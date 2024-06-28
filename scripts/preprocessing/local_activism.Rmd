@@ -1,0 +1,87 @@
+---
+title: "census_preprocessing"
+output: html_document
+date: "2024-06-26"
+---
+
+## Introduction
+This census_preprocessing.Rmd is intended to 1) download the "cps_00001.dat" dataset and 2) clean the data such that it can be merged with the other files at the facility level. The purpose of using this dataset is to proxy the degree to which civic society is involved in activism at local agendas. 
+Note that all of these datasets are publicly available at the [IPUMS](https://cps.ipums.org/cps/).
+
+Note that variables *year*, and *county* are unique identifiers for each observation. Use these to when merging. 
+
+```{r download}
+library(ipumsr)
+library(plyr)
+library(dplyr)
+ddi <- read_ipums_ddi("data/cps_00002.xml")
+data <- read_ipums_micro(ddi)
+```
+
+
+## Processing
+In this section, I remove weightings that were used for population estimates. Examples include primary sampling units, weights at the household level, weights at the district level.
+```{r}
+cols_drop <- c("SERIAL", "MONTH", "HWTFINL", "CPSID", "ASECFLAG", "HFLAG", 
+               "ASECWTH", "PERNUM", "WTFINL", "CPSIDV", "CPSIDP", "ASECWT", 
+               "INCSURV")
+
+data <- data %>%
+  select(-cols_drop)
+```
+
+## Mapping
+
+- VLTORG5 is civic organization
+- VLHTORG5 is number of hours per week respondent volunteered w/ civic organization
+- VLCOMMITTEE Volunteer activities: served on a committee or board
+```{r}
+library(urbnmapr)
+library(ggplot2) 
+
+data$county_fips <- data$COUNTY
+
+
+data_subset <- data %>%
+  dplyr::group_by(county_fips) %>%
+  dplyr::summarise(total_hours = sum(VLCOMMITTEE, na.rm = TRUE)) 
+
+counties <- get_urbn_map(sf = TRUE, map = "counties")
+counties$county_fips <- as.numeric(counties$county_fips)
+
+#order matters
+#resulting object inherits the class of the object on the left
+civic_data <- left_join(counties, 
+                        data_subset, 
+                        by = "county_fips")
+
+ggplot(civic_data) +
+  geom_sf(mapping = aes(fill = total_hours)) +
+  scale_fill_gradient(name = "Hours per Week",
+                       label = scales::comma_format()) +
+  labs(title = "Volunteer Hours with Civic Organization by County")
+```
+
+
+## Percentage of people who volunteered at least once
+
+```{r}
+data_subset <- data %>%
+  dplyr::group_by(county_fips) %>%
+  dplyr::summarise(percent_status_1 = mean(VLSTATUS == 1, na.rm = TRUE) * 100)  # Calculate percentage
+
+# Merge with spatial data
+civic_data <- left_join(counties, 
+                        data_subset, 
+                        by = "county_fips")
+
+ggplot(civic_data) +
+  geom_sf(mapping = aes(fill = percent_status_1)) +
+  scale_fill_gradient(name = "Percentage",
+                      low = "lightgrey", high = "black",
+                      na.value = "white") +  
+  labs(title = "Percentage of Respondents with VLSTATUS = 1 by County")
+```
+
+## References
+Sarah Flood, Miriam King, Renae Rodgers, Steven Ruggles, J. Robert Warren, Daniel Backman, Annie Chen, Grace Cooper, Stephanie Richards, Megan Schouweiler, and Michael Westberry. IPUMS CPS: Version 11.0 [dataset]. Minneapolis, MN: IPUMS, 2023. https://doi.org/10.18128/D030.V11.0
