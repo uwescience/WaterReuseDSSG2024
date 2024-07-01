@@ -11,11 +11,12 @@ date: "2024-06-26"
 library(ipumsr)
 library(plyr)
 library(dplyr)
+library(readxl)
 data <- read_xlsx("data/final_results_dissemination_NDINDC.xlsx")
 ```
 
-##Processing
-I merged county-level base map with dataset on NDI, NDC information. Merged output is named "data_plot," which I use for mapping.
+## Processing
+I merged county-level base map with the dataset on NDI, NDC information. Merged output is named "data_plot," which I use for mapping.
 ```{r}
 library(urbnmapr)
 
