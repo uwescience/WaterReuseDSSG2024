@@ -1,0 +1,83 @@
+---
+title: "drought risk data procesing"
+output: html_document
+date: "2024-06-26"
+---
+
+## Introduction
+
+
+```{r download}
+library(ipumsr)
+library(plyr)
+library(dplyr)
+library(readxl)
+data <- read_xlsx("data/final_results_dissemination_NDINDC.xlsx")
+```
+
+## Processing
+I merged county-level base map with the dataset on NDI, NDC information. Merged output is named "data_plot," which I use for mapping.
+```{r}
+library(urbnmapr)
+
+data$county_fips <- data$FIPS
+
+counties <- get_urbn_map(sf = TRUE, map = "counties")
+counties$county_fips <- as.numeric(counties$county_fips)
+
+
+#resulting object inherits the class of the object on the left (order matters!)
+data_plot <- left_join(counties, 
+                        data, 
+                        by = "county_fips")
+
+str(data_plot)
+data_plot$NDC <- as.numeric(data_plot$NDC)
+```
+
+## Mapping
+The decision to use the 98th percentile as the cutoff for visualization is based on the distribution of NDI values. Upon reviewing the histogram of the NDI column, it became evident that a handful of outliers (ex. Virginia) have NDI values greater than 200, while the majority of counties show NDI values below 1. Excluding these outliers from the visualization enhances clarity in distinguishing between counties.
+
+```{r}
+library(ggplot2) 
+
+plot_percentile <- function(data, variable, caption, title,
+                            percentile=0.95,
+                            low_color = "white", high_color = "red",
+                            na_color = "gray"){
+  percentiles <- quantile(data[[variable]], probs=c(0, percentile), na.rm=TRUE)
+  
+  plot_data_variable <- ggplot(data)+
+    geom_sf(mapping = aes_string(fill = variable)) +
+    scale_fill_gradient(name = variable, 
+                        label = scales::comma_format(),
+                        low=low_color,
+                        high=high_color,
+                        na.value = na_color,
+                        limits = percentiles,
+                        breaks = scales::pretty_breaks(n = 5)) + 
+    labs(title = title,
+         caption = caption) +
+    theme(text = element_text(family = "Times New Roman"))
+  
+      return(plot_data_variable)
+}
+
+plot_percentile(data = data_plot, 
+                variable = "NDC", 
+                title = "NDC by county", 
+                caption = "NDC is the cumulative deficit over 1949-2010.")
+
+plot_percentile(data = data_plot, 
+                variable = "NDI", 
+                title = "NDI by county", 
+                caption = "NDI is the annual cumulative deficit for the worst drought year.")
+```
+
+## References
+Devineni, N., Lall, U., Etienne, E., Shi, D., & Xi, C. (2015). 
+America’s water risk: Current demand and climate variability. Geophysical Research Letters, 1–9. doi:10.1002/2015GL063487.
+
+
+
+
