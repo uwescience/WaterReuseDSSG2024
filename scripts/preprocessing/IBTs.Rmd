@@ -1,0 +1,71 @@
+---
+title: "Inter-basin Transfers Mapping"
+output: pdf_document
+date: "2024-07-01"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(pacman)
+p_load(tidycensus,tidyverse,sf,data.table,tigris,
+       srvyr,survey,rio,car,janitor,rmapshaper,scales,santoku,viridis, urbnmapr)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+
+ibt <- read_sf(dsn = 'Downloads/IBT Geospatial Data/', layer = "Digitized_IBTs")
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+
+vignette("usmap1")
+
+```
+
+```{r}
+#convert coordinate system to match urbnmapr coordinates
+#figure out how to overlay the maps 
+#separate out the types of interbasin transfer types by color 
+
+head(ibt)
+```
+
+
+```{r}
+ggplot() +
+  geom_sf(data = ibt) +
+  theme_minimal() +
+  labs(title = "IBT Shapefile Plot",
+       fill = "Legend")
+
+```
+```{r}
+shapefile_data <- st_transform(ibt, crs = 4326)
+```
+
+```{r}
+
+usmap::plot_usmap() +
+  geom_sf(data = shapefile_data) + 
+  theme_minimal()
+
+
+
+```
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
