@@ -12,7 +12,7 @@ library(ipumsr)
 library(plyr)
 library(dplyr)
 library(readxl)
-data <- read_xlsx("data/final_results_dissemination_NDINDC.xlsx")
+data <- read_xlsx("~/Desktop/WaterReuseDSSG2024/data/final_results_dissemination_NDINDC.xlsx")
 ```
 
 ## Processing
