@@ -1,0 +1,192 @@
+---
+title: "CWNSProcessing"
+author: "Daniel Vogler"
+date: "2024-06-27"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The Community Watershed Needs Survey (CWNS) collects a wide range of data about waste water *facilities*. It comes as a large collection of SQL-style tables, not all of which are relevant to our task. We are most interested in plotting Total Waste water Flow for each facility and having the ability to aggregate this at census tract / county level.
+
+Goal: consolidate the 37 tables in the CWNS file into one table that we can use for our analyses.
+
+As a pre-processing step, the team has manually reviewed the tables comprising CWNS and designated which tables we are interested in incorporating and which we can filter out. These labels are stored in the `Merge` column of `index` below:
+
+```{r}
+# Load necessary packages
+library(tidyverse)
+library(lintr)
+library(urbnmapr)
+library(ggplot2)
+
+root_dir <- config::get()
+datasets_folder <- "/2022CWNS_NATIONAL_APR2024/"
+
+datasets_dir <- paste0(root_dir, datasets_folder)
+
+index_dir <- paste0(datasets_dir, "CWNS-Database-Dictionary-April2024-Tables.csv")
+
+index <- read.csv(index_dir, header = TRUE)
+
+tibble(index)
+```
+
+```{r}
+tables_for_merge <- subset(index, Merge == TRUE) %>% select(c("Table", "Merge"))
+
+tibble(tables_for_merge)
+```
+
+Already, we've significantly reduced the scope of the problem by eliminating a bunch of tables we don't want to merge. Next, we will identify which tables can be straightforwardly merged as-are and which would need to be pre-processed further before merging. We will do this by looking at which tables have a combination of `CWNS_ID` and `FACILITY_ID` that is unique, and in which tables this repeats. 
+
+Our starting point is the `FACILITIES` table:
+
+```{r}
+facilities_path <- paste0(datasets_dir, "FACILITIES.csv")
+facilities_df <- read.csv(facilities_path)
+```
+
+We can check if the CWNS ID is repeated in the facilities path:
+
+```{r}
+any(duplicated(facilities_df$CWNS_ID))
+```
+
+The result above indicates that CWNS_ID is a key into the `FACILITIES` table. Let's check this for all of tables we want to merge more systematically.
+
+```{r}
+duplicated_status <- vector("logical", length = nrow(tables_for_merge))
+
+for (i in seq_along(tables_for_merge$Table)) {
+  
+  table_name <- tables_for_merge$Table[i]
+  table_path <- paste0(datasets_dir, table_name, ".csv")
+  
+  table <- read.csv(table_path)
+  
+  is_duplicated <- any(duplicated(table$CWNS_ID))
+  
+  duplicated_status[i] <- is_duplicated
+  
+}
+
+tables_for_merge$is_duplicated <- duplicated_status
+
+tables_for_merge <- tables_for_merge %>% arrange(is_duplicated)
+
+tibble(tables_for_merge)
+```
+
+For tables where `CWNS_ID` does not repeat, we can simply merge on this ID, with `FACILITIES` as our starting point.
+
+```{r}
+
+files_for_merge <- tables_for_merge %>% 
+  subset(is_duplicated == FALSE) %>% 
+  mutate(Table = paste0(Table, ".csv")) %>% 
+  select("Table") %>% 
+  pull(Table)
+
+join_column <- "CWNS_ID"
+
+first_table_path <- paste0(datasets_dir, "FACILITIES.csv")
+
+first_table <- read.csv(first_table_path)
+
+df <- first_table %>% mutate(CWNS_ID = as.character(CWNS_ID))
+
+# Initialize a counter for the number of tables merged
+tables_merged <- 1
+
+for (tablename in files_for_merge) {
+  
+  print(paste("Processing table", tablename))
+  table_path <- paste0(datasets_dir, tablename)
+  table <- read.csv(table_path)
+  
+  # CWNS id is numeric natively
+  table <- table %>% mutate(CWNS_ID = as.character(CWNS_ID))
+
+  merged_df <- merge(df, table, by = join_column, all = TRUE)
+
+  suffix_x <- grep("\\.x$", names(merged_df), value = TRUE)
+  suffix_y <- grep("\\.y$", names(merged_df), value = TRUE)
+
+  resolved_df <- merged_df %>%
+    mutate(across(all_of(suffix_x), ~coalesce(.x, get(
+      gsub("\\.x$", ".y", cur_column()))), .names = "{.col}")) %>%
+    select(-all_of(c(suffix_y))) %>%
+    rename_with(~gsub("\\.x$", "", .), ends_with(".x"))
+
+  df <- resolved_df
+
+  print(nrow(df))
+  print(ncol(df))
+
+  tables_merged <- tables_merged + 1
+  print(paste("Tables merged:", tables_merged))
+}
+```
+
+Next, we move to the tables that have to be pre-processed manually to resolve duplications in `CWNS_ID`:
+
+```{r}
+files_for_processing <- tables_for_merge %>% 
+  subset(is_duplicated == TRUE) %>% 
+  mutate(Table = paste0(Table, ".csv")) %>% 
+  select("Table") %>% 
+  pull(Table)
+
+```
+
+Let's start with the most important of the additional files, `FLOW.csv`. We know that `CWNS_ID` repeats in this file. Let's examine why:
+
+```{r}
+flow <- read.csv(paste0(datasets_dir, files_for_processing[length(files_for_processing)]))
+
+tibble(head(flow, 10))
+
+```
+The problem is that there is a line item for each type of flow - the table is in long form. We will merge it this way to keep the data tidy, but need to be aware that each row in the table no longer represents a unique `CWNS_ID`.
+
+Now let's merge flow into the main table:
+
+```{r}
+
+flow <- flow %>% mutate(CWNS_ID = as.character(CWNS_ID))
+
+merged_df <- merge(df, flow, by = join_column, all = TRUE)
+
+suffix_x <- grep("\\.x$", names(merged_df), value = TRUE)
+suffix_y <- grep("\\.y$", names(merged_df), value = TRUE)
+
+resolved_df <- merged_df %>% 
+  mutate(across(all_of(suffix_x), ~coalesce(.x, get(
+    gsub("\\.x$", ".y", cur_column()))), .names = "{.col}")) %>% 
+  select(-all_of(c(suffix_y))) %>% 
+  rename_with(~gsub("\\.x$", "", .), ends_with(".x"))
+
+```
+
+Before mapping flow, I want to check this dataset for completeness. Let's check what percentage of each column is `NA`.
+
+```{r}
+na_percentage <- sapply(resolved_df, function(x) {
+  sum(is.na(x)) / length(x) * 100
+})
+
+print(na_percentage)
+
+```
+
+Total flow is the most important variable from this data set, and we have now joined it with basic facility information including the facility's physical location. At this point, let us export the file as a csv. We may add on to this CSV at a later date if we decide to pull in further variables, but for now we have put the top-priority variable in a format that is ready for mapping.
+
+```{r}
+write.csv(resolved_df, "cwns-flow.csv")
+```
