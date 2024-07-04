@@ -84,3 +84,7 @@ plot_percentile(data = data_sf,
                 title = "NDI by county", 
                 caption = "NDI is...")
 ```
+
+```{r}
+map_chloropleth(data, counties, "FIPS", "FIPS", "NDI")
+```
