@@ -1,5 +1,8 @@
 
-#To do: separate types of files? vastly different needs when mapping shapefiles vs. other types of files
+#To do: separate types of files as cases! vastly different needs when mapping shapefiles vs. other types of files
+#To do: error handling 
+#To do: able to use underlying shapefile vs. tigris vs. usmap 
+
 map_points <- function(shape_file, variable_data, location_columns, variable_names) {
   # Args: 
     #shapefile: optional file path providing relevant boundaries e.g state, county, HUC. If no file to provide, write FALSE 
@@ -16,27 +19,34 @@ map_points <- function(shape_file, variable_data, location_columns, variable_nam
       if (shape_file) {
         shape_file_sf <- sf::st_read(system.file(shape_file, package="sf"))
       }
-      data_sf <- st_as_sf(variable_data, coords = location_columns, crs = st_crs(4326))
+      #data_sf <- st_as_sf(variable_data, coords = location_columns, crs = st_crs(4326))
+      map_data <- variable_data %>%
+        select(location_columns[1], location_columns[2], variable) %>%
+        #NOT GENERAL 
+        rename(lat = LATITUDE, lon = LONGITUDE) %>%
+        usmap_transform()
+      
       
       # Plot combined data
-      p<- ggplot() +
+      p <- usmap::plot_usmap() +
         #geom_sf(data = shape_file_sf, fill = "lightblue", color = "black") +
-        geom_sf(data = data_sf, color = "red") +
+        geom_sf(data = map_data, color = "red") +
         theme_minimal() +
         labs(title = "Mapping the United States",
              subtitle = variable,
              x = "Longitude",
              y = "Latitude")
       print(p)
-    } else {
-      #shape_file_df <- st_transform(variable_data, crs = 4326)
-        p <- usmap::plot_usmap() +
-          geom_point(data = variable_data, aes(x = location_columns[1], y = location_columns[2])) + 
-          theme_minimal()
-        print(p)
+    }
+    else {
+      print('Please enter a location column name')
     }
   }
 }
+
+#Testing on cwns point data with latitude, longitude, and measure of interest (CURRENT_DESIGN_FLOW)
+#This works on Nora's computer but it includes the islands, so the projection is a little funky. 
+#Would be helpful to standardize the projection and cut out extraneous islands from the mapping 
 
 library(pacman)
 p_load(tidycensus,tidyverse,sf,data.table,tigris,
@@ -44,4 +54,4 @@ p_load(tidycensus,tidyverse,sf,data.table,tigris,
 
 cwns <- read_csv('Downloads/cwns-flow.csv')
 
-map_points(FALSE, cwns, c('LATITUDE', 'LONGITUDE'), FALSE)
+map_points(FALSE, cwns, c('LATITUDE', 'LONGITUDE'), 'CURRENT_DESIGN_FLOW')
