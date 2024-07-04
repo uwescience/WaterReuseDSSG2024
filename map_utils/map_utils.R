@@ -12,5 +12,4 @@ check_compatibility <- function(data, shapefile, data_key, shape_key) {
     type(data_key) == typeof(shape_key)
   
   return (check_result)
-  
 }
