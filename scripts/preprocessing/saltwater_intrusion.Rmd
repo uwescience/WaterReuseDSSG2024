@@ -28,7 +28,7 @@ library(xml2)
 
 data <- read_csv("~/Desktop/WaterReuseDSSG2024/data/SGD_Coastal_Vulnerabilities.csv", 
                  col_types = cols(.default = "c"))
-map <- read_sf("~/Downloads/Catchment_CONUS_coastline.shp")
+map <- sf::read_sf("~/Downloads/Catchment_CONUS_coastline.shp")
 
 
 data$REACHCODE <- ifelse(nchar(data$REACHCODE) < 14, 
@@ -57,8 +57,8 @@ plot_data <- usmap %>%
   left_join(data, by = c("REACHCODE"))
 
 plot_usmap("counties", color = "gray80") + 
-  geom_sf(data = plot_data, aes(fill = SWIVULN))
-
+  geom_sf(data = plot_data, aes(fill = SWIVULN)) +
+  scale_fill_gradient(low = "lightblue", high = "blue", na.value = "white")
 
 
 plot_usmap("counties", color = "gray80") + 
