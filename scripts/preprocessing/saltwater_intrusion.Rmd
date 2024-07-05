@@ -6,6 +6,13 @@ date: "2024-07-01"
 
 This script is intended to map "salt water intrusion" data onto the coastline shapefile.
 
+## Data-specific features
+- This involves aggregation process by grouping different COMIDs up to the REACHCODE level.
+- Minor thing, but saltwater intrusion is a redflag. I used red to indicate its harmfulness, but might want to think about general red-blue color range when generalizing. 
+
+## General features
+- This is a common problem across many datasets, but seems that shape file and substantive data do not always share the same type and name. 
+
 ## Introduction
 
 - ComID is about unique feature identifier in NHDPlusV2.
@@ -39,20 +46,20 @@ data <- data %>%
   group_by(REACHCODE, REGION) %>%
   summarize(SWIVULN = sum(as.numeric(SWIVULN)))
 
-sum(map$REACHCODE%in% data$REACHCODE)
-sum(data$REACHCODE%in% map$REACHCODE)
+#sum(map$REACHCODE%in% data$REACHCODE)
+#sum(data$REACHCODE%in% map$REACHCODE)
 
-hold <- map[map$REACHCODE %in% data$REACHCODE[-which(data$REGION %in% c("TX", "CA","PN"))],]
-
-
-plot_usmap("counties", color = "gray80") + 
-  geom_sf(data = plot_data, aes(fill = SWIVULN))
-
+#hold <- map[map$REACHCODE %in% data$REACHCODE[-which(data$REGION %in% c("TX", "CA","PN"))],]
 
 usmap <- usmap_transform(map)
 
 plot_data <- usmap %>%
   left_join(data, by = c("REACHCODE"))
+
+plot_usmap("counties", color = "gray80") + 
+  geom_sf(data = plot_data, aes(fill = SWIVULN))
+
+
 
 plot_usmap("counties", color = "gray80") + 
   geom_sf(data = plot_data, color = "lightblue", size = 0.2) +
