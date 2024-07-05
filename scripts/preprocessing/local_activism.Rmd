@@ -7,6 +7,15 @@ date: "2024-06-26"
 # Introduction
 Procedural equity refers to the degree to which stakeholders can influence decision-making process around the policy outcome. In this project, we focus on procedural equity around water reuse. To proxy this, this script introduces two approaches. First, Census data provides information about individuals who are involved in local civic organizations. Second, by flipping the unit of analysis, County Business Pattern provides information about the number of civic organizations and water-relevant. 
 
+## document padding for identifiers at county level
+README markdown for processing countyfips should be X number of characters long.
+or write that into a function
+  features of this identifier that needs to be consistent 
+  ways this can be constructed by changing 
+
+  
+
+
 ## Census data on Volunteering and Civic Life
 This script is intended to 1) download the "cps_00002.dat" dataset and 2) clean the data such that it can be merged with the other files at the facility level. The purpose of using this dataset is to proxy the degree to which civic society is involved in activism at local agendas. 
 Note that all of these datasets are publicly available at the [IPUMS](https://cps.ipums.org/cps/).
@@ -111,8 +120,6 @@ I created a new variable called "water" which is coded 1 if NAICS code is water-
 cbp_data has a new variable called "county_fips" which turns fipstate into a numeric variable and append that with fipscty (FIPS county code). This process is only to make it compatible with county-level map's identifer variable which takes a form of "state_id + county_id." 
 
 ```{r load cbp data}
-
-cbp <- read_csv("data/CBP2022/CBP2022.CB2200CBP-Data.csv") 
 cbp <- read_csv("data/cbp22co.txt") 
 cbp <- cbp %>%
   dplyr::mutate(water = ifelse(naics %in% c("2213//", #water, sewage system
@@ -137,7 +144,7 @@ cbp <- cbp %>%
 
 
 cbp_data <- cbp %>%
-  mutate(county_fips = as.numeric(fipstate) * 1000 + as.numeric(fipscty))
+  mutate(county_fips = paste(fipstate, fipscty, sep=""))
 
 #water sector
 cbp_water <- cbp_data %>%

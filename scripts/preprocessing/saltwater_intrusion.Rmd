@@ -1,0 +1,103 @@
+---
+title: "Salt Water Intrusion"
+output: html_document
+date: "2024-07-01"
+---
+
+This script is intended to map "salt water intrusion" data onto the coastline shapefile.
+
+## Introduction
+
+- ComID is about unique feature identifier in NHDPlusV2.
+- REACHCODE is a common identifier for Catchment_CONUS_coastline.shp file and Saltwater Intrusion dataset.
+
+```{r download}
+library(ipumsr)
+library(plyr)
+library(dplyr)
+library(readr)
+library(sf)
+library(xml2)
+
+data <- read_csv("~/Desktop/WaterReuseDSSG2024/data/SGD_Coastal_Vulnerabilities.csv", 
+                 col_types = cols(.default = "c"))
+map <- read_sf("~/Downloads/Catchment_CONUS_coastline.shp")
+
+
+data$REACHCODE <- ifelse(nchar(data$REACHCODE) < 14, 
+                          paste0("0", data$REACHCODE), 
+                          data$REACHCODE)
+ 
+# map$REACHCODE <- ifelse(nchar(map$REACHCODE) < 14, 
+#                          paste0("0", map$REACHCODE), 
+#                          map$REACHCODE)
+
+
+#I'm aggregating ComID-level observations up to REACHCODE level. This is because "map" is at the REACHCODE level.
+
+data <- data %>%
+  group_by(REACHCODE, REGION) %>%
+  summarize(SWIVULN = sum(as.numeric(SWIVULN)))
+
+sum(map$REACHCODE%in% data$REACHCODE)
+sum(data$REACHCODE%in% map$REACHCODE)
+
+hold <- map[map$REACHCODE %in% data$REACHCODE[-which(data$REGION %in% c("TX", "CA","PN"))],]
+
+
+plot_usmap("counties", color = "gray80") + 
+  geom_sf(data = plot_data, aes(fill = SWIVULN))
+
+
+usmap <- usmap_transform(map)
+
+plot_data <- usmap %>%
+  left_join(data, by = c("REACHCODE"))
+
+plot_usmap("counties", color = "gray80") + 
+  geom_sf(data = plot_data, color = "lightblue", size = 0.2) +
+  geom_point(data = plot_data,
+    aes(color = SWIVULN, size = SWIVULN, geometry = geometry),
+    alpha = 0.2,
+    color = "red",
+    stat = "sf_coordinates"
+  ) +
+  scale_size_continuous(name = "Saltwater Vulnerability",
+                        labels = scales::comma_format(),
+                        range = c(0.01, 7)) + 
+  scale_color_gradient(name = "Saltwater Vulnerability",
+                       low = "bisque", high = "red") +
+  theme(legend.position = "bottom") +
+  labs(title = "Saltwater Vulnerability") +
+  theme(text = element_text(family = "Times New Roman"))
+
+```
+
+# Loop through all variables once the above is done. 
+
+```{r}
+variables_to_loop <- names(plot_data)[9:length(names(plot_data))]
+
+plot_list <- list()
+
+for (variable in variables_to_loop) {
+  plot <- ggplot(data = plot_data) +
+    geom_sf(color = "blue", size = 1) +  
+    geom_sf(aes_string(color = variable)) +  
+    scale_color_continuous(name = variable) +  
+    scale_size_continuous(name = "",
+                          labels = scales::comma_format(),
+                          range = c(0.1, 10)) +  
+    labs(title = variable)  
+  
+  plot_list[[variable]] <- plot
+}
+
+
+print(plot_list[[1]])
+
+for (i in seq_along(plot_list)) {
+  ggsave(paste0("plot_", names(plot_list)[i], ".png"), plot_list[[i]], width = 8, height = 6)
+}
+
+```
