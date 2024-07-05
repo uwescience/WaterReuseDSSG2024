@@ -39,14 +39,16 @@ filename <- "final_results_dissemination_NDINDC.xlsx"
 filepath <- paste0(dataset_dir, filename)
 
 data <- read_xlsx(filepath, sheet=1) %>% 
-  mutate(FIPS = as.character(FIPS))
+  mutate(FIPS = as.character(FIPS)) %>% 
+  mutate(FIPS = sub("^0+", "", FIPS))
 ```
 
 ```{r}
 
 ## TO DO: consider how to deal with leading zeros
 counties <- counties %>% 
-  rename(FIPS = county_fips)
+  rename(FIPS = county_fips) %>%
+  mutate(FIPS = sub("^0+", "", FIPS))
 ```
 
 ```{r}
@@ -83,4 +85,18 @@ plot_percentile(data = data_sf,
                 variable = "NDI", 
                 title = "NDI by county", 
                 caption = "NDI is...")
+```
+
+
+```{r}
+map_chloropleth(data, 
+                counties, 
+                "FIPS", 
+                "FIPS", 
+                "NDI",
+                map_percentile = TRUE)
+```
+
+```{r}
+
 ```
