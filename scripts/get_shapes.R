@@ -1,13 +1,11 @@
-library(tidyverse)
-library(usmap)
-library(sf)
-test_loc_assignee <- read_csv("datasets/Found_dataset/location_assignee.csv")
-
-
 # I am writing a function that assigns locations to a shape base on the given longitudes and latitudes
-get_shapes <- function(dataset, longitudes, latitudes){
+
+get_shapes <- function(dataset, longitudes, latitudes, census_year = "2023"){
+  # Load the libraries
+  require(tigris)
+  require(sf)
   # get a county shapefile using tigris
-  us_counties = counties(year = "2023")
+  us_counties = counties(year = census_year)
 
   # Convert the dataframe to a spatial object and use the us_counties' crs
   points <- st_as_sf(dataset, coords = c(longitudes, latitudes), crs = st_crs(us_counties))
@@ -16,4 +14,3 @@ get_shapes <- function(dataset, longitudes, latitudes){
   joined <- st_join(points, us_counties, join = st_within)
   return(joined)
 }
-
