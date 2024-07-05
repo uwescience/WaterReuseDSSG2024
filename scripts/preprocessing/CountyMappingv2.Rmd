@@ -1,0 +1,86 @@
+---
+title: "county_level_mapping"
+author: "Daniel Vogler"
+date: "2024-07-03"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ipumsr)
+library(dplyr)
+library(readxl)
+library(usmap)
+library(dplyr)
+library(tigris)
+library(sf)
+library(stringr)
+library(ggplot2)
+library(urbnmapr)
+```
+
+```{r}
+counties <- get_urbn_map(map = "counties", sf=TRUE) %>%
+  filter(!(state_abbv %in% c("HI", "AK")))
+```
+
+```{r}
+root_dir <- config::get()
+datasets_folder <- "/Drivers/multiyear drought risk/"
+
+dataset_dir <- paste0(root_dir, datasets_folder)
+print(file.exists(dataset_dir))
+
+filename <- "final_results_dissemination_NDINDC.xlsx"
+
+filepath <- paste0(dataset_dir, filename)
+
+data <- read_xlsx(filepath, sheet=1) %>% 
+  mutate(FIPS = as.character(FIPS))
+```
+
+```{r}
+
+## TO DO: consider how to deal with leading zeros
+counties <- counties %>% 
+  rename(FIPS = county_fips)
+```
+
+```{r}
+data_sf <- counties %>% left_join(data, by="FIPS") %>% 
+  mutate(NDI = as.numeric(NDI))
+```
+
+```{r}
+plot_percentile <- function(data, variable, caption, title,
+                            percentile=0.95,
+                            low_color = "white", high_color = "red",
+                            na_color = "gray"){
+  percentiles <- quantile(data[[variable]], probs=c(0, percentile), na.rm=TRUE)
+  
+  plot_data_variable <- ggplot(data)+
+    geom_sf(mapping = aes_string(fill = variable)) +
+    scale_fill_gradient(name = variable, 
+                        label = scales::comma_format(),
+                        low=low_color,
+                        high=high_color,
+                        na.value = na_color,
+                        limits = percentiles,
+                        breaks = scales::pretty_breaks(n = 5)) + 
+    labs(title = title,
+         caption = caption) +
+    theme(text = element_text(family = "Times New Roman"))
+  
+      return(plot_data_variable)
+}
+```
+
+```{r}
+plot_percentile(data = data_sf, 
+                variable = "NDI", 
+                title = "NDI by county", 
+                caption = "NDI is...")
+```

@@ -1,0 +1,62 @@
+---
+title: "Initial CWNS Flow Mapping"
+author: "Daniel Vogler"
+date: "2024-07-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(usmap)
+library(dplyr)
+library(tigris)
+library(sf)
+```
+
+```{r}
+cwns <- read.csv("scripts/preprocessing/cwns-flow.csv")  %>%
+  select(-X) %>% 
+  filter(FLOW_TYPE == "Total Flow")
+```
+
+```{r}
+
+map_data <- cwns %>% 
+  select(LATITUDE, LONGITUDE, CURRENT_DESIGN_FLOW) %>%
+  rename(lat = LATITUDE, lon = LONGITUDE) %>%
+  usmap_transform()
+
+plot_usmap() + 
+  geom_sf(data = map_data, aes(color=log(CURRENT_DESIGN_FLOW))) + 
+  labs(title = "Current Design Flow")
+```
+```{r}
+
+census_year <- 2020
+
+counties <- counties(year=census_year) %>% st_transform(crs = 3082)
+
+cwns_ <- cwns %>% select(LATITUDE, LONGITUDE, COUNTY_FIPS, RESIDENTIAL_POP_2022, FLOW_TYPE, CURRENT_DESIGN_FLOW)
+
+cwns_sf <- st_as_sf(cwns_, coords = c("LATITUDE", "LONGITUDE"), crs = 3082)
+
+points_counties <- st_join(cwns_sf, counties, )
+
+print(points_counties)
+```
+
+
+```{r}
+# Example with ggplot2
+library(ggplot2)
+
+ggplot() +
+  geom_sf(data = counties, fill = "white", color = "black") + 
+  #geom_sf(data = points_counties, color = "red", size = 2) +  
+  labs(title = "Points Mapped to US Counties")
+
+
+```
