@@ -14,21 +14,47 @@
 
 ###
 
-countyfips_helper <- function(
-    cfips=NULL, state=NULL, county=NULL){
-  if (!is.null(cfips) && is.character(cfips) && nchar(cfips) == 5){
+countyfips_helper <- function(cfips = NULL, state = NULL, county = NULL) {
+  
+  if (!is.null(cfips) && is.character(cfips) && nchar(cfips) == 5) {
     return(cfips)
   }
+  if (!is.character(cfips) && nchar(cfips) == 5) {
+    cfips <- as.character(cfips)
+  }
   
-  if (!is.null(state) && !is.null(county)){
+  if (!is.null(state) && !is.null(county)) {
     state <- as.character(state)
     county <- as.character(county)
     cfips <- paste0(state, county)
+    if (nchar(cfips) != 5) {
+      cfips <- paste0(0, cfips)
+    }
     return(cfips)
   }
   
-  if (!is.null(cfips) && nchar(cfips) < 5){
-    cfips <- as.character(cfips)
-    cfips <- paste0(0, cfips)
+  if (is.null(state) && is.null(cfips)) {
+    stop("State code is not provided.")
   }
+  if (is.null(county) && is.null(cfips)) {
+    stop("County code is not provided.")
+  }
+  
+  # Below handles a weird case when a user confounds 5-digit cfips with 3-digit county code.
+  if (nchar(cfips) == 3) {
+    county <- cfips
+    if (is.null(state)) {
+      warning("Variable 'cfips' is a 3-digit county code without a state code.")
+      stop("State code is not provided.")
+    }
+    if (!is.null(state)) {
+      county <- as.character(county)
+      state <- as.character(state)
+      cfips <- paste0(state, county)
+    }
+  }  
+  
+  return(cfips)
 }
+
+##Test Example: Run countyfips_helper(cfips==123)
