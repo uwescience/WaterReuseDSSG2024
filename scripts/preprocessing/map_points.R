@@ -1,57 +1,91 @@
 
-#To do: separate types of files as cases! vastly different needs when mapping shapefiles vs. other types of files
-#To do: error handling 
-#To do: able to use underlying shapefile vs. tigris vs. usmap 
+# There are 3 cases for inputs: 
+# 1: Shapefile with a location label (str) and a dataset with a location label (str). 
+# 2: Shapefile with lat, lon columns or a geometry containing lat and a dataset with lat, lon columns. 
+# 3: Shapefile that can automatically be mapped with usmap. Double check location requirements for this. 
 
-map_points <- function(shape_file, variable_data, location_columns, variable_names) {
+map_points <- function(shapefile, data, location_columns, variable_name, base_unit) {
+  
   # Args: 
     #shapefile: optional file path providing relevant boundaries e.g state, county, HUC. If no file to provide, write FALSE 
-    #data: data points to be visualized on the map 
+    #data: dataset containing points to be visualized on the map
     #location_columns: a list of column names (strings) that contain location data e.g c('lat', 'lon') or c('State')
     #variable_name: a list of column names (string) that contain the variables of interest to be mapped e.g c('saltwater', 'Population Total')
   # Outputs; 
-    #Points on a map of the U.S. Will produce a map for each variable name listed in variable_names
-  require(usmap)
+    #Points on a map of the U.S. Will produce a map for each variable name listed in variable_name
   
-  for (variable in variable_names) {
-    if (length(location_columns) > 0) {
-      # Read and convert files to shapefiles 
-      if (shape_file) {
-        shape_file_sf <- sf::st_read(system.file(shape_file, package="sf"))
-      }
-      #data_sf <- st_as_sf(variable_data, coords = location_columns, crs = st_crs(4326))
-      map_data <- variable_data %>%
-        select(location_columns[1], location_columns[2], variable) %>%
-        #NOT GENERAL 
-        rename(lat = LATITUDE, lon = LONGITUDE) %>%
-        usmap_transform()
-      
-      
-      # Plot combined data
-      p <- usmap::plot_usmap() +
-        #geom_sf(data = shape_file_sf, fill = "lightblue", color = "black") +
-        geom_sf(data = map_data, color = "red") +
-        theme_minimal() +
-        labs(title = "Mapping the United States",
-             subtitle = variable,
-             x = "Longitude",
-             y = "Latitude")
-      print(p)
-    }
-    else {
-      print('Please enter a location column name')
-    }
+  #For case type 1 
+  if (length(location_columns) == 1) {
+    shapefile <- st_as_sf(shapefile)
+    shapefile <- st_make_valid(shapefile)
+    usmap <- usmap_transform(shapefile)
+    plot_data <- usmap %>% left_join(data, by = location_columns[1], relationship = "many-to-many")
+    
+    p <- plot_usmap(base_unit, color = "gray80") + 
+      geom_sf(data = plot_data, color = "lightblue", size = 0.2) +
+      geom_point(data = plot_data,
+                 aes(color = SWIVULN, size = SWIVULN, geometry = geometry),
+                 alpha = 0.2,
+                 color = "red",
+                 stat = "sf_coordinates") +
+      scale_size_continuous(name = "Saltwater Vulnerability",
+                            labels = scales::comma_format(),
+                            range = c(0.01, 7)) +
+      scale_color_gradient(name = "Saltwater Vulnerability",
+                           low = "bisque", high = "red") +
+      theme(legend.position = "bottom") +
+      labs(title = "Saltwater Vulnerability") +
+      theme(text = element_text(family = "Times New Roman"))
+    print(p)
+    
+    #For case type 2
+  } else if (length(location_columns) == 2) {
+    # if (!is.logical(shapefile) || shapefile != FALSE) {
+    #   shapefile <- st_make_valid(shapefile)
+    #   # Ensure that geometries are points, lines, or polygons
+    #   if (any(st_geometry_type(shapefile) %in% c("POINT", "MULTIPOINT", "LINESTRING", "MULTILINESTRING", "POLYGON", "MULTIPOLYGON"))) {
+    #     if (!inherits(map, "sf")) {
+    #       stop("The object is not an sf object.")
+    #     }
+    #     shapefile <- shapefile %>%
+    #     mutate(centroid = st_centroid(geometry)) %>%
+    #     mutate(lon = st_coordinates(centroid)[, 1],
+    #            lat = st_coordinates(centroid)[, 2])
+    #   }
+    #   }
+    map_data <- data %>%
+      select(location_columns[1], location_columns[2], variable_name) %>%
+      rename(lat = location_columns[1], lon = location_columns[2]) %>%
+      usmap_transform()
+    
+    # Plot combined data
+    p <- usmap::plot_usmap() +
+      geom_sf(data = map_data, color = "red") +
+      theme_minimal() +
+      labs(title = "Mapping the United States",
+           subtitle = variable_name,
+           x = "Longitude",
+           y = "Latitude")
+    print(p)
+    
+    #For case type 3
+  } else if (location_columns.isnull()) {
+    # map_data <- data %>%
+    #   select(location_columns[1], location_columns[2], variable) %>%
+    #   rename(lat = LATITUDE, lon = LONGITUDE) %>%
+    #   usmap_transform()
+    
+    # Plot combined data
+    shape_file <- shapefile %>%
+      usmap_transform()
+    
+    p <- usmap::plot_usmap() +
+      geom_sf(data = shapefile, color = "red") +
+      theme_minimal() +
+      labs(title = "Mapping the United States",
+           subtitle = variable_name,
+           x = "Longitude",
+           y = "Latitude")
+    print(p)
   }
 }
-
-#Testing on cwns point data with latitude, longitude, and measure of interest (CURRENT_DESIGN_FLOW)
-#This works on Nora's computer but it includes the islands, so the projection is a little funky. 
-#Would be helpful to standardize the projection and cut out extraneous islands from the mapping 
-
-library(pacman)
-p_load(tidycensus,tidyverse,sf,data.table,tigris,
-       srvyr,survey,rio,car,janitor,rmapshaper,scales,santoku,viridis, urbnmapr, usmap)
-
-cwns <- read_csv('Downloads/cwns-flow.csv')
-
-map_points(FALSE, cwns, c('LATITUDE', 'LONGITUDE'), 'CURRENT_DESIGN_FLOW')
