@@ -96,7 +96,3 @@ map_chloropleth(data,
                 "NDI",
                 map_percentile = TRUE)
 ```
-
-```{r}
-
-```
