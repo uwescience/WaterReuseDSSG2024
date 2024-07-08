@@ -1,0 +1,27 @@
+---
+title: "Dimension Reduction"
+output: html_document
+date: "2024-07-08"
+---
+
+## Introduction
+The goal of this note is to organize different options for dimensionality reduction. 
+The user should be able to choose one of these options, or let the pipeline automatically choose the optimal one as a default. To do so, having a set of categories that best describe the input can be helpful.
+
+Dimensionalitly reduction preserves key features of data but gets rid of redundancy. It also allows users to creat a single-index that incorporates complex data sets. 
+
+## Principal Component Analysis(PCA)
+PCA calculates a new vector that maximizes the variance of the original data. This new vector (PC1) corresponds to the eigenvector of the largest eigenvalue in the variance-covariance matrix.
+
+- PCA might not necessarily generate the single-most representative vector. Depending on the data, we might need more than one vector to describe the dataset. *If* one PC vector can explain less than 0.5 of the total variance, then using the PC1 as the single index might not be appropriate.
+
+## T-distributed stochastic neighbor embedding(t-SNE)
+t-SNE is a non-linear dimensionality reduction method that preserves the local data structure. Using a Gaussian kernel, t-SNE generates pairwise similarity for two data points. A pair of points that are far apart gets a low joint-probability. After getting joint probabilities in high-dimensional space (Gaussian Kernal), these points are mapped onto lower dimentional space while preserving the similarities. The goal is to minimize the divergence between the probability distribution in high and low-dimensional space.
+
+- The strength of t-SNE compared to PCA is that it always reduces the dimension down to two or three. This brings more consistency to the output, and always allows us to visualize it.
+
+
+
+## How can this piece of info be incorporated into our overall workflow?
+
+
