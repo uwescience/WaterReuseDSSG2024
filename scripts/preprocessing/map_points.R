@@ -55,10 +55,6 @@ map_points <- function(shapefile, data, location_columns, variable_name, base_un
     
     #For case type 3
   } else if (is.null(location_columns)) {
-    # map_data <- data %>%
-    #   select(location_columns[1], location_columns[2], variable) %>%
-    #   rename(lat = LATITUDE, lon = LONGITUDE) %>%
-    #   usmap_transform()
     
     # Plot combined data
     shapefile <- shapefile %>%
