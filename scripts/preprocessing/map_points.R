@@ -2,17 +2,18 @@
 # There are 3 cases for inputs: 
 # 1: Shapefile with a location label (str) and a dataset with a location label (str). 
 # 2: Shapefile with lat, lon columns or a geometry containing lat and a dataset with lat, lon columns. 
-# 3: Shapefile that can automatically be mapped with usmap. Double check location requirements for this. 
+# 3: Shapefile or dataset containing lat and lon that can automatically be mapped with usmap. Double check location requirements for this. 
 
 map_points <- function(shapefile, data, location_columns, variable_name, base_unit) {
   
   # Args: 
-    #shapefile: optional file path providing relevant boundaries e.g state, county, HUC. If no file to provide, write FALSE 
-    #data: dataset containing points to be visualized on the map
-    #location_columns: a list of column names (strings) that contain location data e.g c('lat', 'lon') or c('State')
-    #variable_name: a list of column names (string) that contain the variables of interest to be mapped e.g c('saltwater', 'Population Total')
+  #shapefile: optional file path providing relevant boundaries e.g state, county, HUC. If no file to provide, write FALSE 
+  #data: dataset containing points to be visualized on the map 
+  #location_columns: a list of column names (strings) that contain location data e.g c('lat', 'lon') or c('State')
+  #variable_name: a list of column names (string) that contain the variables of interest to be mapped e.g c('saltwater', 'Population Total')
+  #base_unit: a string with the base unit to be drawn on the usmap e.g 'counties'
   # Outputs; 
-    #Points on a map of the U.S. Will produce a map for each variable name listed in variable_name
+  #Points on a map of the U.S. Will produce a map for each variable name listed in variable_name
   
   #For case type 1 
   if (length(location_columns) == 1) {
@@ -40,19 +41,6 @@ map_points <- function(shapefile, data, location_columns, variable_name, base_un
     
     #For case type 2
   } else if (length(location_columns) == 2) {
-    # if (!is.logical(shapefile) || shapefile != FALSE) {
-    #   shapefile <- st_make_valid(shapefile)
-    #   # Ensure that geometries are points, lines, or polygons
-    #   if (any(st_geometry_type(shapefile) %in% c("POINT", "MULTIPOINT", "LINESTRING", "MULTILINESTRING", "POLYGON", "MULTIPOLYGON"))) {
-    #     if (!inherits(map, "sf")) {
-    #       stop("The object is not an sf object.")
-    #     }
-    #     shapefile <- shapefile %>%
-    #     mutate(centroid = st_centroid(geometry)) %>%
-    #     mutate(lon = st_coordinates(centroid)[, 1],
-    #            lat = st_coordinates(centroid)[, 2])
-    #   }
-    #   }
     map_data <- data %>%
       select(location_columns[1], location_columns[2], variable_name) %>%
       rename(lat = location_columns[1], lon = location_columns[2]) %>%
@@ -69,14 +57,14 @@ map_points <- function(shapefile, data, location_columns, variable_name, base_un
     print(p)
     
     #For case type 3
-  } else if (location_columns.isnull()) {
+  } else if (is.null(location_columns)) {
     # map_data <- data %>%
     #   select(location_columns[1], location_columns[2], variable) %>%
     #   rename(lat = LATITUDE, lon = LONGITUDE) %>%
     #   usmap_transform()
     
     # Plot combined data
-    shape_file <- shapefile %>%
+    shapefile <- shapefile %>%
       usmap_transform()
     
     p <- usmap::plot_usmap() +
