@@ -7,7 +7,7 @@
 map_points <- function(shapefile, data, location_columns, variable_name, base_unit) {
   
   # Args: 
-  #shapefile: optional file path providing relevant boundaries e.g state, county, HUC. If no file to provide, write FALSE 
+  #shapefile: optional file path providing relevant boundaries e.g state, county, HUC. If no file to provide, write NULL 
   #data: dataset containing points to be visualized on the map 
   #location_columns: a list of column names (strings) that contain location data e.g c('lat', 'lon') or c('State')
   #variable_name: a list of column names (string) that contain the variables of interest to be mapped e.g c('saltwater', 'Population Total')
