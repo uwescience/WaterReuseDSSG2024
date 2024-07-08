@@ -1,9 +1,8 @@
 
 # There are 3 cases for inputs: 
-# 1: Shapefile with a location label (str) and a dataset with a location label (str). 
-# 2: Shapefile with lat, lon columns or a geometry containing lat and a dataset with lat, lon columns. 
-# 3: Shapefile or dataset containing lat and lon that can automatically be mapped with usmap. Double check location requirements for this. 
-
+# 1: Shapefile with a location label (str) AND a dataset with a location label (str). 
+# 2: Dataset with lat, lon columns or a geometry containing lat. 
+# 3: Shapefile that can automatically be mapped with usmap. Please check the package's location data requirements for this. 
 map_points <- function(shapefile, data, location_columns, variable_name, base_unit) {
   
   # Args: 
@@ -17,8 +16,6 @@ map_points <- function(shapefile, data, location_columns, variable_name, base_un
   
   #For case type 1 
   if (length(location_columns) == 1) {
-    shapefile <- st_as_sf(shapefile)
-    shapefile <- st_make_valid(shapefile)
     usmap <- usmap_transform(shapefile)
     plot_data <- usmap %>% left_join(data, by = location_columns[1], relationship = "many-to-many")
     
@@ -65,6 +62,7 @@ map_points <- function(shapefile, data, location_columns, variable_name, base_un
     
     # Plot combined data
     shapefile <- shapefile %>%
+      rename(lat = location_columns[1], lon = location_columns[2]) %>%
       usmap_transform()
     
     p <- usmap::plot_usmap() +
