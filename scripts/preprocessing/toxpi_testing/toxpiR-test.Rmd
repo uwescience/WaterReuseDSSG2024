@@ -1,0 +1,62 @@
+---
+title: "ToxPi Sandbox"
+author: "Daniel Vogler"
+date: "2024-07-08"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(toxpiR)
+```
+
+I will test out `toxpiR` by using it to create a very simple index. I will use the multiyear drought index, a county-level dataset with two numeric columns, NDI and NDC. With ToxPi, we can create a simple index that captures both of these. (These two variables are not intended to be mixed together; the goal is just to understand the capabilities & applicability of `toxpiR`.)
+
+```{r}
+root_dir <- config::get()
+datasets_folder <- "/Drivers/multiyear drought risk/"
+
+dataset_dir <- paste0(root_dir, datasets_folder)
+
+filename <- "final_results_dissemination_NDINDC.xlsx"
+
+filepath <- paste0(dataset_dir, filename)
+
+drought_data <- read_xlsx(filepath, sheet=1) %>% 
+  mutate(FIPS = as.character(FIPS)) %>% 
+  mutate(FIPS = sub("^0+", "", FIPS)) %>%
+  mutate(NDC = as.numeric(NDC))
+```
+
+```{r}
+
+f.slices <- TxpSliceList(NDC = 
+                           TxpSlice(txpValueNames = "NDC"),
+                         NDI =
+                           TxpSlice(txpValueNames = "NDI")
+                         )
+
+f.weights <- c(2,1)
+
+f.model <-TxpModel(txpSlices = f.slices,
+                   txpWeights = f.weights)
+
+index <- txpCalculateScores(model=f.model,
+                   input=drought_data,
+                   id.var="FIPS")
+```
+
+``` {r}
+
+output_df <- drought_data %>%
+  mutate(scores = index@txpScores) %>%
+  mutate(sliceScores = index@txpSliceScores)
+```
+
+```{r}
+View(output_df)
+```
