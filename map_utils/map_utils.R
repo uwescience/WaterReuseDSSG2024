@@ -137,7 +137,7 @@ plot_percentile <- function(data,
 }
 
 # main mapping utility for plotting shapes (as opposed to points)
-map_chloropleth <- function(data, 
+map_choropleth <- function(data, 
                             shapefile, 
                             data_key, 
                             shape_key, 
