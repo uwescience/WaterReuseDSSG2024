@@ -213,7 +213,7 @@ map_choropleth <- function(data,
     
     if (map_percentile == TRUE) {
       
-      plot_percentile(data, 
+      plot <- plot_percentile(data, 
                       variable, 
                       title = map_title, 
                       caption = map_caption,
@@ -221,8 +221,9 @@ map_choropleth <- function(data,
                       high_color = high_color,
                       na_color = na_color,
                       map_font = map_font)
-      
+      return(plot)
     }
+
     
     else {
       
@@ -269,35 +270,48 @@ map_choropleth <- function(data,
   #####################################################################################
   # Case 3
   #####################################################################################
-  
-  if (check_compatibility(data, shapefile, data_key, shape_key) == FALSE) {
-    warning("This dataset & shapefile seem incompatible. 
-            Please check that column names match key names and that 
-            keys in data & shapefile have the same type")
-  }
-  
-  if (data_key != shape_key) {
-    
-
-    colnames(shapefile)[which(colnames(shapefile)==shape_key)] <- data_key
-
-    data_sf <- shapefile %>% left_join(data, by = data_key)
-    
-    data[[variable]] <- as.numeric(data[[variable]])
-  
-  }
-  
   else {
+    if (check_compatibility(data, shapefile, data_key, shape_key) == FALSE) {
+      warning("This dataset & shapefile seem incompatible. 
+              Please check that column names match key names and that 
+              keys in data & shapefile have the same type")
+    }
     
-    data_sf <- shapefile %>% left_join(data, by = data_key)
-    
-    data[[variable]] <- as.numeric(data[[variable]])
-    
-  }
+    if (data_key != shape_key) {
+      
   
-  if (map_percentile == TRUE) {
+      colnames(shapefile)[which(colnames(shapefile)==shape_key)] <- data_key
+  
+      data_sf <- shapefile %>% left_join(data, by = data_key)
+      
+      data[[variable]] <- as.numeric(data[[variable]])
     
-    plot_percentile(data_sf, 
+    }
+    
+    else {
+      
+      data_sf <- shapefile %>% left_join(data, by = data_key)
+      
+      data[[variable]] <- as.numeric(data[[variable]])
+      
+    }
+    
+    if (map_percentile == TRUE) {
+      
+      plot_percentile(data_sf, 
+                      variable, 
+                      title = map_title, 
+                      caption = map_caption,
+                      low_color = low_color, 
+                      high_color = high_color,
+                      na_color = na_color,
+                      map_font = map_font)
+    
+      }
+    
+    else {
+      
+      plot_absolute(data_sf, 
                     variable, 
                     title = map_title, 
                     caption = map_caption,
@@ -305,19 +319,7 @@ map_choropleth <- function(data,
                     high_color = high_color,
                     na_color = na_color,
                     map_font = map_font)
-  
-    }
-  
-  else {
     
-    plot_absolute(data_sf, 
-                  variable, 
-                  title = map_title, 
-                  caption = map_caption,
-                  low_color = low_color, 
-                  high_color = high_color,
-                  na_color = na_color,
-                  map_font = map_font)
-  
     }
+  }
 }
