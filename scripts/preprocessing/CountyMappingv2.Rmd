@@ -10,6 +10,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
+
+setwd("/Users/danielvogler/Documents/DSSG/WaterReuseDSSG2024")
+
 library(ipumsr)
 library(dplyr)
 library(readxl)
@@ -20,6 +23,8 @@ library(sf)
 library(stringr)
 library(ggplot2)
 library(urbnmapr)
+
+source("/Users/danielvogler/Documents/DSSG/WaterReuseDSSG2024/map_utils/map_utils.R")
 ```
 
 ```{r}
@@ -57,42 +62,10 @@ data_sf <- counties %>% left_join(data, by="FIPS") %>%
 ```
 
 ```{r}
-plot_percentile <- function(data, variable, caption, title,
-                            percentile=0.95,
-                            low_color = "white", high_color = "red",
-                            na_color = "gray"){
-  percentiles <- quantile(data[[variable]], probs=c(0, percentile), na.rm=TRUE)
-  
-  plot_data_variable <- ggplot(data)+
-    geom_sf(mapping = aes_string(fill = variable)) +
-    scale_fill_gradient(name = variable, 
-                        label = scales::comma_format(),
-                        low=low_color,
-                        high=high_color,
-                        na.value = na_color,
-                        limits = percentiles,
-                        breaks = scales::pretty_breaks(n = 5)) + 
-    labs(title = title,
-         caption = caption) +
-    theme(text = element_text(family = "Times New Roman"))
-  
-      return(plot_data_variable)
-}
-```
-
-```{r}
-plot_percentile(data = data_sf, 
-                variable = "NDI", 
-                title = "NDI by county", 
-                caption = "NDI is...")
-```
-
-
-```{r}
-map_chloropleth(data, 
-                counties, 
-                "FIPS", 
-                "FIPS", 
-                "NDI",
+map_choropleth(data = data_sf, 
+                shapefile = NULL, 
+                data_key = "FIPS", 
+                shape_key = NULL, 
+                variable = "NDI",
                 map_percentile = TRUE)
 ```
