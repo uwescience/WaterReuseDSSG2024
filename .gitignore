@@ -2,3 +2,4 @@ config.yml
 # macOS
 .DS_Store
 .Rhistory
+private/
