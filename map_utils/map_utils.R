@@ -1,3 +1,4 @@
+# helper to map_chloropleth()
 check_compatibility <- function(data, 
                                 shapefile, 
                                 data_key, 
@@ -17,6 +18,8 @@ check_compatibility <- function(data,
   return (check_result)
 }
 
+# plot unmodified values of variable, without converting them to percentiles
+# helper to map_chloropleth()
 plot_absolute <- function(data, 
                           variable, 
                           caption, 
@@ -71,6 +74,8 @@ plot_absolute <- function(data,
   
 }
 
+# plot the percentile score of a variable, rather than its unmodified value
+# helper to map_cloropleth()
 plot_percentile <- function(data, 
                             variable, 
                             caption, 
@@ -131,6 +136,7 @@ plot_percentile <- function(data,
   
 }
 
+# main mapping utility for plotting shapes (as opposed to points)
 map_chloropleth <- function(data, 
                             shapefile, 
                             data_key, 
@@ -186,6 +192,84 @@ map_chloropleth <- function(data,
   # to percentile scores and maps the percentile scores
   
   
+  # CONTROL FLOW:
+  # Case 1: both data and shapefile are NULL. Throw error. 
+  # Case 2: data or shapefile are NULL. No merge necessary. Try to plot non-null table.
+  # Case 3: data and shapefile are not NULL. Merge then plot combined table.
+  
+  #####################################################################################
+  # Case 1
+  #####################################################################################
+  
+  if (is.null(data) && is.null(shapefile)) {
+    stop("data and shapefile passed to map_chloropleth() are null!")
+  }
+  
+  #####################################################################################
+  # Case 2
+  #####################################################################################
+  
+  if (is.null(shapefile)) {
+    
+    if (map_percentile == TRUE) {
+      
+      plot_percentile(data, 
+                      variable, 
+                      title = map_title, 
+                      caption = map_caption,
+                      low_color = low_color, 
+                      high_color = high_color,
+                      na_color = na_color,
+                      map_font = map_font)
+      
+    }
+    
+    else {
+      
+      plot_absolute(data, 
+                    variable, 
+                    title = map_title, 
+                    caption = map_caption,
+                    low_color = low_color, 
+                    high_color = high_color,
+                    na_color = na_color,
+                    map_font = map_font)
+      
+    }
+  }
+  
+  else if (is.null(data)) {
+    if (map_percentile == TRUE) {
+      
+      plot_percentile(shapefile, 
+                      variable, 
+                      title = map_title, 
+                      caption = map_caption,
+                      low_color = low_color, 
+                      high_color = high_color,
+                      na_color = na_color,
+                      map_font = map_font)
+      
+    }
+    
+    else {
+      
+      plot_absolute(shapefile, 
+                    variable, 
+                    title = map_title, 
+                    caption = map_caption,
+                    low_color = low_color, 
+                    high_color = high_color,
+                    na_color = na_color,
+                    map_font = map_font)
+      
+    }
+  }
+  
+  #####################################################################################
+  # Case 3
+  #####################################################################################
+  
   if (check_compatibility(data, shapefile, data_key, shape_key) == FALSE) {
     warning("This dataset & shapefile seem incompatible. 
             Please check that column names match key names and that 
@@ -234,5 +318,3 @@ map_chloropleth <- function(data,
   
     }
 }
-
-
