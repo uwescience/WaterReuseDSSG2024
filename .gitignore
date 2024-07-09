@@ -1,4 +1,7 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
 config.yml
 # macOS
 .DS_Store
-.Rhistory
