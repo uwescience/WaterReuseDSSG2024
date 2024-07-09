@@ -278,7 +278,10 @@ map_chloropleth <- function(data,
   
   if (data_key != shape_key) {
     
-    data_sf <- shapefile %>% left_join(data, by = c(data_key, shape_key))
+
+    colnames(shapefile)[which(colnames(shapefile)==shape_key)] <- data_key
+
+    data_sf <- shapefile %>% left_join(data, by = data_key)
     
     data[[variable]] <- as.numeric(data[[variable]])
   
