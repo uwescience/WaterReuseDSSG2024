@@ -28,7 +28,7 @@ mapper <- function(data = NULL, shapefile = NULL,
   # map_path: Specify a folder path where you will save the maps
   # map_title: A string of the title of the map.
   # base_unit: a string with the base unit to be drawn on the usmap e.g 'counties'
-
+  
   # Get the required packages and functions
   require(tidyverse)
   require(usmap)
@@ -38,16 +38,21 @@ mapper <- function(data = NULL, shapefile = NULL,
   if (plot_all == TRUE){
     if (is.null(location_columns)){
       choro_map = map_choropleth(data, shapefile, data_key, 
-                                   shape_key, variable = variable_name,
-                                   map_title)
+                                 shape_key, variable = variable_name,
+                                 map_title, map_caption="Caption",
+                                 map_percentile, low_color, 
+                                 high_color, na_color, map_font)
       ggsave(filename = paste0(variable_name, ".png"), plot = choro_map,
              path = map_path, device = "png")
       print("The coordinate are needed to plot the points")
     } else {
       choro_map = map_choropleth(data, shapefile, data_key, 
-                                   shape_key, variable = variable_name, map_title)
+                                 shape_key, variable = variable_name,
+                                 map_title, map_caption="Caption",
+                                 map_percentile, low_color, 
+                                 high_color, na_color, map_font)
       point_map = map_points(shapefile, data, location_columns, 
-                             variable_name)
+                             variable_name, base_unit)
       ggsave(filename = paste0(variable_name, ".png"), 
              plot = choro_map, path = map_path, device = "png")
       ggsave(filename = paste0(variable_name, ".png"), 
@@ -56,15 +61,17 @@ mapper <- function(data = NULL, shapefile = NULL,
     }
     
   } else if (tolower(plot) == "choropleth"){
-    choro_map = map_choropleth(data, shapefile, 
-                                 data_key, shape_key, 
-                               variable = variable_name, map_title)
+    choro_map = map_choropleth(data, shapefile, data_key, 
+                               shape_key, variable = variable_name,
+                               map_title, map_caption="Caption",
+                               map_percentile, low_color, 
+                               high_color, na_color, map_font)
     ggsave(filename = paste0(variable_name, ".png"),
            plot = choro_map, path = map_path, device = "png")
     
   } else if (tolower(plot) == "points"){
     point_map = map_points(shapefile, data, 
-                           location_columns, variable_name)
+                           location_columns, variable_name, base_unit)
     ggsave(filename = paste0(variable_name, ".png"), 
            plot = point_map, path = map_path, device = "png")    
     
