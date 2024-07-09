@@ -31,15 +31,28 @@ unique_states <- fips_codes %>%
 tracts_url <- "https://nccsdata.s3.us-east-1.amazonaws.com/geo/xwalk/TRACTX.csv"
 crosswalk_file <- readr::read_csv(tracts_url)
 
-# assume data is nested (from county to census tracts)
-# args: 
-# output:library(dplyr)
 
 
 crosswalk_data <- function(data, 
                            source_scale, 
                            key, 
                            target_scale) {
+  # args: key is the common column that helps join. target_scale has to be specified by the user. 
+        # Both key and target_scale should be from the list of names.
+          "tract.census.geoid"        
+          "county.census.geoid"       
+          "puma.census.geoid"         
+          "state.census.geoid"       
+          "state.census.name"         
+          "metro.census.cbsa10.geoid" 
+          "metro.census.cbsa10.name"  
+          "metro.census.csa10.geoid" 
+          "metro.census.csa10.name"   
+          "region.woodard.nation"     
+          "region.woodard.culture"    
+          "region.census.main"       
+          "region.census.division"
+  # output:data set that contains new column of target scale.
   
   if (!is.character(data[(source_scale)])) {
     data <- data %>%
