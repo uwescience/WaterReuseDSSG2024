@@ -40,9 +40,7 @@ Once we find the corresponding weights data, the next step is to merge/join thes
 
 
 
-
-
-## Spatial Overlay
+## Census tracts crosswalk
 Spatial overlay allows us to map geospatial data that are in different layers, represented by different geometries (eg. point, polygon, line string). 
 
 ### Part 1: Overlay county-level data *onto* census tracts map
@@ -54,6 +52,27 @@ library(crsuggest)
 options(tigris_use_cache = TRUE)
 library(urbnmapr)
 library(ggplot2)
+
+
+```
+
+### Part 2: Overlay census-tract level data *onto* county map
+```{r}
+
+
+```
+
+### Part 3: Overlay shoreline data *onto* census-tract map
+```{r}
+
+
+```
+
+
+## Mapping
+This can be our next step.
+
+```{r}
 library(leaflet)
 
 drought <- read_excel("~/Desktop/WaterReuseDSSG2024/data/final_results_dissemination_NDINDC.xlsx")
@@ -78,25 +97,6 @@ data_plot <- left_join(tract,
                         by = "county_fips") 
 
 
-```
-
-### Part 2: Overlay census-tract level data *onto* county map
-```{r}
-
-
-```
-
-### Part 3: Overlay shoreline data *onto* census-tract map
-```{r}
-
-
-```
-
-
-## Mapping
-This can be our next step.
-
-```{r}
 #shift_geometry function in the tigris package moves away Alaska, Hawaii, and Puerto Rico
 shift_plot <- shift_geometry(
   data_plot,
