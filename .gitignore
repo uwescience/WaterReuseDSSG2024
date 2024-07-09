@@ -5,3 +5,4 @@
 config.yml
 # macOS
 .DS_Store
+private/
