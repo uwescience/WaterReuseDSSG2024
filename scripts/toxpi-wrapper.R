@@ -21,7 +21,7 @@ check_indicators <- function(indicators) {
 }
 
 
-create_index <- function(df, id_col, weights) {
+create_index <- function(df, id_col, weights, index_name = "index_value") {
   
   check_id(df, id_col)
   
@@ -56,8 +56,10 @@ create_index <- function(df, id_col, weights) {
   
   output <- data.frame(
     id = df[[id_col]],
-    index_value = scores_for_map
+    index_col = scores_for_map
   )
+  
+  colnames(output)[which(colnames(output) == "index_col")] <- index_name
   
   return (output)
   
