@@ -1,4 +1,4 @@
-crosswalk_geom <- function(shapefile, data) {
+crosswalk_geom <- function(shapefile, data, source_scale, target_scale) {
   
   # Use case: Assign point data or smaller polygons to the target scale based on the larger polygons they are        # contained in. Uses st_contains to check if shape contained by another.
   

@@ -33,16 +33,15 @@ crosswalk_geom <- function(shapefile, data, source_scale, target_scale) {
   # Output: 
     # One joined dataset on the target scale
 
-
+    require(sf)
     # Transform data to the CRS of the target polygons
-    data_sf <- st_as_sf(data, coords = source_scale, crs = st_crs(shapefile))
 
   if (st_crs(data_sf) != st_crs(shapefile)) {
     stop("CRS of data and shapefile do not match even after transformation.")
   }
   
   # Perform the spatial join to check containment
-  joined_data <- st_join(data_sf, shapefile, join = st_contains, left = TRUE, largest = TRUE)
+  joined_data <- st_join(data_sf, shapefile, largest = TRUE)
   
   
   # Return the joined dataset
@@ -53,10 +52,54 @@ crosswalk_geom <- function(shapefile, data, source_scale, target_scale) {
 
 ## Testing CWNS example (points and counties shapefile)
 # Counties in new column of joined dataframe should match existing county column from cwns dataset
+```{r}
+# Try to find bug for this error message: Warning in st_is_longlat(x): bounding box has potentially an invalid value range for longlat data
+
+# Check type cwns type of data after transformation to sf, is the bounding box the geom column? 
+
+
+```
 
 ```{r}
-cwns_joined_data <- crosswalk_geom(counties_sf, cwns, c("LATITUDE", "LONGITUDE"), "geometry")
-head(cwns_joined_data)
+
+options(tigris_use_cache = TRUE)
+# Load the counties shapefile for the entire United States
+counties_sf <- counties(year = 2023, cb = TRUE)
+
+cwns <- read_csv("~/Downloads/cwns-flow.csv")
+cwns <- cwns %>% 
+  select(COUNTY_FIPS, LATITUDE, LONGITUDE, CURRENT_DESIGN_FLOW, LOCATION_TYPE)
+
+head(cwns)
+
+cwns_sf <- st_as_sf(cwns, coords = c("LONGITUDE", "LATITUDE"), crs = st_crs(counties_sf))
+
+cwns_sf$geometry
+
+counties_sf$geometry
+
+
+```
+
+```{r}
+#general conversion from csv and excel sheet containing latitude and longitude columns to shapefile 
+convert_to_shapefile <- function(data, location_columns, crs){
+  #Args: 
+    # data: a csv or excel spreadsheet containing latitude and longitude columns
+    # 
+  cwns_sf <- st_as_sf(cwns, coords = , crs = st_crs(counties_sf))
+
+cwns_sf$geometry
+
+counties_sf$geometry
+}
+
+```
+
+```{r}
+
+cwns_joined_data <- crosswalk_geom(counties_sf, cwns_sf, c("geometry"), "geometry")
+cwns_joined_data
 ```
 ## Testing Interbasin Water Transfers Example (lines in counties shapefile)
 # Lines should be new counties column should be populated in addition to existing state and country columns from ibt dataset
@@ -67,6 +110,15 @@ head(ibt)
 
 
 ```{r}
+
+options(tigris_use_cache = TRUE)
+
+# Load the counties shapefile for the entire United States
+counties_sf <- counties(year = 2023, cb = TRUE)
+
+ibt <- st_as_sf(ibt, crs = st_crs(counties_sf))
+ibt <- st_transform(ibt, crs = st_crs(counties_sf))
+
 ibt_joined_data <- crosswalk_geom(counties_sf, ibt, c("geometry"), "geometry")
 head(ibt_joined_data)
 
