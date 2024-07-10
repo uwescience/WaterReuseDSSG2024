@@ -1,0 +1,74 @@
+---
+title: "Crosswalking play file"
+output: html_document
+date: "2024-07-09"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(pacman)
+
+
+p_load(tidycensus,tidyverse,sf,data.table,tigris,
+       srvyr,survey,rio,car,janitor,rmapshaper,scales,santoku,viridis, urbnmapr, usmap, ipumsr, dplyr, readr, terra)
+
+```
+
+
+```{r}
+crosswalk_geom <- function(shapefile, data, source_scale, target_scale) {
+  
+  # Use case: Assign point data or smaller polygons to the target scale based on the larger polygons they are        # contained in. Uses st_contains to check if shape contained by another.
+  
+  # Args: 
+    # shapefile: shapefile containing polygons
+    # data: shapefile containing polygons OR data with latitude and longitude columns (can be converted to sf)
+    # source_scale: a list. the column name(s) of the source scale e.g c("latitude", "longitude") or c("geometry")
+    # target_scale: the name (str) of the target column name e.g ("geometry")
+  
+  # Output: 
+    # One joined dataset on the target scale
+
+
+    # Transform data to the CRS of the target polygons
+    data_sf <- st_as_sf(data, coords = source_scale, crs = st_crs(shapefile))
+
+  if (st_crs(data_sf) != st_crs(shapefile)) {
+    stop("CRS of data and shapefile do not match even after transformation.")
+  }
+  
+  # Perform the spatial join to check containment
+  joined_data <- st_join(data_sf, shapefile, join = st_contains, left = TRUE, largest = TRUE)
+  
+  
+  # Return the joined dataset
+  return(joined_data)
+}
+
+```
+
+## Testing CWNS example (points and counties shapefile)
+# Counties in new column of joined dataframe should match existing county column from cwns dataset
+
+```{r}
+cwns_joined_data <- crosswalk_geom(counties_sf, cwns, c("LATITUDE", "LONGITUDE"), "geometry")
+head(cwns_joined_data)
+```
+## Testing Interbasin Water Transfers Example (lines in counties shapefile)
+# Lines should be new counties column should be populated in addition to existing state and country columns from ibt dataset
+```{r}
+ibt <- read_sf(dsn = '~/Downloads/IBT Geospatial Data/', layer = "Digitized_IBTs")
+head(ibt)
+```
+
+
+```{r}
+ibt_joined_data <- crosswalk_geom(counties_sf, ibt, c("geometry"), "geometry")
+head(ibt_joined_data)
+
+```
+
