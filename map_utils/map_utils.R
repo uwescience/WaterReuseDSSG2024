@@ -1,3 +1,4 @@
+# helper to map_chloropleth()
 check_compatibility <- function(data, 
                                 shapefile, 
                                 data_key, 
@@ -17,6 +18,8 @@ check_compatibility <- function(data,
   return (check_result)
 }
 
+# plot unmodified values of variable, without converting them to percentiles
+# helper to map_chloropleth()
 plot_absolute <- function(data, 
                           variable, 
                           caption, 
@@ -71,6 +74,8 @@ plot_absolute <- function(data,
   
 }
 
+# plot the percentile score of a variable, rather than its unmodified value
+# helper to map_cloropleth()
 plot_percentile <- function(data, 
                             variable, 
                             caption, 
@@ -131,7 +136,8 @@ plot_percentile <- function(data,
   
 }
 
-map_chloropleth <- function(data, 
+# main mapping utility for plotting shapes (as opposed to points)
+map_choropleth <- function(data, 
                             shapefile, 
                             data_key, 
                             shape_key, 
@@ -186,31 +192,42 @@ map_chloropleth <- function(data,
   # to percentile scores and maps the percentile scores
   
   
-  if (check_compatibility(data, shapefile, data_key, shape_key) == FALSE) {
-    warning("This dataset & shapefile seem incompatible. 
-            Please check that column names match key names and that 
-            keys in data & shapefile have the same type")
+  # CONTROL FLOW:
+  # Case 1: both data and shapefile are NULL. Throw error. 
+  # Case 2: data or shapefile are NULL. No merge necessary. Try to plot non-null table.
+  # Case 3: data and shapefile are not NULL. Merge then plot combined table.
+  
+  #####################################################################################
+  # Case 1
+  #####################################################################################
+  
+  if (is.null(data) && is.null(shapefile)) {
+    stop("data and shapefile passed to map_chloropleth() are null!")
   }
   
-  if (data_key != shape_key) {
-    
-    data_sf <- shapefile %>% left_join(data, by = c(data_key, shape_key))
-    
-    data[[variable]] <- as.numeric(data[[variable]])
+  #####################################################################################
+  # Case 2
+  #####################################################################################
   
-  }
-  
-  else {
+  if (is.null(shapefile)) {
     
-    data_sf <- shapefile %>% left_join(data, by = data_key)
+    if (map_percentile == TRUE) {
+      
+      plot <- plot_percentile(data, 
+                      variable, 
+                      title = map_title, 
+                      caption = map_caption,
+                      low_color = low_color, 
+                      high_color = high_color,
+                      na_color = na_color,
+                      map_font = map_font)
+      return(plot)
+    }
+
     
-    data[[variable]] <- as.numeric(data[[variable]])
-    
-  }
-  
-  if (map_percentile == TRUE) {
-    
-    plot_percentile(data_sf, 
+    else {
+      
+      plot_absolute(data, 
                     variable, 
                     title = map_title, 
                     caption = map_caption,
@@ -218,21 +235,91 @@ map_chloropleth <- function(data,
                     high_color = high_color,
                     na_color = na_color,
                     map_font = map_font)
-  
+      
     }
+  }
   
-  else {
+  else if (is.null(data)) {
+    if (map_percentile == TRUE) {
+      
+      plot_percentile(shapefile, 
+                      variable, 
+                      title = map_title, 
+                      caption = map_caption,
+                      low_color = low_color, 
+                      high_color = high_color,
+                      na_color = na_color,
+                      map_font = map_font)
+      
+    }
     
-    plot_absolute(data_sf, 
-                  variable, 
-                  title = map_title, 
-                  caption = map_caption,
-                  low_color = low_color, 
-                  high_color = high_color,
-                  na_color = na_color,
-                  map_font = map_font)
-  
+    else {
+      
+      plot_absolute(shapefile, 
+                    variable, 
+                    title = map_title, 
+                    caption = map_caption,
+                    low_color = low_color, 
+                    high_color = high_color,
+                    na_color = na_color,
+                    map_font = map_font)
+      
     }
+  }
+  
+  #####################################################################################
+  # Case 3
+  #####################################################################################
+  else {
+    if (check_compatibility(data, shapefile, data_key, shape_key) == FALSE) {
+      warning("This dataset & shapefile seem incompatible. 
+              Please check that column names match key names and that 
+              keys in data & shapefile have the same type")
+    }
+    
+    if (data_key != shape_key) {
+      
+  
+      colnames(shapefile)[which(colnames(shapefile)==shape_key)] <- data_key
+  
+      data_sf <- shapefile %>% left_join(data, by = data_key)
+      
+      data[[variable]] <- as.numeric(data[[variable]])
+    
+    }
+    
+    else {
+      
+      data_sf <- shapefile %>% left_join(data, by = data_key)
+      
+      data[[variable]] <- as.numeric(data[[variable]])
+      
+    }
+    
+    if (map_percentile == TRUE) {
+      
+      plot_percentile(data_sf, 
+                      variable, 
+                      title = map_title, 
+                      caption = map_caption,
+                      low_color = low_color, 
+                      high_color = high_color,
+                      na_color = na_color,
+                      map_font = map_font)
+    
+      }
+    
+    else {
+      
+      plot_absolute(data_sf, 
+                    variable, 
+                    title = map_title, 
+                    caption = map_caption,
+                    low_color = low_color, 
+                    high_color = high_color,
+                    na_color = na_color,
+                    map_font = map_font)
+    
+    }
+  }
 }
-
-
