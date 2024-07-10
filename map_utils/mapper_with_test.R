@@ -119,6 +119,12 @@ census_tract_sf <- tracts(year = 2023, cb = TRUE,
                           filter_by = c(-124.7844079, -66.9513812, 24.7433195, 49.3457868))
 cvi <- read_csv("private/datasets/cleaned_data/CVI Data Excerpts_rename.csv")
 mapper(data = cvi, shapefile = census_tract_sf, shape_key = "GEOID",
-       data_key = "FIPS Code", plot = "choropleth", variable_name = "NDC2NDI", 
+       data_key = "FIPS Code", plot = "choropleth", variable_name = "flood_factor2020", 
        map_path = "private/maps")
 
+
+
+cwns <- read_csv("private/datasets/cleaned_data/CWNS_merged.csv")
+mapper(data = cwns, shapefile = census_tract_sf, shape_key = "GEOID",
+       data_key = "FIPS Code", plot = "choropleth", variable_name = "flood_factor2020", 
+       map_path = "private/maps")
