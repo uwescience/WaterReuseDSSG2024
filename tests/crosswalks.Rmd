@@ -43,7 +43,7 @@ Once we find the corresponding weights data, the next step is to merge/join thes
 ## Census tracts crosswalk
 Spatial overlay allows us to map geospatial data that are in different layers, represented by different geometries (eg. point, polygon, line string). 
 
-### Part 1: Overlay county-level data *onto* census tracts map
+### Overlay county-level data *onto* census tracts map
 ```{r}
 library(readxl)
 library(tidycensus)
@@ -57,15 +57,13 @@ library(raster)
 library(sf)
 
 # read in datasets
-drought <- read_excel("~/Desktop/WaterReuseDSSG2024/data/final_results_dissemination_NDINDC.xlsx")
+drought <- read_excel("../data/final_results_dissemination_NDINDC.xlsx")
 drought$county_fips <- as.character(drought$FIPS)
 
-cvi <- read_csv("~/Downloads/CVI Data Excerpts_rename.csv")
-  
+cvi <- read_csv("../data/CVI Data Excerpts_rename.csv")
+cwns <- read_csv("../data/CWNS_merged.csv")
 
-cwns <- read_csv("~/Downloads/CWNS_merged.csv")
-
-str_name <- "~/Downloads/CONUS_ww_raster.tif" 
+str_name <- "../data/CONUS_ww_raster.tif" 
 raster <- terra::rast(str_name)
 
 
@@ -117,6 +115,13 @@ sample1 <- crosswalk_data(drought,
                           source_scale = "county_fips", 
                           key = "county.census.geoid", 
                           target_scale = "tract.census.geoid")
+
+
+```
+
+
+### Overlay census tracts-level data *onto* county map
+```{r}
 # census tract to county
 sample2 <- crosswalk_data(cvi,
                           source_scale = "FIPS Code",
@@ -129,58 +134,4 @@ sample3 <- crosswalk_data(cwns,
                           target_scale = "county.census.geoid")
 
 
-
 ```
-
-### Part 2: Overlay census-tract level data *onto* county map
-```{r}
-
-
-```
-
-### Part 3: Overlay shoreline data *onto* census-tract map
-```{r}
-
-
-```
-
-
-## Mapping
-This can be our next step.
-
-```{r}
-library(leaflet)
-
-drought <- read_excel("~/Desktop/WaterReuseDSSG2024/data/final_results_dissemination_NDINDC.xlsx")
-
-
-drought$county_fips <- as.character(drought$FIPS)
-
-# load the census tract shapefile
-tract <- tigris::tracts(cb = TRUE) #data for the year 2022
-
-# identify an appropriate projected CRS for layer
-crs <- suggest_crs(tract) #4326
-
-tract <- tract %>%
-  dplyr::mutate(county_fips = paste0(STATEFP, COUNTYFP))
-
-tract$county_fips <- as.character(tract$county_fips)
-
-#resulting object inherits the class of the object on the left (order matters!)
-data_plot <- left_join(tract, 
-                        drought, 
-                        by = "county_fips") 
-
-
-#shift_geometry function in the tigris package moves away Alaska, Hawaii, and Puerto Rico
-shift_plot <- shift_geometry(
-  data_plot,
-  position = c("below", "outside")
-)
-
-ggplot() +
-    geom_sf(data = shift_plot, fill = "white", color = "grey") +
-    geom_sf(data = shift_plot, aes(fill = "NDI"))
-```
-
