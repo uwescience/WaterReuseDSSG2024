@@ -1,27 +1,29 @@
-crosswalk_geom <- function(shapefile, data, source_scale, target_scale) {
-  
-  # Use case: Assign point data or smaller polygons to the target scale based on the larger polygons they are        # contained in. Uses st_contains to check if shape contained by another.
+crosswalk_geom <- function(data, shapefile, location_columns = NULL, type = "shapes") {
   
   # Args: 
-  # shapefile: shapefile containing polygons
-  # data: shapefile containing polygons OR data with latitude and longitude columns (can be converted to sf)
-  # source_scale: a list. the column name(s) of the source scale e.g c("latitude", "longitude") or c("geometry")
-  # target_scale: the name (str) of the target column name e.g ("geometry")
-  
+    # data: point data (lat, lon) or a shapefile containing shapes (polygons, lines, etc.)
+    # shapefile: shapefile containing shapes (polygons, lines, etc.). This is for the target boundaries/geographic levels (assumes larger than the starting level I think). 
+    # location_columns: required for points (e.g c("LATITUDE", "LONGITUDE") or c("lat", "lon") depending on data format), not required for shapefile data. 
+    # type: default is "shapes", input "points" otherwise. 
   # Output: 
-  # One joined dataset on the target scale
+    # A joined dataset (shapefile) containing the scales 
   
-  require(sf)
-  # Transform data to the CRS of the target polygons
-  
-  if (st_crs(data_sf) != st_crs(shapefile)) {
-    stop("CRS of data and shapefile do not match even after transformation.")
+  if (type == "points" && !is.null(location_columns)) {
+    
+    # Convert the dataframe to a spatial object using the shapefile's CRS
+    points <- st_as_sf(data, coords = location_columns, crs = st_crs(shapefile))
+    
+    # Perform the spatial join to find the containing shape for each point
+    joined <- st_join(points, shapefile, join = st_within, left = TRUE)
+    
+  } else {
+    # Ensure data is a spatial object and has the same CRS as the shapefile
+    data <- st_transform(data, crs = st_crs(shapefile))
+    data <- st_make_valid(data)
+    
+    # Perform the spatial join
+    joined <- st_join(data, shapefile, join = st_contains)
   }
   
-  # Perform the spatial join to check containment
-  joined_data <- st_join(data_sf, shapefile, largest = TRUE)
-  
-  
-  # Return the joined dataset
-  return(joined_data)
+  return(joined)
 }
