@@ -48,14 +48,68 @@ Spatial overlay allows us to map geospatial data that are in different layers, r
 library(readxl)
 library(tidycensus)
 library(tigris)
-library(crsuggest)
 options(tigris_use_cache = TRUE)
-library(urbnmapr)
-library(ggplot2)
 library(tidyverse)
-library(raster)
-library(sf)
+library(data.table)
+library(dplyr)
 
+
+crosswalk_data <- function(data, 
+                           source_scale, 
+                           key, 
+                           target_scale) {
+  
+  if (!is.character(data[[source_scale]])) {
+    data <- data %>%
+      mutate({{ source_scale }} := as.character({{ source_scale }}))
+  }
+  
+  tracts_url <- "https://nccsdata.s3.us-east-1.amazonaws.com/geo/xwalk/TRACTX.csv"
+  crosswalk_file <- readr::read_csv(tracts_url)
+  
+  merged_data <- data %>%
+    left_join(crosswalk_file, by = setNames(key, source_scale))
+  
+  return(merged_data)
+}
+
+```
+```{r}
+ct_tr_weight <- read_csv("../data/2020ct_tr.csv") 
+ct_tr_weight <- ct_tr_weight[-1, ]
+ct_tr_weight$tract <- gsub("\\.", "", ct_tr_weight$tract)
+
+ct_tr_weight <- ct_tr_weight %>%
+  dplyr::mutate(afact = as.numeric(afact)) |> as.data.frame()
+
+
+```
+
+### Overlay census tracts-level data *onto* county map
+```{r}
+# generate census tract ID for each county
+drought_intermediary <- crosswalk_data(drought,
+                          source_scale = "county_fips",
+                          key = "county.census.geoid",
+                          target_scale = "tract.census.geoid") 
+
+drought_intermediary <- as.data.frame(drought_intermediary) 
+
+
+ct_tr_weight$tract <-as.character(ct_tr_weight$tract)
+ct_tr_weight$tract.census.geoid <- paste0(county, tract)
+# attach weights and interpolate census tract level data
+drought_processed <- drought_intermediary %>%
+  left_join(ct_tr_weight, by = c("tract.census.geoid" = "tract"))
+
+# Calculate weighted values
+drought_processed <- drought_processed %>%
+  mutate(weighted_value = NDC * afact)  
+
+```
+
+# tests
+```{r}
 # read in datasets
 drought <- read_excel("../data/final_results_dissemination_NDINDC.xlsx")
 drought$county_fips <- as.character(drought$FIPS)
@@ -66,72 +120,5 @@ cwns <- read_csv("../data/CWNS_merged.csv")
 str_name <- "../data/CONUS_ww_raster.tif" 
 raster <- terra::rast(str_name)
 
-
-crosswalk_data <- function(data, 
-                           source_scale, 
-                           key, 
-                           target_scale) {
-  # args: key is the common column that helps join. target_scale has to be specified by the user. 
-        # Both key and target_scale should be from the list of names.
-          "tract.census.geoid"        
-          "county.census.geoid"       
-          "puma.census.geoid"         
-          "state.census.geoid"       
-          "state.census.name"         
-          "metro.census.cbsa10.geoid" 
-          "metro.census.cbsa10.name"  
-          "metro.census.csa10.geoid" 
-          "metro.census.csa10.name"   
-          "region.woodard.nation"     
-          "region.woodard.culture"    
-          "region.census.main"       
-          "region.census.division"
-  # output:data set that contains new column of target scale.
-  
-  tracts_url <- "https://nccsdata.s3.us-east-1.amazonaws.com/geo/xwalk/TRACTX.csv"
-  crosswalk_file <- readr::read_csv(tracts_url)
-          
-  if (!is.character(data[(source_scale)])) {
-    data <- data %>%
-      dplyr::mutate({{ source_scale }} := as.character({{ source_scale }}))
-  }
-  
-  print(paste0("Maximum number of digits for the identifier is ", max(nchar(source_scale))))
-  print(paste0("Minimum number of digits for the identifier is ", min(nchar(source_scale))))
-  
-  appendix <- crosswalk_file %>%
-    dplyr::select({{ key }}, {{ target_scale }}) 
-  
-  target_data <- data %>%
-    dplyr::left_join(appendix, 
-                     by = setNames(key, source_scale))
-  
-  return(target_data)
-}
-
-# Usage example:
-# county to census tract
-sample1 <- crosswalk_data(drought, 
-                          source_scale = "county_fips", 
-                          key = "county.census.geoid", 
-                          target_scale = "tract.census.geoid")
-
-
-```
-
-
-### Overlay census tracts-level data *onto* county map
-```{r}
-# census tract to county
-sample2 <- crosswalk_data(cvi,
-                          source_scale = "FIPS Code",
-                          key = "tract.census.geoid",
-                          target_scale = "county.census.geoid")
-# census tract to county
-sample3 <- crosswalk_data(cwns,
-                          source_scale = "CWNS_ID",
-                          key = "tract.census.geoid",
-                          target_scale = "county.census.geoid")
-
-
+sample1 <- crosswalk_data(cvi, )
 ```
