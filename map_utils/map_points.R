@@ -3,7 +3,8 @@
 # 1: Shapefile with a location label (str) AND a dataset with a location label (str). 
 # 2: Dataset with lat, lon columns or a geometry containing lat. 
 # 3: Shapefile that can automatically be mapped with usmap. Please check the package's location data requirements for this. 
-map_points <- function(shapefile, data, location_columns, variable_name, base_unit) {
+map_points <- function(shapefile, data, location_columns, variable_name, base_unit,
+                       map_title, name, bbox) {
   
   # Args: 
   #shapefile: optional file path providing relevant boundaries e.g state, county, HUC. If no file to provide, write NULL 
@@ -22,17 +23,17 @@ map_points <- function(shapefile, data, location_columns, variable_name, base_un
     p <- plot_usmap(base_unit, color = "gray80") + 
       geom_sf(data = plot_data, color = "lightblue", size = 0.2) +
       geom_point(data = plot_data,
-                 aes(color = SWIVULN, size = SWIVULN, geometry = geometry),
+                 aes(color = variable_name, size = variable_name, geometry = geometry),
                  alpha = 0.2,
                  color = "red",
                  stat = "sf_coordinates") +
-      scale_size_continuous(name = "Saltwater Vulnerability",
+      scale_size_continuous(name,
                             labels = scales::comma_format(),
                             range = c(0.01, 7)) +
-      scale_color_gradient(name = "Saltwater Vulnerability",
+      scale_color_gradient(name,
                            low = "bisque", high = "red") +
       theme(legend.position = "bottom") +
-      labs(title = "Saltwater Vulnerability") +
+      labs(title = map_title) +
       theme(text = element_text(family = "Times New Roman"))
     print(p)
     
@@ -42,6 +43,22 @@ map_points <- function(shapefile, data, location_columns, variable_name, base_un
       select(location_columns[1], location_columns[2], variable_name) %>%
       rename(lat = location_columns[1], lon = location_columns[2]) %>%
       usmap_transform()
+    
+    # Check the CRS of cwns_transformed
+    crs_map_data <- st_crs(map_data)
+    
+    # Define the bounding box coordinates in WGS84 (EPSG:4326)
+    bbox_wgs84 <- st_bbox(bbox, crs = st_crs(4326))
+    
+    # Convert bbox to sf object in WGS84
+    bbox_sf_wgs84 <- st_as_sfc(bbox_wgs84)
+    
+    # Transform the bbox to the same CRS as map_data
+    bbox_transformed <- st_transform(bbox_sf_wgs84, crs_map_data)
+    
+    # Perform the intersection to crop the points
+    map_data <- st_intersection(map_data, bbox_transformed)
+    
     
     # Plot combined data
     p <- usmap::plot_usmap() +
