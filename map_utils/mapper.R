@@ -1,7 +1,8 @@
 # This function will use all the mapping functions we created to map
 # any kind of maps
 
-mapper <- function(data = NULL, shapefile = NULL, 
+mapper <- function(data = NULL, 
+                   shapefile = NULL, 
                    location_columns = NULL, 
                    variable_name = NULL,
                    data_key = NULL, 
@@ -69,7 +70,7 @@ mapper <- function(data = NULL, shapefile = NULL,
                                  map_percentile, low_color, 
                                  high_color, na_color, map_font)
       point_map = map_points(shapefile, data, location_columns, 
-                             variable_name, base_unit, bbox)
+                             variable_name, base_unit, map_title, name, bbox)
       ggsave(filename = paste0(variable_name, ".png"), 
              plot = choro_map, path = map_path, device = "png")
       ggsave(filename = paste0(variable_name, ".png"), 
@@ -88,10 +89,9 @@ mapper <- function(data = NULL, shapefile = NULL,
     
   } else if (tolower(plot) == "points"){
     point_map = map_points(shapefile, data, 
-                           location_columns, variable_name, base_unit, bbox)
-    print(bbox)
-    print(typeof(bbox))
-    print(bbox[1])
+                           location_columns, variable_name,
+                           base_unit, map_title, name, bbox)
+    
     ggsave(filename = paste0(variable_name, ".png"), 
            plot = point_map, path = map_path, device = "png")    
     
