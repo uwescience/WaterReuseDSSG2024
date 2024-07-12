@@ -10,11 +10,11 @@ source("./map_utils/crosswalks.R")
 
 crosswalk <- function(data = NULL, 
                       shapefile = NULL, 
-                      source_scale, 
+                      source_scale = NULL, 
                       key = NULL, 
-                      target_scale) {
+                      target_scale = NULL) {
   
-  if (is.null(shapefile)) {
+  if (is.null(shapefile) && !is.null(key)) {
     
     crosswalk_data(data = data, 
                    source_scale = source_scale,
