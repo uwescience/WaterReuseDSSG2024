@@ -54,7 +54,7 @@ map_points <- function(shapefile, data, location_columns, variable_name, base_un
     bbox_sf_wgs84 <- st_as_sfc(bbox_wgs84)
     
     # Transform the bbox to the same CRS as map_data
-    bbox_transformed <- st_transform(bbox_sf_wgs84, crs = map_data)
+    bbox_transformed <- st_transform(bbox_sf_wgs84, crs_map_data)
     
     # Perform the intersection to crop the points
     map_data <- st_intersection(map_data, bbox_transformed)
