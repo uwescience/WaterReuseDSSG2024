@@ -9,7 +9,7 @@ source("./map_utils/crosswalks.R")
 # source()
 
 crosswalk <- function(data, 
-                      data_type = NULL,
+                      data_type,
                       data2 = NULL,
                       shapefile = NULL, 
                       raster = NULL,
