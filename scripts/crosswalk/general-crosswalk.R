@@ -9,22 +9,22 @@ source("./map_utils/crosswalks.R")
 # source()
 
 crosswalk <- function(data, 
+                      data_type = NULL,
                       data2 = NULL,
                       shapefile = NULL, 
                       raster = NULL,
                       source_scale = NULL, 
                       target_scale = NULL,
                       key = NULL, 
-                      data_type = NULL, 
                       method = "area", 
                       output_type = NULL
                       ) {
   # Args: 
     # data: can be labeled data with ID location column(s), point data (contains lat/lon columns), a shapefile, or a raster
     # data_type: type of "data." Pick one of these options: "points", "shapes", "raster".
-    # data2: a non-shapefile and non-raster dataset. Must contain the same key as data if key argument is not NULL. 
-    # shapefile: a shapefile containing target geometries, to be combined with data 
-    # raster: a raster to be combined with data 
+    # data2: data containing the same key as data. ONLY applicable if key argument is not NULL. 
+    # shapefile: a shapefile containing target geometries, to be combined with data (no key)
+    # raster: a raster to be combined with data (no key)
     # source_scale: the location column name(s) of the orginal data. List type..? 
     # target_scale: the location column name(s) of the data to be crosswalked. List type..? 
     # key: a numeric key identifier for crosswalking to a new census data scale or between datasets. 
@@ -49,7 +49,7 @@ crosswalk <- function(data,
     crosswalk_geom(shapefile = shapefile, 
                    data = data, 
                    location_columns = source_scale,
-                   type = typeof)
+                   type = data_type)
   }
   
   else if (!is.null(raster)) {
