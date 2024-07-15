@@ -35,8 +35,7 @@ map_points <- function(shapefile, data, location_columns, variable_name, base_un
       theme(legend.position = "bottom") +
       labs(title = map_title) +
       theme(text = element_text(family = "Times New Roman"))
-    print(p)
-    
+
     #For case type 2
   } else if (length(location_columns) == 2) {
     map_data <- data %>%
@@ -68,8 +67,7 @@ map_points <- function(shapefile, data, location_columns, variable_name, base_un
            subtitle = variable_name,
            x = "Longitude",
            y = "Latitude")
-    print(p)
-    
+
     #For case type 3
   } else if (is.null(location_columns)) {
     
@@ -85,6 +83,5 @@ map_points <- function(shapefile, data, location_columns, variable_name, base_un
            subtitle = variable_name,
            x = "Longitude",
            y = "Latitude")
-    print(p)
   }
 }
