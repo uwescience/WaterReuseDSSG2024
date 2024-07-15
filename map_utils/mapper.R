@@ -37,10 +37,10 @@ mapper <- function(data = NULL,
   # Get the required packages and functions
   require(tidyverse)
   require(usmap)
-  source("map_utils/map_utils.R")
-  source("map_utils/get_shapes.R")
-  source("map_utils/map_points.R")
-  source("map_utils/plot_raster.R")
+  source("~/DSSG/WaterReuseDSSG2024/map_utils/map_utils.R")
+  source("~/DSSG/WaterReuseDSSG2024/map_utils/get_shapes.R")
+  source("~/DSSG/WaterReuseDSSG2024/map_utils/map_points.R")
+  source("~/DSSG/WaterReuseDSSG2024/map_utils/plot_raster.R")
   
   
   # crop the shapefile if the bbox is not NULL
@@ -67,7 +67,7 @@ mapper <- function(data = NULL,
                                location_columns, variable_name,
                                base_unit, map_title, name, bbox)
   } else if (tolower(plot) == "raster") {
-    plot_to_save <- plot_raster(data, layer, shapefile, cellsize)
+    plot_to_save <- plot_raster(data, layer, shapefile, cellsize, map_title)
   } else {
     print("The map you specified cannot be plotted at the moment.")
     return(NULL) # Exit function early if the plot type is not supported
