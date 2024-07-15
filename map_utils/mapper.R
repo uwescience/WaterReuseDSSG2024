@@ -19,8 +19,7 @@ mapper <- function(data = NULL,
                    base_unit = NULL,
                    name = NULL,
                    bbox = NULL,
-                   layer = NULL,
-                   cellsize = NULL){
+                   layer = NULL){
   # data: The dataset that contains the column of interest
   # shapefile: A shapefile with FIPS
   # location: a vector of column names of the coordinates
@@ -67,7 +66,7 @@ mapper <- function(data = NULL,
                                location_columns, variable_name,
                                base_unit, map_title, name, bbox)
   } else if (tolower(plot) == "raster") {
-    plot_to_save <- plot_raster(data, layer, shapefile, cellsize, map_title)
+    plot_to_save <- plot_raster(data, layer, map_title)
   } else {
     print("The map you specified cannot be plotted at the moment.")
     return(NULL) # Exit function early if the plot type is not supported
