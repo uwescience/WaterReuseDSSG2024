@@ -5,8 +5,14 @@ title: Motivation
 
 **Questions**
 
-What question(s) are you answering?
-What need are you filling?
+There are two main goals for this project: 
+- Creating a general tool that allows users to create their own index of interest and map it on the US continental map. 
+- Use this tool to create a set of deliverables for stakeholders in the water sector to assess and prioritize areas based on their potential benefit from investing in water reuse infrastructure. 
+
+Deliverables include: 
+- Index measuring potential benefits that communities can get from water reuse.
+- Visualization of that index through mapping
+- User interface and generalizable R code that allows users to choose their own components of the index and to map it. 
 
 **Background**
 
