@@ -1,8 +1,8 @@
 # Jihyeon's code
 
-setwd(config::get("home_path"))
+# setwd(config::get("home_path"))
 
-source("./map_utils/crosswalks.R")
+# source("./map_utils/crosswalks.R")
 
 # Nora's code
 
