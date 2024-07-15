@@ -1,7 +1,7 @@
 # This function plot raster datasets
 
 plot_raster <- function(data, layer, 
-                            shapefile, cellsize) {
+                            shapefile, cellsize, map_title) {
   if (!inherits(data, "SpatRaster")) {
     stop("Input data is not a SpatRaster object")
   }
@@ -47,8 +47,8 @@ plot_raster <- function(data, layer,
     geom_raster(data = raster_df, aes(x = x, y = y, fill = value)) +
     geom_sf(data = grid_sf, fill = NA, color = "lightblue") +
     scale_fill_viridis_c() +
-    labs(title = paste("Raster Layer", ifelse(is.null(raster_layer), 1, raster_layer)),
-         x = "Longitude", y = "Latitude", fill = "Value") +
+    labs(title = map_title, x = "Longitude", 
+         y = "Latitude", fill = "Value") +
     theme_minimal() +
     coord_sf()
   return(raster_plot)
