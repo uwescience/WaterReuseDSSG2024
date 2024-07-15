@@ -9,7 +9,7 @@ title:            DSSG Project Name
 tagline:          ''
 description:      'A 2024 Data Science for Social Good summer fellowship project at the University of Washington' 
 url:              "https://uwescience.github.io"
-baseurl:          "/DSSG-website-template"
+baseurl:          "/WaterReuseDSSG2024"
 
 
 paginate:         5
