@@ -1,5 +1,15 @@
 # This function plot raster datasets
 
+#' Plot raster data 
+#'
+#' @param data The dataset that contains the column of interest
+#' @param layer An integer value of the layer that is to be plotted if the data is a multilayer dataset
+#' @param map_title A string of the title of the map
+#'
+#' @return A plot of the raster data
+#' @export
+#'
+#' @examples
 plot_raster <- function(data, layer, map_title) {
   if (!inherits(data, "SpatRaster")) {
     stop("Input data is not a SpatRaster object")
