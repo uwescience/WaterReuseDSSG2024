@@ -87,11 +87,24 @@ library(stars)
 
 raster_example <- raster("~/Downloads/CONUS_ww_raster.tif")
 
+
+```
+
+## Testing CWNS example (points and counties shapefile)
+# Counties in new column of joined dataframe should match existing county column from cwns dataset
+```{r}
+# Try to find bug for this error message: Warning in st_is_longlat(x): bounding box has potentially an invalid value range for longlat data
+
+# Check type cwns type of data after transformation to sf, is the bounding box the geom column? 
+
+
+
 ```
 
 ```{r}
 
-crosswalk_raster <- function(data1, data2, method = "area", output_type = NULL, points = FALSE) {
+
+crosswalk_raster<- function(data1, data2, method = "area", output_type = NULL, points = FALSE) {
   # Function for Raster/Raster
   
   if (st_crs(data1) != st_crs(data2)) {
@@ -147,66 +160,4 @@ crosswalk_raster <- function(data1, data2, method = "area", output_type = NULL, 
 
 ```{r}
 combined <- crosswalk_raster(raster_example, counties_sf, output_type = "shapefile")
-
-```
-
-```{r}
-head(combined)
-```
-
-
-
-## Polygon version
-```{r}
-# Determine which counties the polygons are "in" 
-
-ibt <- st_transform(ibt, crs = st_crs(counties_sf))
-
-try_join <- st_join(ibt, counties_sf, join = st_within)
-head(try_join)
-
-```
-## Test on watershed to county 
-
-```{r}
-
-aquifers <- st_read("~/Downloads/aquifers_us/us_aquifers.shp")
-head(aquifers)
-
-aquifers <- st_transform(aquifers, crs = st_crs(counties_sf))
-aquifers <- st_make_valid(aquifers)
-
-joined_sfs <- crosswalk_geom(aquifers, counties_sf)
-
-```
-
-
-
-```{r}
-
-plot_data <- usmap::usmap_transform(joined_sfs)
-
-p <- usmap::plot_usmap("states", color = "gray80") + 
-      geom_sf(data = plot_data, color = "lightblue", size = 0.2)
-
-print(p)
-```
-
-
-##Test on rasters 
-
-## Notes for convert_to_shapefile code 
-```{r}
-#general conversion from csv and excel sheet containing latitude and longitude columns to shapefile 
-# convert_to_shapefile <- function(data, location_columns, crs){
-#   #Args: 
-#     # data: a csv or excel spreadsheet containing latitude and longitude columns
-#     # 
-#   cwns_sf <- st_as_sf(cwns, coords = , crs = st_crs(counties_sf))
-# 
-# cwns_sf$geometry
-# 
-# counties_sf$geometry
-# }
-
 ```

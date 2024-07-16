@@ -1,7 +1,8 @@
 # This function will use all the mapping functions we created to map
 # any kind of maps
 
-mapper <- function(data = NULL, shapefile = NULL, 
+mapper <- function(data = NULL, 
+                   shapefile = NULL, 
                    location_columns = NULL, 
                    variable_name = NULL,
                    data_key = NULL, 
@@ -16,7 +17,9 @@ mapper <- function(data = NULL, shapefile = NULL,
                    high_color = "red",
                    na_color = "gray",
                    map_font = "Arial",
-                   base_unit = NULL){
+                   base_unit = NULL,
+                   name = NULL,
+                   bbox = NULL){
   # data: The dataset that contains the column of interest
   # shapefile: A shapefile with FIPS
   # location: a vector of column names of the coordinates
@@ -28,6 +31,7 @@ mapper <- function(data = NULL, shapefile = NULL,
   # map_path: Specify a folder path where you will save the maps
   # map_title: A string of the title of the map.
   # base_unit: a string with the base unit to be drawn on the usmap e.g 'counties'
+  # bbox: a vector of bounding box coordinates (xmin, ymin, xmax, ymax) to crop the shapefile
   
   # Get the required packages and functions
   require(tidyverse)
@@ -35,6 +39,20 @@ mapper <- function(data = NULL, shapefile = NULL,
   source("map_utils/map_utils.R")
   source("map_utils/get_shapes.R")
   source("map_utils/map_points.R")
+  
+  
+  # crop the shapefile if the bbox is not NULL
+  if (!is.null(bbox) & !is.null(shapefile)){
+    
+    # Define the bounding box
+    bbox = st_bbox(bbox, crs = st_crs(shapefile))
+    
+    # Convert the bbox to an sf object
+    bbox_sf <- st_as_sfc(bbox)
+    # Get the intersection of the shapefile and bbox
+    shapefile = st_intersection(shapefile, bbox_sf)
+  }
+  
   if (plot_all == TRUE){
     if (is.null(location_columns)){
       choro_map = map_choropleth(data, shapefile, data_key, 
@@ -52,7 +70,7 @@ mapper <- function(data = NULL, shapefile = NULL,
                                  map_percentile, low_color, 
                                  high_color, na_color, map_font)
       point_map = map_points(shapefile, data, location_columns, 
-                             variable_name, base_unit)
+                             variable_name, base_unit, map_title, name, bbox)
       ggsave(filename = paste0(variable_name, ".png"), 
              plot = choro_map, path = map_path, device = "png")
       ggsave(filename = paste0(variable_name, ".png"), 
@@ -71,7 +89,9 @@ mapper <- function(data = NULL, shapefile = NULL,
     
   } else if (tolower(plot) == "points"){
     point_map = map_points(shapefile, data, 
-                           location_columns, variable_name, base_unit)
+                           location_columns, variable_name,
+                           base_unit, map_title, name, bbox)
+    
     ggsave(filename = paste0(variable_name, ".png"), 
            plot = point_map, path = map_path, device = "png")    
     

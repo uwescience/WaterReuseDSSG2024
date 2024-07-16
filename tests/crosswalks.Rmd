@@ -1,0 +1,137 @@
+---
+title: "crosswalks"
+output: html_document
+date: "2024-07-08"
+---
+
+## General notes on crosswalks
+Crosswalks are needed to align geospatial data that are on different scales. Scales here are referring to units of analysis (county, census tracts, blocks, watershed etc.) While it is easy to aggregate datasets when the sum of the parts equal the whole, it is not always the case. This script generates steps for crosswalks that allow us compare variables in a different resolution. 
+
+Crosswalks can be helpful in two scenarios First, there should be crosswalk between different spatial resolution in the same time period. Second, crosswalk can be helpful when the boundary of the spatial resolution changes over time. There should be an estimated population or any features for newly demarcated boundary. 
+
+We focus on the first type of problem - same year, but different resolutions. There are two ways of resolving this problem.
+1) Downward approach
+- Assignment Borrowing: Let's say for example we have a dataset at a county-level. Each row of this dataset contains a binary variable telling us whether or not that county has Republican partisanship. If we want this data to talk to the census-tract level data, we can automatically let this information flow downstream by simply coding *all* of the census-tract within the county as 1. (And census tracts always fall under the county.)
+- Aportioning: Another option is to use weighting. For example, let's say King County is 50% Seattle, 20% Kirkland and 30% Bellevue. Our county-level data tells us that there are 10 elementary schools in the entire King County. Given the information about city distribution within the King County, we can estimate the number of elementary schools within each city. By using this weighting (usually population), we're allowing county-level and city-level data speak to each other.
+
+2) Upward approach
+- Aggregate: We can simply add up the components to fill in the information at the higher level. For example, by adding up the number of students across all of the departments on campus, we get the total number of students. 
+- Population Weighting: Even if we have information for a subset of data at the low level, we can estimate the value for the total by weighting. Note that [IPUMS](https://www.nhgis.org/geographic-crosswalks) discusses these two approaches more extensively.
+
+## Weighting and Aportioning
+*Where to find weighting values*
+Either way, it's important to find the relevant weighting values.  [IPUMS](https://www.nhgis.org/geographic-crosswalks#download) provides these weights. This is a short list of geographic level codes that are used across the IPUMS. Each NHGIS crosswalk file provides interpolation weights for allocating census counts from a specified set of source zones to a specified set of target zones.
+
+The crosswalk file name indicates which geographic levels, years, and geographic extent are covered in the file:
+
+    nhgis_[source level][source year]_[target level][target year]{_state FIPS code}.csv
+
+Geographic level codes:
+
+    blk - Block
+    bgp - Block group part (intersections between block groups, places, county subdivisions, etc.)
+            - 1990 NHGIS level ID: blck_grp_598
+            - 2000 NHGIS level ID: blck_grp_090
+    bg  - Block group
+    tr  - Census tract
+    co  - County
+    
+Once we find the corresponding weights data, the next step is to merge/join these weights with the source data and transform (multiply) them into values that align with the target data. 
+
+
+
+## Census tracts crosswalk
+Spatial overlay allows us to map geospatial data that are in different layers, represented by different geometries (eg. point, polygon, line string). 
+
+### Overlay county-level data *onto* census tracts map
+```{r}
+library(readxl)
+library(tidycensus)
+library(tigris)
+library(crsuggest)
+options(tigris_use_cache = TRUE)
+library(urbnmapr)
+library(ggplot2)
+library(tidyverse)
+library(raster)
+library(sf)
+
+# read in datasets
+drought <- read_excel("../data/final_results_dissemination_NDINDC.xlsx")
+drought$county_fips <- as.character(drought$FIPS)
+
+cvi <- read_csv("../data/CVI Data Excerpts_rename.csv")
+cwns <- read_csv("../data/CWNS_merged.csv")
+
+str_name <- "../data/CONUS_ww_raster.tif" 
+raster <- terra::rast(str_name)
+
+
+crosswalk_data <- function(data, 
+                           source_scale, 
+                           key, 
+                           target_scale) {
+  # args: key is the common column that helps join. target_scale has to be specified by the user. 
+        # Both key and target_scale should be from the list of names.
+          "tract.census.geoid"        
+          "county.census.geoid"       
+          "puma.census.geoid"         
+          "state.census.geoid"       
+          "state.census.name"         
+          "metro.census.cbsa10.geoid" 
+          "metro.census.cbsa10.name"  
+          "metro.census.csa10.geoid" 
+          "metro.census.csa10.name"   
+          "region.woodard.nation"     
+          "region.woodard.culture"    
+          "region.census.main"       
+          "region.census.division"
+  # output:data set that contains new column of target scale.
+  
+  tracts_url <- "https://nccsdata.s3.us-east-1.amazonaws.com/geo/xwalk/TRACTX.csv"
+  crosswalk_file <- readr::read_csv(tracts_url)
+          
+  if (!is.character(data[(source_scale)])) {
+    data <- data %>%
+      dplyr::mutate({{ source_scale }} := as.character({{ source_scale }}))
+  }
+  
+  print(paste0("Maximum number of digits for the identifier is ", max(nchar(source_scale))))
+  print(paste0("Minimum number of digits for the identifier is ", min(nchar(source_scale))))
+  
+  appendix <- crosswalk_file %>%
+    dplyr::select({{ key }}, {{ target_scale }}) 
+  
+  target_data <- data %>%
+    dplyr::left_join(appendix, 
+                     by = setNames(key, source_scale))
+  
+  return(target_data)
+}
+
+# Usage example:
+# county to census tract
+sample1 <- crosswalk_data(drought, 
+                          source_scale = "county_fips", 
+                          key = "county.census.geoid", 
+                          target_scale = "tract.census.geoid")
+
+
+```
+
+
+### Overlay census tracts-level data *onto* county map
+```{r}
+# census tract to county
+sample2 <- crosswalk_data(cvi,
+                          source_scale = "FIPS Code",
+                          key = "tract.census.geoid",
+                          target_scale = "county.census.geoid")
+# census tract to county
+sample3 <- crosswalk_data(cwns,
+                          source_scale = "CWNS_ID",
+                          key = "tract.census.geoid",
+                          target_scale = "county.census.geoid")
+
+
+```
