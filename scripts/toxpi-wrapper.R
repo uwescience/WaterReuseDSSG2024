@@ -1,22 +1,31 @@
 check_id <- function(data, id_var) {
   
-  # Inputs:
-  # - data (dataframe) - dataframe the user wants to create a toxpiR index from
-  # - id_var (string) - name of the column in data that identifies the basic unit over which
-    # the index is contstructed; for example, in an index of drought risk over US counties
-    # the index might be 'county_id'
-  
-  # Output:
-  # (boolean) - is the id valid (is it in the dataframe)?
-  
+  #' Checks if the ID column is valid
+  #' 
+  #' Checks that the user-provided ID column is in the dataframe passed to create_index()
+  #' 
+  #' Inputs:
+  #' 
+  #'  - data (dataframe) - dataframe the user wants to create a toxpiR index from
+  #'  - id_var (string) - name of the column in data that identifies the basic unit over which
+  #'    the index is contstructed; for example, in an index of drought risk over US counties
+  #'    the index might be 'county_id'
+  #' 
+  #' Output:
+  #'    (boolean) - is the id valid (is it in the dataframe)?
+    
   if (sum(id_var %in% names(data)) == 0) {
     stop("The id passed to create_index() has to be one of the columns in the dataset")
   }
 }
 
-# helper function to create_index; checks that all of the indicators that the
-# user would like to turn into an index are numerics; otherwise converts them
+
 check_indicators <- function(indicators) {
+  
+  #' Checks that indicators are numerics
+  #' @description
+    #' helper function to create_index; checks that all of the indicators that the
+    #' user would like to turn into an index are numerics; otherwise converts them
   
   are_numerics <- (sum(sapply(indicators, is.numeric)) == ncol(indicators))
   
@@ -34,27 +43,53 @@ check_indicators <- function(indicators) {
 }
 
 
-# takes a dataframe, weights, and a designated column specifying the id; calculates a toxpiR index
-# that is ready for mapping functions in map_utils
+
 create_index <- function(df, id_col, weights, index_name = "index_value") {
   
-  # Inputs:
-  # - df (dataframe) - data containing a row identifier and a set of numeric variables
-    # that should be incorporate into the index
-  
-  # - id_col (string) - name of the column in data that identifies the basic unit over which
-    # the index is contstructed; for example, in an index of drought risk over US counties
-    # the index might be 'county_id'
-  
-  # - weights (vector) - length should be (nrow(df) - 1). Specifies the weight that each component of
-    # the index should receive when it is calculated by toxpi
-  
-  # index_name (string) - name of the index - this will become the name of the column containing the
-    # index value in the output
-  
-  # Outputs:
-  # - dataframe with 2 columns and N rows, where N is the number of rows in df. For each value of
-    # the id, calculates index value and outputs it in a format that is easy for the mapper to deal with
+  #' Creates an index with toxpiR
+  #' 
+  #' @description
+    #' wrapper around toxpiR; takes a dataframe, weights, and a designated column specifying the id; 
+    #' calculates a toxpiR index that is ready for mapping using the functions in map_utils
+    #' 
+  #' Inputs:
+  #' - data (dataframe) - expects a dataframe containing a variable of
+  #'   interest, indexed by a geographic region identifier like FIPS
+  #'
+  #' - shape (dataframe) - a shapefile that specifies the
+  #'   geographic regions in question; must contain a 'geometry' column
+  #'
+  #' - data_key (string) - a string that contains the NAME of column in
+  #'   data that should be used to merge it with the shapefile. This
+  #'   should be something like "FIPS"
+  #'
+  #' - shape_key (string) - a string that contains the NAME of column in
+  #'   the shapefile that should be used to merge it with the data. This
+  #'   should be something like "FIPS"
+  #'
+  #' - variable (string) - a string containing the NAME of the column in
+  #'   data that contains the variable that should be used to make the map
+  #'
+  #' - map_title (string) - the map title
+  #'
+  #' - map_caption (string) - a string defining the caption that appears
+  #'   at the bottom right of the map figure
+  #'
+  #' - map_percentile (boolean) - whether the map should display raw values
+  #'   of variable (=FALSE, default) or show which percentile of the
+  #'   data distribution the geographic unit in question falls into (=TRUE)
+  #'
+  #' - low_color, high_color, na_color (strings) - the colors designating
+  #'   the lowest and highest values of variable, respectively, and the
+  #'   color that should indicate missing data
+  #'
+  #' - map_font (string) - font in the title, caption, legends
+  #'
+  #' Outputs:
+  #' - a ggplot2 object mapping the shapes defined in the dataset and
+  #'   color-coding them according to the value of variable; instead of
+  #'   plotting the RAW value of variable, this function converts them
+  #'   to percentile scores and maps the percentile scores
   
   check_id(df, id_col)
   

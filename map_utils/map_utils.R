@@ -1,15 +1,23 @@
-# helper to map_chloropleth()
 check_compatibility <- function(data, 
                                 shapefile, 
                                 data_key, 
                                 shape_key) {
   
-  # Two checks are needed:
-  # - data_key is a column in data & shape_key is a column in shapefile
-  # - data_key and shape_key have the same type
-  
-  # Output: boolean - true if this combination of data, shapefile, keys
-  # can be spatially joined
+  #' Check if the data and the shapefile can be merged
+  #' 
+  #' @description
+    #' Performs two checks to confirm that the data file and the 
+    #' shapefile called by the plotting functions are compatible 
+    #' with each other
+  #' 
+  #' This function checks that 
+  #' - data_key is a column in data & shape_key is a column in shapefile
+  #' - data_key and shape_key have the same type
+  #' 
+  #' Outputs TRUE if this combination of data, shapefile, & keys can
+  #' be spatially joined
+  #' 
+  #' Helper function to map_choropleth()
   
   check_result <- data_key %in% names(data) && 
     shape_key %in% names(shapefile) && 
@@ -18,8 +26,6 @@ check_compatibility <- function(data,
   return (check_result)
 }
 
-# plot unmodified values of variable, without converting them to percentiles
-# helper to map_chloropleth()
 plot_absolute <- function(data, 
                           variable, 
                           caption, 
@@ -30,34 +36,41 @@ plot_absolute <- function(data,
                           map_font = "Arial" 
                       ){
   
-  # Inputs:
-  # - data (dataframe) - expects a dataframe containing a geometry
-    # and a variable of interest. Usually, this dataframe will result
-    # from merging (1) a raw data file, indexed by a geographic region
-    # identifier like FIPS, with (2) a shapefile that specifies the
-    # geographic regions in question
-  
-  # - variable (string) - a string containing the NAME of the column in 
-    # data that contains the variable that should be used to make the map
+  #' Plots unmodified values of variable
+  #' 
+  #' @description
+    #' Plots the values of the variable WITHOUT converting them to
+    #' percentiles; serves as a helper function to map_choropleth()
+  #'
+  #' Inputs:
+  #' 
+  #' - data (dataframe) - expects a dataframe containing a geometry
+  #' and a variable of interest. Usually, this dataframe will result
+  #' from merging (1) a raw data file, indexed by a geographic region
+  #' identifier like FIPS, with (2) a shapefile that specifies the
+  #' geographic regions in question
+  #'
+  #' - variable (string) - a string containing the NAME of the column in
+  #' data that contains the variable that should be used to make the map
+  #'
+  #' - caption (string) - a string defining the caption that appears
+  #' at the bottom right of the map figure
+  #'
+  #' - title (string) - the map title
+  #'
+  #' - low_color, high_color, na_color (strings) - the colors designating
+  #' the lowest and highest values of variable, respectively, and the
+  #' color that should indicate missing data
+  #'
+  #' map_font (string) - font in the title, caption, legends
+  #'
+  #'
+  #' Outputs:
+  #' - a ggplot2 object mapping the shapes defined in the dataset and
+  #' color-coding them according to the un-adjusted value of variable
+  #'
+  #'
 
-  # - caption (string) - a string defining the caption that appears
-    # at the bottom right of the map figure
-  
-  # - title (string) - the map title
-  
-  # - low_color, high_color, na_color (strings) - the colors desigating
-    # the lowest and highest values of variable, respectively, and the 
-    # color that should indicate missing data
-  
-  # map_font (string) - font in the title, caption, legends
-  
-  ###################################################################
-  
-  # Outputs:
-  # - a ggplot2 object mapping the shapes defined in the dataset and
-    # color-coding them according to the unadjusted value of variable
-  
-  
   plot_data_variable <- ggplot(data) +
     geom_sf(mapping = aes_string(fill = variable)) +
     scale_fill_gradient(name = variable, 
@@ -74,8 +87,6 @@ plot_absolute <- function(data,
   
 }
 
-# plot the percentile score of a variable, rather than its unmodified value
-# helper to map_cloropleth()
 plot_percentile <- function(data, 
                             variable, 
                             caption, 
@@ -85,34 +96,37 @@ plot_percentile <- function(data,
                             na_color = "gray",
                             map_font = "Arial") {
   
-  # Inputs:
-  # - data (dataframe) - expects a dataframe containing a geometry
-  # and a variable of interest. Usually, this dataframe will result
-  # from merging (1) a raw data file, indexed by a geographic region
-  # identifier like FIPS, with (2) a shapefile that specifies the
-  # geographic regions in question
-  
-  # - variable (string) - a string containing the NAME of the column in 
-  # data that contains the variable that should be used to make the map
-  
-  # - caption (string) - a string defining the caption that appears
-  # at the bottom right of the map figure
-  
-  # - title (string) - the map title
-  
-  # - low_color, high_color, na_color (strings) - the colors desigating
-  # the lowest and highest values of variable, respectively, and the 
-  # color that should indicate missing data
-  
-  # map_font (string) - font in the title, caption, legends
-  
-  ###################################################################
-  
-  # Outputs:
-  # - a ggplot2 object mapping the shapes defined in the dataset and
-    # color-coding them according to the value of variable; instead of
-    # plotting the RAW value of variable, this function coverts them
-    # to percentile scores and maps the percentile scores
+  #' Plots the values of a variable converted to percentile scores
+  #' 
+  #' Plot the percentile score of a variable, converted from 
+  #' its unmodified value; serves as helper function to map_choropleth()
+  #' 
+  #' Inputs:
+  #' - data (dataframe) - expects a dataframe containing a geometry
+  #' and a variable of interest. Usually, this dataframe will result
+  #' from merging (1) a raw data file, indexed by a geographic region
+  #' identifier like FIPS, with (2) a shapefile that specifies the
+  #' geographic regions in question
+  #' 
+  #' - variable (string) - a string containing the NAME of the column in 
+  #' data that contains the variable that should be used to make the map
+  #' - caption (string) - a string defining the caption that appears
+  #' at the bottom right of the map figure
+  #' 
+  #' - title (string) - the map title
+  #' 
+  #' - low_color, high_color, na_color (strings) - the colors desigating
+  #' the lowest and highest values of variable, respectively, and the 
+  #' color that should indicate missing data
+  #' 
+  #' map_font (string) - font in the title, caption, legends
+  #' 
+  #' Outputs:
+  #' 
+  #' - a ggplot2 object mapping the shapes defined in the dataset and
+  #' color-coding them according to the value of variable; instead of
+  #' plotting the RAW value of variable, this function coverts them
+  #' to percentile scores and maps the percentile scores
   
   ecdf_function <- ecdf(data[[variable]])
   
@@ -150,47 +164,49 @@ map_choropleth <- function(data,
                             na_color = "gray",
                             map_font = "Arial") {
   
-  # Inputs:
-  # - data (dataframe) - expects a dataframe containing a variable of 
-    # interest, indexed by a geographic region identifier like FIPS
-  
-  # - shape (dataframe) a shapefile that specifies the
-    # geographic regions in question; must contain a 'geometry' column
-  
-  # - data_key (string) - a string that contains the NAME of column in
-    # data that should be used to merge it with the shapefile. This
-    # should be something like "FIPS"
-  
-  # - shape_key (string) - a string that contains the NAME of column in
-    # the shapefile that should be used to merge it with the data. This
-    # should be something like "FIPS" 
-  
-  # - variable (string) - a string containing the NAME of the column in 
-    # data that contains the variable that should be used to make the map
-  
-  # - map_title (string) - the map title
-  
-  # - map_caption (string) - a string defining the caption that appears
-  # at the bottom right of the map figure
-  
-  # - map_percentile (boolean) - whether the map should display raw values
-  # of variable (=FALSE, default) or show which percentile of the
-  # data distribution the geographic unit in question falls into (=TRUE)
-  
-  # - low_color, high_color, na_color (strings) - the colors designating
-  # the lowest and highest values of variable, respectively, and the 
-  # color that should indicate missing data
-  
-  # map_font (string) - font in the title, caption, legends
-  
-  ###################################################################
-  
-  # Outputs:
-  # - a ggplot2 object mapping the shapes defined in the dataset and
-  # color-coding them according to the value of variable; instead of
-  # plotting the RAW value of variable, this function coverts them
-  # to percentile scores and maps the percentile scores
-  
+  #' Creates a choropleth map
+  #' 
+  #' Given a dataset, shapefile, and variable of interest, plots a choropleth map
+  #' 
+  #' Inputs:
+  #' - data (dataframe) - expects a dataframe containing a variable of
+  #'   interest, indexed by a geographic region identifier like FIPS
+  #'
+  #' - shape (dataframe) - a shapefile that specifies the
+  #'   geographic regions in question; must contain a 'geometry' column
+  #'
+  #' - data_key (string) - a string that contains the name of column in
+  #'   data that should be used to merge it with the shapefile. This
+  #'   should be something like "FIPS"
+  #'
+  #' - shape_key (string) - a string that contains the name of column in
+  #'   the shapefile that should be used to merge it with the data. This
+  #'   should be something like "FIPS"
+  #'
+  #' - variable (string) - a string containing the name of the column in
+  #'   data that contains the variable that should be used to make the map
+  #'
+  #' - map_title (string) - the map title
+  #'
+  #' - map_caption (string) - a string defining the caption that appears
+  #'   at the bottom right of the map figure
+  #'
+  #' - map_percentile (boolean) - whether the map should display raw values
+  #'   of variable (=FALSE, default) or show which percentile of the
+  #'   data distribution the geographic unit in question falls into (=TRUE)
+  #'
+  #' - low_color, high_color, na_color (strings) - the colors designating
+  #'   the lowest and highest values of variable, respectively, and the
+  #'   color that should indicate missing data
+  #'
+  #' - map_font (string) - font in the title, caption, legends
+  #'
+  #' Outputs:
+  #' 
+  #' - a ggplot2 object mapping the shapes defined in the dataset and
+  #'   color-coding them according to the value of variable; instead of
+  #'   plotting the RAW value of variable, this function converts them
+  #'   to percentile scores and maps the percentile scores
   
   # CONTROL FLOW:
   # Case 1: both data and shapefile are NULL. Throw error. 
