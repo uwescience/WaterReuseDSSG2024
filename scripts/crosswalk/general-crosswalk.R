@@ -2,11 +2,15 @@
 
 # setwd(config::get("home_path"))
 
-# source("./map_utils/crosswalks.R")
+source("scripts/utility_function/crosswalks.R")
+source("scripts/utility_function/tract_county_weight.R")
+source("scripts/utility_function/county_tract_weight.R")
+
 
 # Nora's code
 
 # source()
+
 
 crosswalk <- function(data, 
                       data_type,
@@ -14,10 +18,13 @@ crosswalk <- function(data,
                       shapefile = NULL, 
                       raster = NULL,
                       source_scale = NULL, 
-                      target_scale = NULL,
                       key = NULL, 
                       method = "area", 
-                      output_type = NULL
+                      output_type = NULL,
+                      weight_type = NULL,
+                      variable = NULL,
+                      weight = NULL,
+                      calc_method = NULL
                       ) {
   # Args: 
     # data: can be labeled data with ID location column(s), point data (contains lat/lon columns), a shapefile, or a raster
@@ -34,14 +41,11 @@ crosswalk <- function(data,
   # Output: 
     # A dataframe on the target geographic scale. At this time, the user may need to perform weighted aggregations for moving up in scale and apply weights to splits. 
   
-  if (is.null(shapefile) && !is.null(key)) {
+  if (is.null(shapefile) && !is.null(key) && is.null(data2)) {
     
-    #check if Jihyeon agrees about need for data2 argument
-    crosswalk_data(data = data,
-                   data2 = data2,
-                   source_scale = source_scale,
-                   key = key, 
-                   target_scale = target_scale)
+    crosswalk_data(data = data, 
+             source_scale = source_scale, 
+             key = key) 
   }
   
   else if (!is.null(shapefile) && !is.null(data) && is.null(key)) {
@@ -59,6 +63,24 @@ crosswalk <- function(data,
                      method = method, 
                      output_type = output_type, 
                      points = data_type)
+  }
+  
+  else if (!is.null(weight_type) && !is.null(variable) && !is.null(weight) && !is.null(calc_method)){
+    tract_county(data = data, 
+                 weight_type = weight_type,
+                 variable = variable,
+                 weight = weight, 
+                 calc_method = calc_method)
+      
+  }
+  
+  else if (!is.null(weight_type) && !is.null(variable) && !is.null(weight) && !is.null(calc_method)){
+    county_tract(data = data, 
+                 weight_type = weight_type,
+                 variable = variable,
+                 weight = weight, 
+                 calc_method = calc_method)
+    
   }
   
   else {
