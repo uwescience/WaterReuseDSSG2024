@@ -129,10 +129,6 @@ data <- data %>%
 
 # head(data)
 # head(map)
-```
-
-
-```{r}
 map <- st_as_sf(map)
 ```
 
