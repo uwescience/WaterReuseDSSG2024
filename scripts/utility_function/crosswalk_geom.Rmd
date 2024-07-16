@@ -13,39 +13,80 @@ knitr::opts_chunk$set(echo = TRUE)
 library(pacman)
 
 
-p_load(tidycensus,tidyverse,sf,data.table,tigris,car,janitor,rmapshaper, terra)
+p_load(usmap, raster, exactextractr, tidycensus,tidyverse,sf,data.table,tigris,car,janitor,rmapshaper, terra, qgisprocess)
+
+```
+
+## Testing CWNS example (points and counties shapefile)
+# Counties in new column of joined dataframe should match existing county column from cwns dataset
+
+```{r}
+# Load Tigris County shapefile, CWNS dataset 
+
+options(tigris_use_cache = TRUE)
+
+# Load the counties shapefile for the entire United States
+counties_sf <- counties(year = 2023, cb = TRUE)
+
+cwns <- read_csv("~/Downloads/cwns-flow.csv")
+
+#Select only a few columns
+cwns <- cwns %>% 
+  select(COUNTY_FIPS, LATITUDE, LONGITUDE, CURRENT_DESIGN_FLOW, LOCATION_TYPE)
+
+#Convert cwns to shapefile using counties CRS  
+cwns_sf <- st_as_sf(cwns, coords = c("LONGITUDE", "LATITUDE"), crs = st_crs(counties_sf))
 
 ```
 
 
+## Testing Interbasin Water Transfers Example (lines in counties shapefile)
+# Lines should be new counties column should be populated in addition to existing state and country columns from ibt dataset
 ```{r}
-crosswalk_geom <- function(shapefile, data, source_scale, target_scale) {
-  
-  # Use case: Assign point data or smaller polygons to the target scale based on the larger polygons they are        # contained in. Uses st_contains to check if shape contained by another.
-  
-  # Args: 
-    # shapefile: shapefile containing polygons
-    # data: shapefile containing polygons OR data with latitude and longitude columns (can be converted to sf)
-    # source_scale: a list. the column name(s) of the source scale e.g c("latitude", "longitude") or c("geometry")
-    # target_scale: the name (str) of the target column name e.g ("geometry")
-  
-  # Output: 
-    # One joined dataset on the target scale
+# Load ibt data
+ibt <- read_sf(dsn = '~/Downloads/IBT Geospatial Data/', layer = "Digitized_IBTs")
 
-    require(sf)
-    # Transform data to the CRS of the target polygons
+# Transform CRS to Counties CRS
+ibt <- st_transform(ibt, crs = st_crs(counties_sf))
 
-  if (st_crs(data) != st_crs(shapefile)) {
-    stop("CRS of data and shapefile do not match even after transformation.")
+```
+
+## Point-to-boundary  
+```{r}
+
+crosswalk_geom <- function(data, shapefile, location_columns = NULL, type = "shapes") {
+  
+  
+  if (type == "points" && !is.null(location_columns)) {
+    # Convert the dataframe to a spatial object using the shapefile's CRS
+    points <- st_as_sf(data, coords = location_columns, crs = st_crs(shapefile))
+    
+    # Perform the spatial join to find the containing shape for each point
+    joined <- st_join(points, shapefile, join = st_within, left = TRUE)
+  } else {
+    # Ensure data is a spatial object and has the same CRS as the shapefile
+    data <- st_transform(data, crs = st_crs(shapefile))
+    data <- st_make_valid(data)
+    
+    # Perform the spatial join
+    joined <- st_join(data, shapefile, join = st_contains)
   }
   
-  # Perform the spatial join to check containment
-  joined_data <- st_join(data, shapefile, largest = TRUE, left = TRUE)
-  
-  
-  # Return the joined dataset
-  return(joined_data)
+  return(joined)
 }
+
+
+```
+
+```{r}
+crosswalk_geom(cwns, counties_sf, c("LONGITUDE", "LATITUDE"), type = "points")
+```
+```{r}
+#Attempt crosswalk on point data via st_interpolate 
+library(stars)
+
+raster_example <- raster("~/Downloads/CONUS_ww_raster.tif")
+
 
 ```
 
@@ -57,88 +98,66 @@ crosswalk_geom <- function(shapefile, data, source_scale, target_scale) {
 # Check type cwns type of data after transformation to sf, is the bounding box the geom column? 
 
 
-```
-
-```{r}
-
-options(tigris_use_cache = TRUE)
-# Load the counties shapefile for the entire United States
-counties_sf <- counties(year = 2023, cb = TRUE)
-
-cwns <- read_csv("~/Downloads/cwns-flow.csv")
-cwns <- cwns %>% 
-  select(COUNTY_FIPS, LATITUDE, LONGITUDE, CURRENT_DESIGN_FLOW, LOCATION_TYPE)
-
-# head(cwns)
-
-cwns_sf <- st_as_sf(cwns, coords = c("LONGITUDE", "LATITUDE"), crs = st_crs(counties_sf))
-
-# cwns_sf$geometry
-# 
-# counties_sf$geometry
-
 
 ```
 
 ```{r}
-#general conversion from csv and excel sheet containing latitude and longitude columns to shapefile 
-# convert_to_shapefile <- function(data, location_columns, crs){
-#   #Args: 
-#     # data: a csv or excel spreadsheet containing latitude and longitude columns
-#     # 
-#   cwns_sf <- st_as_sf(cwns, coords = , crs = st_crs(counties_sf))
-# 
-# cwns_sf$geometry
-# 
-# counties_sf$geometry
-# }
 
+
+crosswalk_raster<- function(data1, data2, method = "area", output_type = NULL, points = FALSE) {
+  # Function for Raster/Raster
+  
+  if (st_crs(data1) != st_crs(data2)) {
+    data2 <- st_transform(data2, st_crs(data1))
+  }
+  
+  combine_rasters <- function(raster1, raster2, method) {
+    if (method == "area") {
+      combined <- (raster1 + raster2) / 2  # Example: averaging the rasters
+    } else if (method == "population") {
+      combined <- raster1 + raster2  # Example: summing the rasters
+    } else {
+      stop("Invalid method for raster combination.")
+    }
+    return(combined)
+  }
+
+  # Function for Raster/Point
+  raster_point_join <- function(raster, points) {
+    point_values <- exact_extract(raster, points, fun = "mean", progress = FALSE)
+    point_values <- unlist(point_values)
+    point_values[is.na(point_values)] <- 0  # Handle NA values
+    combined <- cbind(st_as_sf(points), raster_value = point_values)
+    return(combined)
+  }
+
+  # Function for Raster/Shapefile
+  raster_shapefile_join <- function(raster, shapefile, output_type) {
+    if (output_type == "shapefile") {
+      extracted_values <- exact_extract(raster, shapefile, "mean")  # Example: mean values
+      shapefile$extracted_values <- extracted_values
+      return(shapefile)
+    } else if (output_type == "raster") {
+      shapefile_rasterized <- rasterize(shapefile, raster)
+      return(shapefile_rasterized)
+    } else {
+      stop("Invalid output type for raster/shapefile combination.")
+    }
+  }
+
+  # Determine the types of input data and call the appropriate function
+  if (inherits(data1, "Raster") && inherits(data2, "Raster")) {
+    return(combine_rasters(data1, data2, method))
+  } else if (inherits(data1, "Raster") && inherits(data2, "sf") && points== TRUE) {
+    return(raster_point_join(data1, data2))
+  } else if (inherits(data1, "Raster") && inherits(data2, "sf")) {
+    return(raster_shapefile_join(data1, data2, output_type))
+  } else {
+    stop("Unsupported data types.")
+  }
+}
 ```
 
 ```{r}
-#it doesn't seem like it's keeping the geometry of the county but it is keeping the labeling infomation 
-#rasterize shapefiles and do raster joins
-cwns_sf <- cwns_sf[1:10,]
-
-library(HydroData)
-library(AOI)
-
-cwns_area <- cwns_sf[1,] 
-cwns_area
-
-class(cwns_area)
-
-basins_cwns <- findNearestHUC12(point = cwns_area$geometry, n = 1, ids = TRUE, bb = TRUE)
-basins_cwns
-
-
-cwns_joined_data <- crosswalk_geom(counties_sf, cwns_sf, c("geometry"), "geometry")
-cwns_joined_data
+combined <- crosswalk_raster(raster_example, counties_sf, output_type = "shapefile")
 ```
-## Testing Interbasin Water Transfers Example (lines in counties shapefile)
-# Lines should be new counties column should be populated in addition to existing state and country columns from ibt dataset
-```{r}
-ibt <- read_sf(dsn = '~/Downloads/IBT Geospatial Data/', layer = "Digitized_IBTs")
-head(ibt)
-```
-
-
-```{r}
-
-options(tigris_use_cache = TRUE)
-
-# Load the counties shapefile for the entire United States
-counties_sf <- counties(year = 2023, cb = TRUE)
-
-ibt <- st_as_sf(ibt, crs = st_crs(counties_sf))
-ibt <- st_transform(ibt, crs = st_crs(counties_sf))
-
-ibt_joined_data <- crosswalk_geom(counties_sf, ibt, c("geometry"), "geometry")
-head(ibt_joined_data)
-
-```
-```{r}
-library(exactextractr)
-
-```
-

@@ -50,7 +50,7 @@ crosswalk_raster <- function(data1, data2, method = "area", output_type = NULL, 
   # Determine the types of input data and call the appropriate function
   if (inherits(data1, "Raster") && inherits(data2, "Raster")) {
     return(combine_rasters(data1, data2, method))
-  } else if (inherits(data1, "Raster") && inherits(data2, "sf") && points == TRUE) {
+  } else if (inherits(data1, "Raster") && inherits(data2, "sf") && points == "points") {
     return(raster_point_join(data1, data2))
   } else if (inherits(data1, "Raster") && inherits(data2, "sf")) {
     return(raster_shapefile_join(data1, data2, output_type))
