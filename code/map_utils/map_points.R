@@ -3,6 +3,21 @@
 # 1: Shapefile with a location label (str) AND a dataset with a location label (str). 
 # 2: Dataset with lat, lon columns or a geometry containing lat. 
 # 3: Shapefile that can automatically be mapped with usmap. Please check the package's location data requirements for this. 
+#' Title
+#'
+#' @param shapefile optional file path providing relevant boundaries e.g state, county, HUC. If no file to provide, write NULL
+#' @param data dataset containing points to be visualized on the map 
+#' @param location_columns a list of column names (strings) that contain location data e.g c('lat', 'lon') or c('State')
+#' @param variable_name a list of column names (string) that contain the variables of interest to be mapped e.g c('saltwater', 'Population Total')
+#' @param base_unit a string with the base unit to be drawn on the usmap e.g 'counties'
+#' @param map_title A string of the title of the map.
+#' @param name The name of the scale. Used as the axis or legend title.
+#' @param bbox a vector of bounding box coordinates (xmin, ymin, xmax, ymax) to crop the shapefile
+#'
+#' @return Points on a map of the U.S. Will produce a map for each variable name listed in variable_name
+#' @export
+#'
+#' @examples 
 map_points <- function(shapefile, data, location_columns, variable_name, base_unit,
                        map_title, name, bbox) {
   
@@ -12,7 +27,7 @@ map_points <- function(shapefile, data, location_columns, variable_name, base_un
   #location_columns: a list of column names (strings) that contain location data e.g c('lat', 'lon') or c('State')
   #variable_name: a list of column names (string) that contain the variables of interest to be mapped e.g c('saltwater', 'Population Total')
   #base_unit: a string with the base unit to be drawn on the usmap e.g 'counties'
-  # Outputs; 
+  # Outputs: 
   #Points on a map of the U.S. Will produce a map for each variable name listed in variable_name
   
   #For case type 1 
@@ -35,8 +50,7 @@ map_points <- function(shapefile, data, location_columns, variable_name, base_un
       theme(legend.position = "bottom") +
       labs(title = map_title) +
       theme(text = element_text(family = "Times New Roman"))
-    print(p)
-    
+
     #For case type 2
   } else if (length(location_columns) == 2) {
     map_data <- data %>%
@@ -68,8 +82,7 @@ map_points <- function(shapefile, data, location_columns, variable_name, base_un
            subtitle = variable_name,
            x = "Longitude",
            y = "Latitude")
-    print(p)
-    
+
     #For case type 3
   } else if (is.null(location_columns)) {
     
@@ -85,6 +98,6 @@ map_points <- function(shapefile, data, location_columns, variable_name, base_un
            subtitle = variable_name,
            x = "Longitude",
            y = "Latitude")
-    print(p)
   }
 }
+
