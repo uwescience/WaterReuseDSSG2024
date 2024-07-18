@@ -1,0 +1,42 @@
+---
+title: "Index Incorporating 4 Datasets"
+author: "Daniel Vogler"
+date: "2024-07-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+library(tidyverse)
+library(toxpiR)
+library(sf)
+library(urbnmapr)
+
+source("~/Documents/DSSG/WaterReuseDSSG2024/scripts/toxpi-wrapper.R")
+source("~/Documents/DSSG/WaterReuseDSSG2024/map_utils/map_utils.R")
+
+index_cols <- c("MGD2022", "MGD2024", "NDC2NDI", "mn_fld_", "extrct_", "GEOID")
+
+fp <- "/Users/danielvogler/Downloads/joined_shapefile/joined_shapefile.shp"
+
+shape <- st_read(dsn = fp, crs = 4979) %>% as.data.frame()
+
+df <- shape %>% select(index_cols)
+
+index <- create_index(df = df, id_col = "GEOID", weights = c(1,1,1,2,1))
+
+counties <- counties <- get_urbn_map(map = "counties", sf=TRUE)
+
+map_choropleth(data = index, 
+               shapefile = counties, 
+               data_key = "id", 
+               shape_key = "county_fips", 
+               variable = "index_value",
+               map_title = "Custom Index from Datasets Shared by Carolyn",
+               map_caption = "Incorporates MGD, NDC, Mean Flood, Extract Variables")
+
+```
