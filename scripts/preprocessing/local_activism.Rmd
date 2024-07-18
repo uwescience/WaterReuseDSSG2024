@@ -1,0 +1,210 @@
+---
+title: "Procedural Equity Measure"
+output: html_document
+date: "2024-06-26"
+---
+
+# Introduction
+Procedural equity refers to the degree to which stakeholders can influence decision-making process around the policy outcome. In this project, we focus on procedural equity around water reuse. To proxy this, this script introduces two approaches. First, Census data provides information about individuals who are involved in local civic organizations. Second, by flipping the unit of analysis, County Business Pattern provides information about the number of civic organizations and water-relevant. 
+
+## document padding for identifiers at county level
+README markdown for processing countyfips should be X number of characters long.
+or write that into a function
+  features of this identifier that needs to be consistent 
+  ways this can be constructed by changing 
+
+  
+
+
+## Census data on Volunteering and Civic Life
+This script is intended to 1) download the "cps_00002.dat" dataset and 2) clean the data such that it can be merged with the other files at the facility level. The purpose of using this dataset is to proxy the degree to which civic society is involved in activism at local agendas. 
+Note that all of these datasets are publicly available at the [IPUMS](https://cps.ipums.org/cps/).
+  
+  - Available Year 2002-2021 at county level
+  - Survey uses population-representative samples as respondents. Each observation point is collected through 60,000 household-interviews.   However, the results are still representative of population by weights given to each observation. Weights are determined by the two-stage stratified sampling based on the information from the Decennial 2010 Census. 
+  - Relevant survey questions include:
+    - In the past 12 months, did you belong to any groups, organizations, or Associations?
+    - How many groups, organizations, or Associations would you say you belonged to in the past 12 months?
+
+
+Note that variables *year*, and *county* are unique identifiers for each observation. Use these to when merging. 
+
+```{r download}
+library(ipumsr)
+library(plyr)
+library(dplyr)
+library(readr)
+ddi <- read_ipums_ddi("data/cps_00002.xml")
+data <- read_ipums_micro(ddi)
+```
+
+
+### Processing
+In this section, I remove weightings that were used for population estimates. Examples include primary sampling units, weights at the household level, weights at the district level.
+```{r}
+cols_drop <- c("SERIAL", "MONTH", "HWTFINL", "CPSID", "ASECFLAG", "HFLAG", 
+               "ASECWTH", "PERNUM", "WTFINL", "CPSIDV", "CPSIDP", "ASECWT", 
+               "INCSURV")
+
+data <- data %>%
+  select(-cols_drop)
+```
+
+### Mapping
+
+- VLTORG5 is civic organization
+- VLHTORG5 is number of hours per week respondent volunteered w/ civic organization
+- VLCOMMITTEE Volunteer activities: served on a committee or board
+```{r}
+library(urbnmapr)
+library(ggplot2) 
+
+data$county_fips <- data$COUNTY
+
+
+data_subset <- data %>%
+  dplyr::group_by(county_fips) %>%
+  dplyr::summarise(total_hours = sum(VLCOMMITTEE, na.rm = TRUE)) 
+
+counties <- get_urbn_map(sf = TRUE, map = "counties")
+counties$county_fips <- as.numeric(counties$county_fips)
+
+#order matters
+#resulting object inherits the class of the object on the left
+civic_data <- left_join(counties, 
+                        data_subset, 
+                        by = "county_fips")
+
+ggplot(civic_data) +
+  geom_sf(mapping = aes(fill = total_hours)) +
+  scale_fill_gradient(name = "Hours per Week",
+                       label = scales::comma_format()) +
+  labs(title = "Volunteer Hours with Civic Organization by County")
+```
+
+
+### Number of people who volunteered at least once
+
+```{r}
+data_subset <- data %>%
+  dplyr::group_by(county_fips) %>%
+  dplyr::summarise(total_volunteer = sum(VLSTATUS == 1, na.rm = TRUE))  # Calculate percentage
+
+# Merge with spatial data
+civic_data <- left_join(counties, 
+                        data_subset, 
+                        by = "county_fips")
+
+ggplot(civic_data) +
+  geom_sf(mapping = aes(fill = total_volunteer)) +
+  scale_fill_gradient(name = "Percentage",
+                      low = "lightgrey", high = "black",
+                      na.value = "white") +  
+  labs(title = "Total number of respondents who volunteered",
+       caption = "Number of Respondents with VLSTATUS = 1 by County") +
+  theme(text = element_text(family = "Times New Roman"))
+  
+```
+
+## County Business Pattern
+
+This dataset rovides detailed statistics on businesses by industry classification and includes data on the number of establishments, employment, and payroll. CBP Data covers more than 6 million single-unit establishments and more than 2 million multi-unit establishments.
+CBP basic data items are extracted from the Business Register (BR), a database of all known single and multi-establishment employer companies maintained by the U.S. Census Bureau.
+
+- Raw data is available here: https://www.census.gov/data/datasets/2022/econ/cbp/2022-cbp.html
+- Available from 1968 until 2022 at county level
+- Variable 'naics'(North American Industry Classification System) refers to industry code which can be found [here](https://www2.census.gov/programs-surveys/cbp/technical-documentation/reference/naics-descriptions/naics2017.txt).
+
+
+I created a new variable called "water" which is coded 1 if NAICS code is water-related industry.
+cbp_data has a new variable called "county_fips" which turns fipstate into a numeric variable and append that with fipscty (FIPS county code). This process is only to make it compatible with county-level map's identifer variable which takes a form of "state_id + county_id." 
+
+```{r load cbp data}
+cbp <- read_csv("data/cbp22co.txt") 
+cbp <- cbp %>%
+  dplyr::mutate(water = ifelse(naics %in% c("2213//", #water, sewage system
+                      "22131/",
+                      "221310",
+                      "22132/",
+                      "221320",
+                      "23711/",
+                      "237110",
+                      "483", #water transportation
+                      "4872//", #sightseeing transportation water
+                      "4883//",
+                      "48839/", #support for water transportation
+                      "488390"
+                      ),1, 0),
+                civic = ifelse(naics %in% c("8133", #social advocacy, human rights, environment organizations
+                      "8134", #civic and social organizations
+                      "81393", #labor unions and organizations
+                      "81394" #political organizations
+                      ),1, 0)
+                      )
+
+
+cbp_data <- cbp %>%
+  mutate(county_fips = paste(fipstate, fipscty, sep=""))
+
+#water sector
+cbp_water <- cbp_data %>%
+  dplyr::group_by(county_fips, water) %>%
+  dplyr::summarize(water_emp = sum(emp),
+            water_est = sum(est),
+            water_payroll = sum(ap)) #annual payroll
+
+#organization sector
+cbp_civic <- cbp_data %>%
+  dplyr::group_by(county_fips, civic) %>%
+  dplyr::summarize(civic_emp = sum(emp),
+            civic_est = sum(est),
+            civic_payroll = sum(ap)) #annual payroll
+```
+
+### Visualizing CBP on county map
+```{r}
+cbp_water_plot <- left_join(counties, 
+                        cbp_water, 
+                        by = "county_fips") 
+
+cbp_civic_plot <- left_join(counties, 
+                        cbp_civic, 
+                        by = "county_fips") 
+
+
+plot_percentile <- function(data, variable, caption, title,
+                            percentile=0.95,
+                            low_color = "white", high_color = "blue",
+                            na_color = "gray"){
+  percentiles <- quantile(data[[variable]], probs=c(0, percentile), na.rm=TRUE)
+  
+  plot_data_variable <- ggplot(data)+
+    geom_sf(mapping = aes_string(fill = variable)) +
+    scale_fill_gradient(name = variable, 
+                        label = scales::comma_format(),
+                        low=low_color,
+                        high=high_color,
+                        na.value = na_color,
+                        limits = percentiles,
+                        breaks = scales::pretty_breaks(n = 5)) + 
+    labs(title = title,
+         caption = caption) +
+    theme(text = element_text(family = "Times New Roman"))
+  
+      return(plot_data_variable)
+}
+
+plot_percentile(data = cbp_water_plot, 
+                variable = "water_est", 
+                title = "Total number of water-related establishments", 
+                caption = "Year 2022")
+
+plot_percentile(data = cbp_civic_plot, 
+                variable = "civic_est", 
+                title = "Total number of civil organizations", 
+                caption = "Year 2022")
+
+
+```
+## References
+Sarah Flood, Miriam King, Renae Rodgers, Steven Ruggles, J. Robert Warren, Daniel Backman, Annie Chen, Grace Cooper, Stephanie Richards, Megan Schouweiler, and Michael Westberry. IPUMS CPS: Version 11.0 [dataset]. Minneapolis, MN: IPUMS, 2023. https://doi.org/10.18128/D030.V11.0
