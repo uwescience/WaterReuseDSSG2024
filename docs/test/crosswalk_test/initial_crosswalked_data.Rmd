@@ -1,0 +1,128 @@
+---
+title: "general_crosswalk_test"
+output: pdf_document
+date: "2024-07-15"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load all libraries 
+```{r}
+library(pacman)
+
+
+p_load(stars, usmap, raster, exactextractr, tidycensus,tidyverse,sf,data.table,tigris,car,janitor,rmapshaper, terra, qgisprocess)
+
+
+```
+
+## Load all datasets
+
+```{r}
+# Load wastewater raster datset. Type = "raster"
+wastewater <- raster("~/Downloads/CONUS_ww_raster.tif")
+head(wastewater)
+
+# Load CVI expert - focus on flood_factor2020 (select out columns), census tracts, includes county (shapes)
+cvi <- read_csv("~/Downloads/CVI Data Excerpts_rename.csv", show_col_types = FALSE)
+head(cvi)
+
+# Load CWNS point data, points
+cwns <- read_csv("~/Downloads/CWNS_merged.csv", show_col_types = FALSE)
+head(cwns)
+
+# Load drought risk data, county-level (shapes), column of interest is "NDC2NDI", select columns out  
+drought <- read_csv("~/Downloads/drought_risk.csv", show_col_types = FALSE)
+head(drought)
+```
+
+```{r}
+# Selecting only the columns we want and checking for NAs, omit NAs
+
+cvi <- cvi %>% 
+  select('State', 'County', 'FIPS Code', 'flood_factor2020') %>% 
+  na.omit()
+
+# sum(is.na(cvi$flood_factor2020))
+  
+cvi <- cvi %>%
+  group_by (County) %>%
+  summarise(mean_flood_value = mean(flood_factor2020, na.rm = TRUE))
+
+
+cwns <- cwns %>%
+  select(LATITUDE, LONGITUDE, MGD2022_wetpeak, MGD2022_total, MGD2042_muni, MGD2042_ind, MGD2042_infil, MGD2042_wetpeak,  MGD2042_total, MGD2022_muni, MGD2022_ind, MGD2022_ind, MGD2022_infil)
+
+cwns <- cwns[, colSums(is.na(cwns)) < 0.5*nrow(cwns)]
+
+cwns <- na.omit(cwns)
+
+#nrow = 3109
+drought <- drought %>%
+  select(FIPS, County, State, NDC2NDI) %>%
+  na.omit()
+
+```
+
+
+## Joining Datasets: Round 1 (cwns and counties)
+```{r}
+#cwns and counties
+options(tigris_use_cache = TRUE)
+
+# Load the counties shapefile for the entire United States
+counties_sf <- counties(year = 2023, cb = TRUE)
+
+
+cwns_counties <- crosswalk(data = cwns, data_type = "points", shapefile = counties_sf, source_scale = c("LONGITUDE", "LATITUDE"))
+
+
+# Group by county 
+cwns_counties <- cwns_counties %>%
+  group_by(COUNTYFP, NAME) %>%
+  summarise(MGD2022_AVG = mean(MGD2022_total, na.rm = TRUE),
+    MGD2024_AVG = mean(MGD2042_total, na.rm = TRUE))
+
+
+```
+```{r}
+#Joining cwns_counties and cvi by county 
+
+cwns_counties <- cwns_counties %>% 
+  mutate(County = NAME)
+
+cwns_cvi <- left_join(cwns_counties, cvi, by = "County")
+
+
+```
+```{r}
+# Join cwns_cvi and drought 
+
+cwns_cvi_drought <- left_join(cwns_cvi, drought, by = 'County')
+
+
+```
+```{r}
+# Join cwns_cvi_drought with wastewater raster
+# County shapefile and raster
+
+#rejoin with county shapes 
+cwns_cvi_drought <- st_join(counties_sf, cwns_cvi_drought)
+
+# Pre-process cwns_cvi_drought as a shapefile
+
+cwns_cvi_drought <- st_make_valid(cwns_cvi_drought) 
+
+
+final_df <- crosswalk(data = cwns_cvi_drought, data_type = "shapes", raster = wastewater, output_type = "shapefile")
+head(final_df)
+
+
+```
+
+```{r}
+write_sf(final_df, "joined_shapefile.shp")
+```
+
