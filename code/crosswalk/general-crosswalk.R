@@ -20,7 +20,7 @@ crosswalk <- function(data,
                       output_type = NULL
                       ) {
 
-    #'Perform spatial or dataset crosswalk operations based on provided parameters.
+    #' @description Perform spatial or dataset crosswalk operations based on provided parameters.
     #'   
     #'   @param data: Data source to be crosswalked. Can be labeled data with ID location column(s), 
     #'        point data (containing lat/lon columns), a shapefile, or a raster.

@@ -150,6 +150,7 @@ This will take the output of crosswalk_id function as an input.
 
 ```{r}
 county_tract <- function(data, weight_type, variable, weight, calc_method){
+  #' @description changes data at the county-level scale to the census tract level
   #' @param data input dataset that contains ID column after pass through crosswalk_id function
   #' @param weight_type Character vector. Specify either "population" or "area"
   #' @param variable Variable of interest
@@ -210,7 +211,12 @@ sample1 <- county_tract(drought_intermediary, "population", "NDI", "afact", "wei
 ### ⬆️ Tract to county
 
 ```{r}
-tract_county <- function(data, weight_type, variable, weight, calc_method) {
+tract_county <- function(data, 
+                         weight_type, 
+                         variable, weight, 
+                         calc_method) {
+  #' @description changes data at the census tract-level scale to the county level
+  #' 
   if (is.data.frame(data)) {
     library(dplyr)
     data <- data %>%
