@@ -22,7 +22,7 @@ crosswalk_geom <- function(data, shapefile, location_columns = NULL, type = "sha
     data <- st_make_valid(data)
     
     # Perform the spatial join
-    joined <- st_join(data, shapefile, join = st_contains)
+    joined <- st_join(data, shapefile, join = st_contains, left = TRUE)
   }
   
   return(joined)

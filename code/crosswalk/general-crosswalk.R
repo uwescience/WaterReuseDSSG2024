@@ -35,7 +35,7 @@ crosswalk <- function(data,
   # Output: 
     # A dataframe on the target geographic scale. At this time, the user may need to perform weighted aggregations for moving up in scale and apply weights to splits. 
   
-  if (is.null(shapefile) && !is.null(key)) {
+  if (!is.null(key) && !is.null(data2)) {
     
     #check if Jihyeon agrees about need for data2 argument
     crosswalk_data(data = data,
