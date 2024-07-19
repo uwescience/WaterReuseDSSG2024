@@ -1,5 +1,6 @@
 
-crosswalk_id <- function(data, 
+crosswalk_id <- function(data,
+                         data2,
                            source_scale, 
                            key) {
   library(readxl)
@@ -12,6 +13,13 @@ crosswalk_id <- function(data,
   library(roxygen2)
   library(docstring)
   
+  if (!is.null(data2)) {
+    merged_data <- data %>%
+      left_join(data, data2, by = setNames(key, source_scale))
+    return(merged_data)
+  }
+  
+  else{
   tracts_url <- "https://nccsdata.s3.us-east-1.amazonaws.com/geo/xwalk/TRACTX.csv"
   crosswalk_file <- readr::read_csv(tracts_url)
   
@@ -37,4 +45,5 @@ crosswalk_id <- function(data,
   }
   
   return(merged_data)
+  }
 }
