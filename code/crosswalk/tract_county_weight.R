@@ -2,15 +2,16 @@
 tr_ct_population <- read.csv("./data/2020tr_ct.csv", header = T)[-1,]
 tr_ct_area <- read.csv("./data/2020tr_ct_area.csv", header = T)[-1,]
 
-library(dplyr)
+
 
 process_data <- function(data) {
+  library(dplyr)
   data$tract <- gsub("\\.", "", data$tract)
   processed_data <- data %>%
     mutate(afact = as.numeric(afact)) %>%
     mutate(tract.census.geoid = paste0(county, tract)) %>%
     rename(county.census.geoid = county) %>%
-    select(county.census.geoid, afact, tract.census.geoid)
+    dplyr::select(county.census.geoid, afact, tract.census.geoid)
   
   return(processed_data)
 }

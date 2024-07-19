@@ -13,7 +13,7 @@ process_data <- function(data) {
     mutate(afact = as.numeric(afact)) %>%
     mutate(tract.census.geoid = paste0(county, tract)) %>%
     rename(county.census.geoid = county) %>%
-    select(county.census.geoid, afact, tract.census.geoid)
+    dplyr::select(county.census.geoid, afact, tract.census.geoid)
   
   return(processed_data)
 }
