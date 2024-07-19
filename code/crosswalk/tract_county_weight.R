@@ -1,6 +1,6 @@
 
-tr_ct_population <- read.csv("scripts/utility_function/weights_data/2020tr_ct.csv", header = T)[-1,]
-tr_ct_area <- read.csv("scripts/utility_function/weights_data/2020tr_ct_area.csv", header = T)[-1,]
+tr_ct_population <- read.csv("./data/2020tr_ct.csv", header = T)[-1,]
+tr_ct_area <- read.csv("./data/2020tr_ct_area.csv", header = T)[-1,]
 
 library(dplyr)
 

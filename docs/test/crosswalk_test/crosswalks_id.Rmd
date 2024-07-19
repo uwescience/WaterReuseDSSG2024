@@ -1,0 +1,274 @@
+---
+title: "Testing crosswalks through ID columns"
+output: html_document
+date: "2024-07-08"
+---
+
+## General notes on crosswalks
+
+Crosswalks are needed to align geospatial data that are on different scales. Scales here are referring to units of analysis (county, census tracts, blocks, watershed etc.) While it is easy to aggregate datasets when the sum of the parts equal the whole, it is not always the case. This script generates steps for crosswalks that allow us compare variables in a different resolution.
+
+Crosswalks can be helpful in two scenarios First, there should be crosswalk between different spatial resolution in the same time period. Second, crosswalk can be helpful when the boundary of the spatial resolution changes over time. There should be an estimated population or any features for newly demarcated boundary.
+
+We focus on the first type of problem - same year, but different resolutions. There are two ways of resolving this problem.
+
+1)  Downward approach
+
+-   Assignment Borrowing: Let's say for example we have a dataset about Drought Risk Index at a county-level. If we want this data to talk to the census-tract level data, we can automatically let all of the census-tracts to inherit that value from the upstream. (And census tracts always fall under the county.) Assignment borrowing or inheritance is appropriate in cases where the values at the higher level are not shared or distributed down to lower levels.
+
+-   Aportioning: Another option is to use weighting. For example, let's say King County has Water Reuse Capacity score of 100. Amount of total reusable water capacity will have to be distributed across different subcomponents -cities of the King County. During this step, aportioning will require a metadata on how subcomponents comprise the whole. For example, value can be broken down into cities based on population proportion or area of each city. Assignment borrowing would not be appropriate in this context.
+
+2)  Upward approach
+
+-   Aggregate: We can simply add up the components to fill in the information at the higher level. For example, by adding up the number of students across all of the departments on campus, we get the total number of students.
+
+-   Population Weighting: Even if we have information for a subset of data at the low level, we can estimate the value for the total by weighting. Note that [IPUMS](https://www.nhgis.org/geographic-crosswalks) discusses these two approaches more extensively.
+
+3)  Weighting and Aportioning
+
+*Where to find weighting values* Either way, it's important to find the relevant weighting values. [MCDC](https://mcdc.missouri.edu/applications/geocorr2022.html) provides these weights. Select source scale and target scale for states of interest. This will generate a .csv file that contains crosswalk weights. Users should download their own weight datasets of interest.
+
+Geographic level codes: tr - Census tract co - County
+
+## Part 1. Crosswalk by adding ID variables
+
+```{r}
+library(readxl)
+library(tidycensus)
+library(tigris)
+options(tigris_use_cache = TRUE)
+library(tidyverse)
+library(data.table)
+library(dplyr)
+library(roxygen2)
+library(docstring)
+
+tracts_url <- "https://nccsdata.s3.us-east-1.amazonaws.com/geo/xwalk/TRACTX.csv"
+  crosswalk_file <- readr::read_csv(tracts_url)
+  
+crosswalk_data <- function(data, 
+                           source_scale, 
+                           key) {
+  #' Append index column for crosswalks
+  #' 
+  #' @description
+  #' 'crosswalk_data' returns dataframe with geo-spatial labels appended
+  #' 
+  #' @param data raw data that needs to be converted to a different scale
+  #' @param source_scale Character vector. column that contains scale information. 
+  #' @param key Character vector. level of the source scale in a formal name, according to the    Census GeoID. Users should identify which of these names their source_scale match.
+  #'  "tract.census.geoid"        
+  #'  "county.census.geoid"       
+  #'  "puma.census.geoid"        
+  #'  "state.census.geoid"      
+  #'  "state.census.name"         
+  #'  "metro.census.cbsa10.geoid" 
+  #'  "metro.census.cbsa10.name"  
+  #'  "metro.census.csa10.geoid" 
+  #'  "metro.census.csa10.name"   
+  #'  "region.woodard.nation"     
+  #'  "region.woodard.culture"    
+  #'  "region.census.main"      
+  #'  "region.census.division"
+  #'
+  #' @examples
+  #' drought_intermediary 
+  #' <- crosswalk_data(drought, 
+  #' source_scale = "county_fips", 
+  #'key = "county.census.geoid")
+  #' 
+  
+  if (!is.character(data[[source_scale]])) {
+    data <- data %>%
+      mutate({{ source_scale }} := as.character({{ source_scale }}))
+  }
+  
+  if (is.null(key)) {
+    warning("Key value is invalid. It has to be one of the following character values.")
+    print(unique(names(crosswalk_file)))
+  }
+  
+  
+  merged_data <- data %>%
+    left_join(crosswalk_file, by = setNames(key, source_scale))
+  
+  if (!identical(source_scale, key)) {
+    merged_data <- merged_data %>%
+      rename({{ key }} := !!sym(source_scale))
+  }
+  
+  return(merged_data)
+}
+
+```
+
+## Part 2.Merging with crosswalk weights data for interpolation
+
+Refer to the [MCDC](https://mcdc.missouri.edu/applications/geocorr2022.html) for additional weights data of interest. This script is \textit{only} for data from county to census tracts, based on population and area weights. Below function is only for crosswalks between census tract and county.
+
+## 2.1 Preparing weights data
+
+```{r}
+#county to tract
+ct_tr_population <- read.csv("../../../data/2020ct_tr.csv", header = T)[-1,] 
+ct_tr_area <- read.csv("../../../data/2020ct_tr_area.csv", header = T)[-1,] 
+
+#tract to county
+tr_ct_population <- read.csv("../../../data/2020tr_ct.csv", header = T)[-1,]
+tr_ct_area <- read.csv("../../../data/2020tr_ct_area.csv", header = T)[-1,]
+
+library(dplyr)
+
+process_data <- function(data) {
+  library(dplyr)
+  data$tract <- gsub("\\.", "", data$tract)
+  processed_data <- data %>%
+    mutate(afact = as.numeric(afact)) %>%
+    mutate(tract.census.geoid = paste0(county, tract)) %>%
+    dplyr::rename(county.census.geoid = county) %>%
+    dplyr::select(county.census.geoid, afact, tract.census.geoid)
+  
+  return(processed_data)
+}
+
+ct_tr_area <- process_data(ct_tr_area) 
+ct_tr_population <- process_data(ct_tr_population)
+tr_ct_population <- process_data(tr_ct_population)
+tr_ct_area <- process_data(tr_ct_area)
+
+```
+
+Once we find the corresponding weights data, the next step is to merge/join these weights with the source data and transform (multiply) them into values that align with the target data. Note that this step is different from the previous section where I appended additional index column. This step will assign weights to the source scale and interpolate those values to the target scale.
+
+## 2.2 Weighting Function
+
+Unlike Part 1 where I appended additional column of target scale, weighting function treats downward and upward assignment differently. This is because weights for each direction are from different data sets.
+
+### ⬇️ County to tract
+
+This will take the output of crosswalk_data function as an input.
+
+```{r}
+county_tract <- function(data, weight_type, variable, weight, calc_method){
+  #' @param data input dataset that contains ID column after pass through crosswalk_data function
+  #' @param weight_type Character vector. Specify either "population" or "area"
+  #' @param variable Variable of interest
+  #' @param weight Column name that contains weight values.
+  #' @param calc_method Aggregation method. Specify either "weighted_mean", "weighted_sum", or "sum".
+  #' 
+  if (!is.data.frame(data)) {
+    stop("Input 'data' must be a dataframe.")
+  }
+  
+  if (weight_type == "population") {
+    data <- data %>%
+      left_join(ct_tr_population, by = "tract.census.geoid")
+  }
+  if (weight_type == "area") {
+    data <- data %>%
+      left_join(ct_tr_area, by = "tract.census.geoid")
+  }
+  if (tolower(calc_method) == "weighted_mean") {
+  processed_data <- data %>%
+    group_by(tract.census.geoid) %>%
+    mutate(!!paste0(variable, "_weighted") := weighted.mean(!!sym(variable), !!sym(weight), na.rm = TRUE))
+  } 
+  else if (tolower(calc_method) == "weighted_sum") {
+  processed_data <- data %>%
+    group_by(tract.census.geoid) %>%
+    mutate(!!paste0(variable, "_sum") := sum(!!sym(variable) * !!sym(weight), na.rm = TRUE))
+  } 
+  else if (tolower(calc_method) == "sum") {
+  processed_data <- data %>%
+    group_by(tract.census.geoid) %>%
+    mutate(!!paste0(variable, "_sum") := sum(!!sym(variable), na.rm = TRUE))
+  } 
+  
+  else {
+  stop("Invalid value for 'calc_method'. Please specify either 'weighted_mean', 'weighted_sum', or 'sum'.")
+  }
+
+  return(processed_data)
+  
+}
+
+```
+
+### test1 : county to tract
+
+```{r}
+drought <- read_excel("../../../data/final_results_dissemination_NDINDC.xlsx")
+drought$county_fips <- as.character(drought$FIPS)
+drought_intermediary <- crosswalk_data(drought,
+                                       source_scale = "county_fips",
+                                       key = "county.census.geoid")
+
+
+sample1 <- county_tract(drought_intermediary, "population", "NDI", "afact", "weighted_mean")
+```
+
+### ⬆️ Tract to county
+
+```{r}
+tract_county <- function(data, weight_type, variable, weight, calc_method) {
+  if (is.data.frame(data)) {
+    library(dplyr)
+    data <- data %>%
+      dplyr::select( "tract.census.geoid", {{ variable }})
+  }
+  if (!is.data.frame(data)) {
+    stop("Input 'data' must be a dataframe.")
+  }
+  
+  if (weight_type == "population") {
+    data <- data %>%
+      left_join(tr_ct_population, by = "tract.census.geoid")
+  } else if (weight_type == "area") {
+    data <- data %>%
+      left_join(tr_ct_area, by = "tract.census.geoid")
+  } else {
+    stop("Invalid value for 'weight_type'. Please specify either 'population' or 'area'.")
+  }
+  
+  print(head(data))
+  
+  if (tolower(calc_method) == "weighted_mean") {
+    processed_data <- data %>%
+      group_by(county.census.geoid) %>%
+      summarize(!!paste0(variable, "_weighted") := weighted.mean(!!sym(variable), !!sym(weight), na.rm = TRUE))
+  } else if (tolower(calc_method) == "weighted_sum") {
+    processed_data <- data %>%
+      group_by(county.census.geoid) %>%
+      summarize(!!paste0(variable, "_sum") := sum(!!sym(variable) * !!sym(weight), na.rm = TRUE))
+  } else if (tolower(calc_method) == "sum") {
+    processed_data <- data %>%
+      group_by(county.census.geoid) %>%
+      summarize(!!paste0(variable, "_sum") := sum(!!sym(variable), na.rm = TRUE))
+  } else {
+    stop("Invalid value for 'calc_method'. Please specify either 'weighted_mean', 'weighted_sum', or 'sum'.")
+  }
+
+  return(processed_data)
+}
+```
+
+### test 2: tract to county
+
+```{r}
+# Example usage:
+
+cvi <- read.csv("../../../data/CVI Data Excerpts_rename.csv")
+
+cvi <- cvi %>% 
+  mutate(tract_fips = ifelse(nchar(FIPS.Code) < 11, paste0(0, FIPS.Code), FIPS.Code)) 
+
+cvi_intermediary <- crosswalk_data(data = cvi,
+                          source_scale = "tract_fips",
+                          key = "tract.census.geoid")
+
+cvi_intermediary <- as.data.frame(cvi_intermediary) 
+
+sample2 <- tract_county(cvi_intermediary, "population", "CVI_overall", "afact", "sum")
+
+
+```

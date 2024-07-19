@@ -2,9 +2,9 @@
 
 setwd(config::get("home_path"))
 
-source("scripts/utility_function/crosswalks.R")
-source("scripts/utility_function/county_tract_weight.R")
-source("scripts/utility_function/tract_county_weight.R")
+source("code/crosswalk/crosswalks.R")
+source("code/crosswalk/county_tract_weight.R")
+source("code/crosswalk/tract_county_weight.R")
 
 # Nora's code
 

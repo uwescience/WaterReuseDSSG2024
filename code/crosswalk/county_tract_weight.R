@@ -1,8 +1,8 @@
 
 
 #county to tract
-ct_tr_population <- read.csv("scripts/utility_function/weights_data/2020ct_tr.csv", header = T)[-1,] 
-ct_tr_area <- read.csv("scripts/utility_function/weights_data/2020ct_tr_area.csv", header = T)[-1,] 
+ct_tr_population <- read.csv("./data/2020ct_tr.csv", header = T)[-1,] 
+ct_tr_area <- read.csv("./data/2020ct_tr_area.csv", header = T)[-1,] 
 
 
 
