@@ -1,5 +1,5 @@
 
-crosswalk_data <- function(data, 
+crosswalk_id <- function(data, 
                            source_scale, 
                            key) {
   library(readxl)
@@ -14,9 +14,11 @@ crosswalk_data <- function(data,
   
   tracts_url <- "https://nccsdata.s3.us-east-1.amazonaws.com/geo/xwalk/TRACTX.csv"
   crosswalk_file <- readr::read_csv(tracts_url)
-   
+  
+  
   if (!is.character(data[[source_scale]])) {
     data <- data %>%
+      {{ source_scale }} <- {{ source_scale }}[1]
       mutate({{ source_scale }} := as.character({{ source_scale }}))
   }
   

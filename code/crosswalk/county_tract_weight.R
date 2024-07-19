@@ -23,7 +23,11 @@ ct_tr_population <- process_data(ct_tr_population)
 
 
 
-county_tract <- function(data, weight_type, variable, weight, calc_method){
+county_tract <- function(data, 
+                         weight_type, 
+                         variable, 
+                         weight = "afact", 
+                         calc_method){
    if (!is.data.frame(data)) {
     stop("Input 'data' must be a dataframe.")
   }

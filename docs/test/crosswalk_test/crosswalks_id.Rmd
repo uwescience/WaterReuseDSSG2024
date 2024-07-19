@@ -46,13 +46,13 @@ library(docstring)
 tracts_url <- "https://nccsdata.s3.us-east-1.amazonaws.com/geo/xwalk/TRACTX.csv"
   crosswalk_file <- readr::read_csv(tracts_url)
   
-crosswalk_data <- function(data, 
+crosswalk_id <- function(data, 
                            source_scale, 
                            key) {
   #' Append index column for crosswalks
   #' 
   #' @description
-  #' 'crosswalk_data' returns dataframe with geo-spatial labels appended
+  #' 'crosswalk_id' returns dataframe with geo-spatial labels appended
   #' 
   #' @param data raw data that needs to be converted to a different scale
   #' @param source_scale Character vector. column that contains scale information. 
@@ -73,7 +73,7 @@ crosswalk_data <- function(data,
   #'
   #' @examples
   #' drought_intermediary 
-  #' <- crosswalk_data(drought, 
+  #' <- crosswalk_id(drought, 
   #' source_scale = "county_fips", 
   #'key = "county.census.geoid")
   #' 
@@ -146,11 +146,11 @@ Unlike Part 1 where I appended additional column of target scale, weighting func
 
 ### ⬇️ County to tract
 
-This will take the output of crosswalk_data function as an input.
+This will take the output of crosswalk_id function as an input.
 
 ```{r}
 county_tract <- function(data, weight_type, variable, weight, calc_method){
-  #' @param data input dataset that contains ID column after pass through crosswalk_data function
+  #' @param data input dataset that contains ID column after pass through crosswalk_id function
   #' @param weight_type Character vector. Specify either "population" or "area"
   #' @param variable Variable of interest
   #' @param weight Column name that contains weight values.
@@ -199,7 +199,7 @@ county_tract <- function(data, weight_type, variable, weight, calc_method){
 ```{r}
 drought <- read_excel("../../../data/final_results_dissemination_NDINDC.xlsx")
 drought$county_fips <- as.character(drought$FIPS)
-drought_intermediary <- crosswalk_data(drought,
+drought_intermediary <- crosswalk_id(drought,
                                        source_scale = "county_fips",
                                        key = "county.census.geoid")
 
@@ -262,7 +262,7 @@ cvi <- read.csv("../../../data/CVI Data Excerpts_rename.csv")
 cvi <- cvi %>% 
   mutate(tract_fips = ifelse(nchar(FIPS.Code) < 11, paste0(0, FIPS.Code), FIPS.Code)) 
 
-cvi_intermediary <- crosswalk_data(data = cvi,
+cvi_intermediary <- crosswalk_id(data = cvi,
                           source_scale = "tract_fips",
                           key = "tract.census.geoid")
 

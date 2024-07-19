@@ -19,7 +19,7 @@ process_data <- function(data) {
 tr_ct_population <- process_data(tr_ct_population)
 tr_ct_area <- process_data(tr_ct_area)
 
-tract_county <- function(data, weight_type, variable, weight, calc_method) {
+tract_county <- function(data, weight_type, variable, weight = "afact", calc_method) {
   if (is.data.frame(data)) {
     data <- data %>%
       select( "tract.census.geoid", {{ variable }})
