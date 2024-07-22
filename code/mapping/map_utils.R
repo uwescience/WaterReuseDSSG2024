@@ -23,7 +23,10 @@ check_compatibility <- function(data,
     shape_key %in% names(shapefile) && 
     typeof(data_key) == typeof(shape_key)
   
-  return (check_result)
+  source("code/crosswalk/key_identifier.R")
+  identify_key(data, shapefile)
+  
+  return(check_result)
 }
 
 plot_absolute <- function(data, 
@@ -44,28 +47,28 @@ plot_absolute <- function(data,
   #'
   #' Inputs:
   #' 
-  #' - data (dataframe) - expects a dataframe containing a geometry
+  #' @param data (dataframe) - expects a dataframe containing a geometry
   #' and a variable of interest. Usually, this dataframe will result
   #' from merging (1) a raw data file, indexed by a geographic region
   #' identifier like FIPS, with (2) a shapefile that specifies the
   #' geographic regions in question
   #'
-  #' - variable (string) - a string containing the NAME of the column in
+  #' @param variable (string) - a string containing the NAME of the column in
   #' data that contains the variable that should be used to make the map
   #'
-  #' - caption (string) - a string defining the caption that appears
+  #' @param caption (string) - a string defining the caption that appears
   #' at the bottom right of the map figure
   #'
-  #' - title (string) - the map title
+  #' @param title (string) - the map title
   #'
-  #' - low_color, high_color, na_color (strings) - the colors designating
-  #' the lowest and highest values of variable, respectively, and the
-  #' color that should indicate missing data
+  #' @param low_color (strings) - the colors designating the lowest values of variable
+  #' @param high_color (strings) - the colors designating the highest values of variable
+  #' @param na_color (strings) - the colors indicating missing data
   #'
-  #' map_font (string) - font in the title, caption, legends
+  #' @param map_font (string) - font in the title, caption, legends
   #'
   #'
-  #' Outputs:
+  #' @Outputs:
   #' - a ggplot2 object mapping the shapes defined in the dataset and
   #' color-coding them according to the un-adjusted value of variable
   #'
@@ -102,26 +105,26 @@ plot_percentile <- function(data,
   #' its unmodified value; serves as helper function to map_choropleth()
   #' 
   #' Inputs:
-  #' - data (dataframe) - expects a dataframe containing a geometry
+  #' @param data (dataframe) - expects a dataframe containing a geometry
   #' and a variable of interest. Usually, this dataframe will result
   #' from merging (1) a raw data file, indexed by a geographic region
   #' identifier like FIPS, with (2) a shapefile that specifies the
   #' geographic regions in question
   #' 
-  #' - variable (string) - a string containing the NAME of the column in 
+  #' @param variable (string) - a string containing the NAME of the column in 
   #' data that contains the variable that should be used to make the map
-  #' - caption (string) - a string defining the caption that appears
+  #' @param caption (string) - a string defining the caption that appears
   #' at the bottom right of the map figure
   #' 
-  #' - title (string) - the map title
+  #' @param title (string) - the map title
   #' 
-  #' - low_color, high_color, na_color (strings) - the colors desigating
-  #' the lowest and highest values of variable, respectively, and the 
-  #' color that should indicate missing data
+  #' @param low_color (strings) - the colors designating the lowest values of variable
+  #' @param high_color (strings) - the colors designating the highest values of variable
+  #' @param na_color (strings) - the colors indicating missing data
+  #'
+  #' @param map_font (string) - font in the title, caption, legends
   #' 
-  #' map_font (string) - font in the title, caption, legends
-  #' 
-  #' Outputs:
+  #' @param Outputs:
   #' 
   #' - a ggplot2 object mapping the shapes defined in the dataset and
   #' color-coding them according to the value of variable; instead of
@@ -169,39 +172,39 @@ map_choropleth <- function(data,
   #' Given a dataset, shapefile, and variable of interest, plots a choropleth map
   #' 
   #' Inputs:
-  #' - data (dataframe) - expects a dataframe containing a variable of
+  #' @param data (dataframe) - expects a dataframe containing a variable of
   #'   interest, indexed by a geographic region identifier like FIPS
   #'
-  #' - shape (dataframe) - a shapefile that specifies the
+  #' @param shape (dataframe) - a shapefile that specifies the
   #'   geographic regions in question; must contain a 'geometry' column
   #'
-  #' - data_key (string) - a string that contains the name of column in
+  #' @param data_key (string) - a string that contains the name of column in
   #'   data that should be used to merge it with the shapefile. This
   #'   should be something like "FIPS"
   #'
-  #' - shape_key (string) - a string that contains the name of column in
+  #' @param shape_key (string) - a string that contains the name of column in
   #'   the shapefile that should be used to merge it with the data. This
   #'   should be something like "FIPS"
   #'
-  #' - variable (string) - a string containing the name of the column in
+  #' @param variable (string) - a string containing the name of the column in
   #'   data that contains the variable that should be used to make the map
   #'
-  #' - map_title (string) - the map title
+  #' @param map_title (string) - the map title
   #'
-  #' - map_caption (string) - a string defining the caption that appears
+  #' @param map_caption (string) - a string defining the caption that appears
   #'   at the bottom right of the map figure
   #'
-  #' - map_percentile (boolean) - whether the map should display raw values
+  #' @param map_percentile (boolean) - whether the map should display raw values
   #'   of variable (=FALSE, default) or show which percentile of the
   #'   data distribution the geographic unit in question falls into (=TRUE)
   #'
-  #' - low_color, high_color, na_color (strings) - the colors designating
-  #'   the lowest and highest values of variable, respectively, and the
-  #'   color that should indicate missing data
+  #' @param low_color (strings) - the colors designating the lowest values of variable
+  #' @param high_color (strings) - the colors designating the highest values of variable
+  #' @param na_color (strings) - the colors indicating missing data
   #'
-  #' - map_font (string) - font in the title, caption, legends
+  #' @param map_font (string) - font in the title, caption, legends
   #'
-  #' Outputs:
+  #' @Outputs:
   #' 
   #' - a ggplot2 object mapping the shapes defined in the dataset and
   #'   color-coding them according to the value of variable; instead of
