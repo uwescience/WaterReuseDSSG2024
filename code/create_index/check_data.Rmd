@@ -1,0 +1,23 @@
+---
+title: "check_data"
+output: html_document
+date: "2024-07-19"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(naniar)
+```
+
+
+```{r}
+check_data <- function(final_df) {
+  # Diagnostic to determine number of NAs
+  # Could also map where there is missing data
+  # Check all data types are numeric / can be converted to numeric 
+  # 
+}
+
+
+```
+
