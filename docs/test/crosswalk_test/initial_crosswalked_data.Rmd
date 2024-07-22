@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(pacman)
 
 
-p_load(stars, usmap, raster, exactextractr, tidycensus,tidyverse,sf,data.table,tigris,car,janitor,rmapshaper, terra, qgisprocess)
+p_load(altair, stars, usmap, raster, exactextractr, tidycensus,tidyverse,sf,data.table,tigris,car,janitor,rmapshaper, terra, qgisprocess)
 
 
 ```
@@ -122,7 +122,25 @@ head(final_df)
 
 ```
 
+
 ```{r}
-write_sf(final_df, "joined_shapefile.shp")
+library("altair")
+library("tibble")
+library("purrr")
+library("dplyr")
+
+altair::install_altair()
+```
+```{r}
+
+library(leaflet)
+library(rgdal)
+  
+  
+```
+
+
+```{r}
+# write_sf(final_df, "joined_shapefile.shp")
 ```
 
