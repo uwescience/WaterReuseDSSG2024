@@ -1,6 +1,15 @@
-# I am writing a function that assigns locations to a shape base on the given longitudes and latitudes
+
 
 get_shapes <- function(dataset, longitudes, latitudes, census_year = "2023"){
+  #' 
+  #' @description #this function assigns locations to a shape base on the given longitudes and latitudes
+  #'
+  #' @param dataset 
+  #' @param longitudes 
+  #' @param latitudes 
+  #' @param census_year set at 2023 as a default
+  #'
+  #' 
   # Load the libraries
   require(tigris)
   require(sf)
