@@ -1,8 +1,8 @@
 
 
 #county to tract
-ct_tr_population <- read.csv("scripts/utility_function/weights_data/2020ct_tr.csv", header = T)[-1,] 
-ct_tr_area <- read.csv("scripts/utility_function/weights_data/2020ct_tr_area.csv", header = T)[-1,] 
+ct_tr_population <- read.csv("./data/2020ct_tr.csv", header = T)[-1,] 
+ct_tr_area <- read.csv("./data/2020ct_tr_area.csv", header = T)[-1,] 
 
 
 
@@ -13,7 +13,7 @@ process_data <- function(data) {
     mutate(afact = as.numeric(afact)) %>%
     mutate(tract.census.geoid = paste0(county, tract)) %>%
     rename(county.census.geoid = county) %>%
-    select(county.census.geoid, afact, tract.census.geoid)
+    dplyr::select(county.census.geoid, afact, tract.census.geoid)
   
   return(processed_data)
 }
@@ -23,7 +23,11 @@ ct_tr_population <- process_data(ct_tr_population)
 
 
 
-county_tract <- function(data, weight_type, variable, weight, calc_method){
+county_tract <- function(data, 
+                         weight_type, 
+                         variable, 
+                         weight = "afact", 
+                         calc_method){
    if (!is.data.frame(data)) {
     stop("Input 'data' must be a dataframe.")
   }
