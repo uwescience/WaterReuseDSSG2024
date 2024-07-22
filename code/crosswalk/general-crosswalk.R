@@ -19,6 +19,7 @@ crosswalk <- function(data,
                       calc_method = NULL,
                       output_type = NULL
                       ) {
+
   #' Append index column for crosswalks
   #' 
   #' @description
@@ -55,7 +56,7 @@ crosswalk <- function(data,
   #' @Notes:
   #'   - The function requires at least one non-null argument ('data', 'shapefile', or 'raster') to perform crosswalk operations.
   #'
-    
+  
   if (!is.null(key)) {
     
     crosswalk_id(data = data,
