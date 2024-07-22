@@ -1,6 +1,6 @@
 
 crosswalk_id <- function(data,
-                         data2,
+                         data2 = NULL,
                            source_scale, 
                            key) {
   library(readxl)

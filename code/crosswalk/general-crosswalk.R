@@ -5,7 +5,6 @@ source("code/crosswalk/crosswalk_id.R")
 source("code/crosswalk/county_tract_weight.R")
 source("code/crosswalk/tract_county_weight.R")
 
-
 crosswalk <- function(data, 
                       data_type = NULL,
                       data2 = NULL,
