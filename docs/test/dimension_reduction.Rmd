@@ -6,9 +6,7 @@ date: "2024-07-08"
 
 ## Introduction
 The goal of this note is to organize different options for dimensionality reduction. 
-The user should be able to choose one of these options, or let the pipeline automatically choose the optimal one as a default. To do so, having a set of categories that best describe the input can be helpful.
-
-Dimensionality reduction preserves key features of data but gets rid of redundancy. It also allows users to create a single-index that incorporates complex data sets. 
+The user should be able to choose one of these options, or let the pipeline automatically choose the optimal one as a default. To do so, having a set of categories that best describe the input can be helpful. Dimensionality reduction preserves key features of data but gets rid of redundancy. It also allows users to create a single-index that incorporates complex data sets. 
 
 ## Principal Component Analysis(PCA)
 PCA calculates a new vector that maximizes the variance of the original data. This new vector (PC1) corresponds to the eigenvector of the largest eigenvalue in the variance-covariance matrix.
