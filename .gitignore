@@ -1,6 +1,8 @@
 # Ignore docs files
 _gh_pages
 _site
+/data
+/private
 .ruby-version
 
 # Numerous always-ignore extensions
