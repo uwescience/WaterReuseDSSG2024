@@ -1,5 +1,4 @@
 # This function will use all the mapping functions we created to map
-# any kind of maps
 
 mapper <- function(data = NULL, 
                    shapefile = NULL, 
@@ -36,12 +35,17 @@ mapper <- function(data = NULL,
   # Get the required packages and functions
   require(tidyverse)
   require(usmap)
-  source("map_utils/map_utils.R")
-  source("map_utils/get_shapes.R")
-  source("map_utils/map_points.R")
+  source("code/mapping/map_utils.R")
+  source("code/mapping/get_shapes.R")
+  source("code/mapping/map_points.R")
   
   
   # crop the shapefile if the bbox is not NULL
+  
+  if (is.null(shape_key) && is.null(data_key)){
+    source("code/crosswalk/key_identifier.R")
+    identify_key(data, shapefile)
+  }
   if (!is.null(bbox) & !is.null(shapefile)){
     
     # Define the bounding box
