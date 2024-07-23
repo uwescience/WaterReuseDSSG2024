@@ -3,6 +3,7 @@ convert_geojson_sf <- function(df) {
   # geojson -> shapefile
   # shapefile -> geojson
   require(geojsonsf)
+  require(sf)
   if (inherits(df, "sf")) {
     final_geojson <- sf_geojson(df)
     return(final_geojson)
