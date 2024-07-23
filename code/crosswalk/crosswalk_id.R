@@ -1,6 +1,6 @@
 
 crosswalk_id <- function(data,
-                         data2,
+                         data2 = NULL,
                            source_scale, 
                            key) {
   library(readxl)
@@ -12,8 +12,11 @@ crosswalk_id <- function(data,
   library(dplyr)
   library(roxygen2)
   library(docstring)
+  source("/code/crosswalk/key_identifier.R")
   
   if (!is.null(data2)) {
+    identify_key(data, data2)
+    
     merged_data <- data %>%
       left_join(data, data2, by = setNames(key, source_scale))
     return(merged_data)

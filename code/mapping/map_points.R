@@ -1,19 +1,16 @@
-
-# There are 3 cases for inputs: 
-# 1: Shapefile with a location label (str) AND a dataset with a location label (str). 
-# 2: Dataset with lat, lon columns or a geometry containing lat. 
-# 3: Shapefile that can automatically be mapped with usmap. Please check the package's location data requirements for this. 
 map_points <- function(shapefile, data, location_columns, variable_name, base_unit,
                        map_title, name, bbox) {
-  
-  # Args: 
-  #shapefile: optional file path providing relevant boundaries e.g state, county, HUC. If no file to provide, write NULL 
-  #data: dataset containing points to be visualized on the map 
-  #location_columns: a list of column names (strings) that contain location data e.g c('lat', 'lon') or c('State')
-  #variable_name: a list of column names (string) that contain the variables of interest to be mapped e.g c('saltwater', 'Population Total')
-  #base_unit: a string with the base unit to be drawn on the usmap e.g 'counties'
-  # Outputs; 
-  #Points on a map of the U.S. Will produce a map for each variable name listed in variable_name
+  #' @description
+  #' There are 3 cases for inputs: 
+  #' 1: Shapefile with a location label (str) AND a dataset with a location label (str). 
+  #' 2: Dataset with lat, lon columns or a geometry containing lat. 
+  #' 3: Shapefile that can automatically be mapped with usmap. Please check the package's location data requirements for this. 
+  #' @param shapefile optional file path providing relevant boundaries e.g state, county, HUC. If no file to provide, write NULL 
+  #' @param data: dataset containing points to be visualized on the map 
+  #' @param location_columns: a list of column names (strings) that contain location data e.g c('lat', 'lon') or c('State')
+  #' @param variable_name: a list of column names (string) that contain the variables of interest to be mapped e.g c('saltwater', 'Population Total')
+  #' @param base_unit: a string with the base unit to be drawn on the usmap e.g 'counties'
+  #' @Outputs Points on a map of the U.S. Will produce a map for each variable name listed in variable_name
   
   #For case type 1 
   if (length(location_columns) == 1) {

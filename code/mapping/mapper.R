@@ -1,5 +1,4 @@
 # This function will use all the mapping functions we created to map
-# any kind of maps
 
 mapper <- function(data = NULL, 
                    shapefile = NULL, 
@@ -20,28 +19,33 @@ mapper <- function(data = NULL,
                    base_unit = NULL,
                    name = NULL,
                    bbox = NULL){
-  # data: The dataset that contains the column of interest
-  # shapefile: A shapefile with FIPS
-  # location: a vector of column names of the coordinates
-  # variable_name: A column name of the variable of interest.
-  # data_key: A key in the data table that can be used to merge with the shapefiles e.g. FIPS
-  # shape_key: A key in the shapefile use to my with data e.g. GEOID
-  # plot_all: if TRUE, it maps both the choropleth and points if all the required variables are available
-  # plot: Takes either "choropleth" or "points" to specify either points or choropleth
-  # map_path: Specify a folder path where you will save the maps
-  # map_title: A string of the title of the map.
-  # base_unit: a string with the base unit to be drawn on the usmap e.g 'counties'
-  # bbox: a vector of bounding box coordinates (xmin, ymin, xmax, ymax) to crop the shapefile
+  #' @param data: The dataset that contains the column of interest
+  #' @param shapefile: A shapefile with FIPS
+  #' @param location: a vector of column names of the coordinates
+  #' @param variable_name: A column name of the variable of interest.
+  #' @param data_key: A key in the data table that can be used to merge with the shapefiles e.g. FIPS
+  #' @param shape_key: A key in the shapefile use to my with data e.g. GEOID
+  #' @param plot_all: if TRUE, it maps both the choropleth and points if all the required variables are available
+  #' @param plot: Takes either "choropleth" or "points" to specify either points or choropleth
+  #' @param map_path: Specify a folder path where you will save the maps
+  #' @param map_title: A string of the title of the map.
+  #' @param base_unit: a string with the base unit to be drawn on the usmap e.g 'counties'
+  #' @param bbox: a vector of bounding box coordinates (xmin, ymin, xmax, ymax) to crop the shapefile
   
   # Get the required packages and functions
   require(tidyverse)
   require(usmap)
-  source("map_utils/map_utils.R")
-  source("map_utils/get_shapes.R")
-  source("map_utils/map_points.R")
+  source("code/mapping/map_utils.R")
+  source("code/mapping/get_shapes.R")
+  source("code/mapping/map_points.R")
   
   
   # crop the shapefile if the bbox is not NULL
+  
+  if (is.null(shape_key) && is.null(data_key)){
+    source("code/crosswalk/key_identifier.R")
+    identify_key(data, shapefile)
+  }
   if (!is.null(bbox) & !is.null(shapefile)){
     
     # Define the bounding box
