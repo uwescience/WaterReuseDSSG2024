@@ -1,0 +1,23 @@
+
+```{r}
+print(getwd())
+library(readr)
+cvi <- read_csv("../../../data/CVI Data Excerpts_rename.csv")
+
+source("../../../code/create_index/get_pca_weights.R")
+
+cvi <- as.data.frame(cvi)
+cvi <- na.omit(cvi)
+
+cvi_weights <- get_pca_weights(cvi, 
+                             excluded_cols = c("State", "County", "FIPS Code", "Geographic Coordinates"), 
+                             scale=TRUE,
+                             verbose=FALSE)
+
+source("../../../code/create_index/weighted_average.R")
+
+cvi_index <- get_weighted_average(cvi, 
+                                cvi_weights, 
+                                excluded_cols = c("State", "County", "FIPS Code", "Geographic Coordinates"))
+```
+
