@@ -1,10 +1,13 @@
-convert_to_geojson <- function(final_df) {
-  # Convert data from a shapefile or csv to a geojson 
-  # Wrapper function for geojsonio functions
+convert_geojson_sf <- function(df) {
+  # Wrapper function for:
+  # geojson -> shapefile
+  # shapefile -> geojson
   require(geojsonsf)
-  if (inherits(final_df, "sf")) {
-    final_geojson <- sf_geojson(final_df)
+  if (inherits(df, "sf")) {
+    final_geojson <- sf_geojson(df)
+    return(final_geojson)
+  } else {
+    final_sf <- read_sf(df)
+    return(final_sf)
   }
-  return(final_geojson)
 }
-
