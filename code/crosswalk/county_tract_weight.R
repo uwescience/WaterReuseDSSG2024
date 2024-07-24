@@ -25,38 +25,40 @@ ct_tr_population <- process_data(ct_tr_population)
 
 county_tract <- function(data, 
                          weight_type, 
-                         variable, 
                          weight = "afact", 
                          calc_method){
    if (!is.data.frame(data)) {
     stop("Input 'data' must be a dataframe.")
-  }
+   }
+  
+  numeric_vars <- purrr::keep(data, is.numeric) %>% names()
+  
   
   if (weight_type == "population") {
     data <- data %>%
       left_join(ct_tr_population, by = "tract.census.geoid")
-  }
-  if (weight_type == "area") {
+  } else if (weight_type == "area") {
     data <- data %>%
       left_join(ct_tr_area, by = "tract.census.geoid")
-  }
+  } 
+  
+  print(head(data))
   if (tolower(calc_method) == "weighted_mean") {
     processed_data <- data %>%
       group_by(tract.census.geoid) %>%
-      mutate(!!paste0(variable, "_weighted") := weighted.mean(!!sym(variable), !!sym(weight), na.rm = TRUE))
-  } 
-  else if (tolower(calc_method) == "weighted_sum") {
+      mutate(across(all_of(numeric_vars), ~ weighted.mean(., !!sym(weight), na.rm = TRUE),
+                    .names = "{.col}_weighted"))
+  } else if (tolower(calc_method) == "weighted_sum") {
     processed_data <- data %>%
       group_by(tract.census.geoid) %>%
-      mutate(!!paste0(variable, "_sum") := sum(!!sym(variable) * !!sym(weight), na.rm = TRUE))
-  } 
-  else if (tolower(calc_method) == "sum") {
+      mutate(across(all_of(numeric_vars), ~ sum(., !!sym(weight), na.rm = TRUE),
+                    .names = "{.col}_sum"))
+  } else if (tolower(calc_method) == "sum") {
     processed_data <- data %>%
       group_by(tract.census.geoid) %>%
-      mutate(!!paste0(variable, "_sum") := sum(!!sym(variable), na.rm = TRUE))
-  } 
-  
-  else {
+      mutate(across(all_of(numeric_vars), ~ sum(., na.rm = TRUE),
+                    .names = "{.col}_sum"))
+  } else {
     stop("Invalid value for 'calc_method'. Please specify either 'weighted_mean', 'weighted_sum', or 'sum'.")
   }
   

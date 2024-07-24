@@ -1,0 +1,35 @@
+---
+title: "Crosswalk User Setup"
+output: html_document
+date: "2024-07-24"
+---
+
+
+## Set up
+In order to source our functions, folder structure in the user's computer should be identical with the structure we have in Github. 
+One way of doing this is to clone the entire repository. If you're an R Studio user, click on the "Terminal" tab right next to "Console" and type in `<gh repo clone uwescience/WaterReuseDSSG2024>`.
+Once done, execute the next lines of code to check your currenr directory and source codes.
+
+```{r}
+library(pacman)
+p_load(altair, stars, usmap, raster, exactextractr, tidycensus,tidyverse,sf,data.table,tigris,car,janitor,rmapshaper, terra, qgisprocess, docstring, dplyr)
+
+print(getwd())
+source("code/crosswalk/general-crosswalk.R")
+
+source("code/mapping/mapper.R")
+
+```
+
+## Help functions
+```{r}
+docstring(crosswalk)
+```
+
+
+## Load datasets of interest
+```{r}
+
+```
+
+## 
