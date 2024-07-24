@@ -1,0 +1,126 @@
+---
+title: "plotting_layers"
+author: "Mbye Sallah"
+date: "2024-07-23"
+output: html_document
+---
+
+#### Import libraries
+```{r}
+library(tidyverse)
+library(leaflet)
+library(sf)
+library(rjson)
+```
+
+# See all the functions in leaflet
+```{r}
+# ls("package:leaflet")
+```
+
+#### Create a map widget
+```{r}
+leaflet_map <- leaflet() %>% 
+  addTiles() %>%
+  setView(-96, 37.8, zoom = 4)
+leaflet_map
+```
+
+
+#### read the GeoJSON file
+```{r}
+counties_sf <- read_sf("/Users/mbye/DSSG/WaterReuseDSSG2024/geo-ndxr/prototype-dev/test_mapping/test/counties.geojson")
+```
+
+
+#### Plot geojson shapefile on map
+```{r}
+leaflet_shapes_map <-  leaflet_map %>% 
+  addPolygons(data = counties_sf)
+leaflet_shapes_map
+```
+
+
+#### Test mapping choropleth
+##### Generate a new column in counties sf with values between 0 to 1
+```{r}
+counties_sf <-  counties_sf %>% 
+  mutate(index_value = runif(n()))
+```
+
+
+
+#### Create a color palette based on the index_value column
+```{r}
+pal <- colorNumeric(
+  palette = "YlGnBu",
+  domain = counties_sf$index_value
+)
+```
+
+
+#### Create the leaflet map and add polygons with the index_value column
+
+```{r}
+leaflet_shapes_map <- leaflet(counties_sf) %>% 
+  addTiles() %>% 
+  addPolygons(
+    fillColor = ~pal(index_value),
+    fillOpacity = 0.7,
+    color = "black",
+    weight = 1,
+    opacity = 1,
+    highlight = highlightOptions(
+      weight = 3,
+      color = "#666",
+      fillOpacity = 0.7,
+      bringToFront = TRUE
+    ),
+    label = ~paste("Index Value:", round(index_value, 2))
+  ) %>% 
+  addLegend(
+    pal = pal,
+    values = ~index_value,
+    title = "Index Value",
+    opacity = 0.7,
+    position = "bottomright"
+  ) %>% setView(-96, 37.8, zoom = 4)
+
+
+# Display the map
+leaflet_shapes_map
+```
+
+
+#### Save the map in html
+```{r}
+saveWidget(leaflet_shapes_map,
+           file = "/Users/mbye/DSSG/WaterReuseDSSG2024/geo-ndxr/prototype-dev/test_mapping/index.html")
+```
+
+
+#### Do the same thing using the web_mapper function
+```{r}
+source("~/DSSG/WaterReuseDSSG2024/geo-ndxr/prototype-dev/web_mapper.R")
+
+#### Map index data
+web_mapper(data_with_shapes = counties_sf,
+           index_value_column = "index_value",
+           name_column = "NAME", 
+           map_path = "~/DSSG/WaterReuseDSSG2024/private/maps", 
+           map_name = "index1")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
