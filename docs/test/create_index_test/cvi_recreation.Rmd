@@ -19,5 +19,19 @@ source("../../../code/create_index/weighted_average.R")
 cvi_index <- get_weighted_average(cvi, 
                                 cvi_weights, 
                                 excluded_cols = c("State", "County", "FIPS Code", "Geographic Coordinates"))
+
+location_df <- cvi %>% select(c("State", "County", "FIPS Code", "Geographic Coordinates")) %>% cbind(cvi_index)
+
+# get shapefile
+
+library(tigris)
+
+tracts_df <- tracts(cb=TRUE, year=2020)
+
+location_df <- location_df %>% left_join(tracts_df, join_by(`FIPS Code` == GEOID))
+
+src("")
+
+web_mapper(location_df)
 ```
 
