@@ -1,0 +1,151 @@
+---
+title: "check_data"
+output: html_document
+date: "2024-07-19"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(naniar)
+library(geojsonio)
+library(sf)
+library(naniar)
+library(dplyr)
+library(BBmisc)
+```
+```{r}
+#plot number of missing for each variable 
+  plot <- gg_miss_var(final_df)
+  
+  #proportions of missings in data, variables, and cases
+  prop <- miss_prop_summary(final_df)
+  
+  #which rows and columns contain missings?
+  na_matrix <- where_na(final_df)
+  
+```
+
+
+```{r}
+check_normalize_data <- function(final_df, location_columns) {
+  # Diagnostic to determine number of NAs
+  # Could also map where there is missing data??
+  # Check all data types are numeric / can be converted to numeric 
+  # location_columns are shapes??
+  # normalize data 
+  require(naniar)
+  require(BBmisc)
+  require(dplyr)
+  
+  print(gg_miss_var(final_df))
+  
+  #pipeline to convert columns to numeric type
+  final_df_no_locations <- final_df %>% 
+    dplyr::select(-any_of(location_columns))
+  
+  for (col in (colnames(final_df_no_locations))) {
+    if (!is.numeric(final_df_no_locations[[col]])) {
+      final_df_no_locations[[col]] <- as.numeric(final_df_no_locations[[col]])
+    }
+  }
+  
+  #normalize all non-location columns 
+  final_df_normalized <- normalize(final_df_no_locations)
+  
+  #select out location columns from original df
+  location_df <- final_df %>%
+    select(all_of(location_columns))
+  
+  #add back location columns to normalized df
+  final_df_combined_normalized <- bind_cols(location_df, final_df_normalized)
+  
+  return(final_df_combined_normalized)
+}
+
+```
+
+
+```{r}
+convert_to_geojson <- function(df) {
+  # Wrapper function for:
+  # geojson -> shapefile
+  # shapefile -> geojson
+  require(geojsonsf)
+  if (inherits(df, "sf")) {
+    final_geojson <- sf_geojson(df)
+    return(final_geojson)
+  } else {
+    final_sf <- read_sf(df)
+    return(final_sf)
+  }
+}
+
+```
+
+```{r}
+library(geojsonR)
+library(httr)
+url <- "https://raw.githubusercontent.com/glynnbird/usstatesgeojson/master/california.geojson"
+response <- GET(url)
+geojson_string <- content(response, "text")
+geojson_example <- read_sf(url) 
+
+
+aquifers <- st_read(dsn = "~/Downloads/aquifers_us/us_aquifers.shp")
+cwns <- read.csv("~/Downloads/CWNS_merged.csv")
+cwns <- cwns %>%
+  select(MGD2022_total, 'LATITUDE', LONGITUDE, OWNER_TYPE)
+
+```
+
+```{r}
+
+head(geojson_example)
+test_sf <- convert_to_geojson(geojson_example)
+head(cwns)
+
+head(cwns)
+
+check_normalize_data(cwns, location_columns = c('LATITUDE', 'LONGITUDE'))
+
+location_columns = c("LATITUDE", "LONGITUDE")
+final_df_no_locations <- cwns %>% 
+    select(-all_of(location_columns))
+final_df_no_locations
+```
+  
+  
+```{r}
+#pipeline to convert columns to numeric type
+colnames(cwns)
+location_columns <- c("LATITUDE", "LONGITUDE") 
+final_df <- cwns
+
+final_df_no_locations <- final_df %>% 
+  select(-all_of(location_columns))
+
+head(final_df_no_locations)
+  
+for (col in (colnames(final_df_no_locations))) {
+    if (!is.numeric(final_df_no_locations[[col]])) {
+      final_df_no_locations[[col]] <- as.numeric(final_df_no_locations[[col]])
+    }
+}
+
+head(final_df_no_locations)
+  
+  #normalize all non-location columns 
+  final_df_normalized <- normalize(final_df_no_locations)
+  
+  #select out location columns from original df
+  location_df <- final_df %>%
+    select(all_of(location_columns))
+  location_df
+  
+  #add back location columns to normalized df
+  final_df_combined_normalized <- bind_cols(location_df, final_df_normalized)
+  head(final_df_combined_normalized)
+  
+```
+
+
