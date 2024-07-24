@@ -12,7 +12,7 @@ crosswalk_id <- function(data,
   library(dplyr)
   library(roxygen2)
   library(docstring)
-  source("/code/crosswalk/key_identifier.R")
+  source("code/crosswalk/key_identifier.R")
   
   if (!is.null(data2)) {
     identify_key(data, data2)
