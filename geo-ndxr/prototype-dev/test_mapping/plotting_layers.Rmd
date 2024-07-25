@@ -106,9 +106,7 @@ source("~/DSSG/WaterReuseDSSG2024/geo-ndxr/prototype-dev/web_mapper.R")
 #### Map index data
 web_mapper(data_with_shapes = counties_sf,
            index_value_column = "index_value",
-           name_column = "NAME", 
-           map_path = "~/DSSG/WaterReuseDSSG2024/private/maps", 
-           map_name = "index1")
+           name_column = "NAME")
 ```
 
 
