@@ -7,7 +7,7 @@ source("code/crosswalk/tract_county_weight.R")
 
 crosswalk <- function(data, 
                       data_type = NULL,
-                      data2 = NULL,
+                      table = NULL,
                       shapefile = NULL, 
                       raster = NULL,
                       source_scale = NULL, 
@@ -28,12 +28,12 @@ crosswalk <- function(data,
   #'        point data (containing lat/lon columns), a shapefile, or a raster.
   #' @param data_type: Type of 'data'. Options include "points" (lat/lon data), "shapes" (shapefile),
   #'              or "raster" (raster data). Default is NULL.
-  #' @param data2: Additional data source containing the same key as 'data'. Only applicable if 'key' argument is not NULL.
+  #' @param table: Additional data source containing the same key as 'data'. Only applicable if 'key' argument is not NULL.
   #' @param shapefile: Shapefile containing target geometries to be combined with 'data' (no key required).
   #' @param raster: Raster data to be combined with 'data' (no key required).
   #' @param source_scale: Name(s) of location column(s) in the original data. Should be a list if multiple columns.
   #' @param key: Key identifier for crosswalking to a new census data scale or between datasets. 
-  #'        Should be sourced from a list of column names from 'data/crosswalk_file' or 'data2'.
+  #'        Should be sourced from a list of column names from 'data/crosswalk_file' or 'table'.
   #' @param method: Method for aggregation if 'data' is being crosswalked to another scale or dataset. 
   #'           Options: "area" or "population". Defaults to area prioritization.
   #' @param variable: List of variable(s) in 'data' that require weighting or aggregation.
@@ -102,7 +102,7 @@ crosswalk <- function(data,
   
   else if (!is.null(weight_type) && !is.null(variable) && !is.null(calc_method)) {
     data_id <- crosswalk_id(data = data,
-                            data2 = NULL,
+                            data2 = table,
                             source_scale = source_scale,
                             key = key)
     county_tract(data = data, 

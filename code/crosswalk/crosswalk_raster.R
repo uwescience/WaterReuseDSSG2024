@@ -1,4 +1,4 @@
-crosswalk_raster <- function(data1, data2, method = "area", output_type = NULL, points = FALSE) {
+crosswalk_raster <- function(data1, data2, method = "area", points = FALSE) {
   #Args: 
     #data1: file of type raster
     #data2: point shapefile, polygon shapefile, or raster file
@@ -34,16 +34,16 @@ crosswalk_raster <- function(data1, data2, method = "area", output_type = NULL, 
   }
   
   # Function for Raster/Shapefile
-  raster_shapefile_join <- function(raster, shapefile, output_type) {
-    if (output_type == "shapefile") {
-      extracted_values <- exact_extract(raster, shapefile, "mean")  # Example: mean values
+  raster_shapefile_join <- function(raster, shapefile) {
+      if (method == "area") {
+        extracted_values <- exact_extract(raster, shapefile, "mean")  # mean values preserve area
+        shapefile$extracted_values <- extracted_values
+        return(shapefile)
+      }
+    else {
+      extracted_values <- exact_extract(raster, shapefile, "sum") # sum preserves population
       shapefile$extracted_values <- extracted_values
       return(shapefile)
-    } else if (output_type == "raster") {
-      shapefile_rasterized <- rasterize(shapefile, raster)
-      return(shapefile_rasterized)
-    } else {
-      stop("Invalid output type for raster/shapefile combination.")
     }
   }
   
@@ -53,7 +53,7 @@ crosswalk_raster <- function(data1, data2, method = "area", output_type = NULL, 
   } else if (inherits(data1, "Raster") && inherits(data2, "sf") && points == "points") {
     return(raster_point_join(data1, data2))
   } else if (inherits(data1, "Raster") && inherits(data2, "sf")) {
-    return(raster_shapefile_join(data1, data2, output_type))
+    return(raster_shapefile_join(data1, data2))
   } else {
     stop("Unsupported data types.")
   }

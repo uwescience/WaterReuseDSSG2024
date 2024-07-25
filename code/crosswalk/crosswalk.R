@@ -15,8 +15,7 @@ crosswalk <- function(data,
                       method = NULL, 
                       variable = NULL,
                       weight_variable = NULL,
-                      calc_method = NULL,
-                      output_type = NULL
+                      calc_method = NULL
                       ) {
 
   #' Append index column for crosswalks
