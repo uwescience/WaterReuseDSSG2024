@@ -24,12 +24,22 @@ web_mapper <- function(data_with_shapes,
   require(leaflet)
   require(htmltools)
   
+  # Check if map_path is NULL and set it to the current directory
+  if (is.null(map_path)) {
+    map_path <- getwd()
+  }
+  
+  # Check if map_name is NULL and set it to index_value_column
+  if (is.null(map_name)) {
+    map_name <- index_value_column
+  }
+  
   # Create a color palette based on the index value
   pal <- colorNumeric(
     palette = "YlGnBu",
     domain = data_with_shapes[[index_value_column]]
   )
-
+  
   # Create the web index mapper
   index_map <- leaflet(data_with_shapes) %>%
     addTiles() %>%
@@ -60,11 +70,9 @@ web_mapper <- function(data_with_shapes,
     ) %>% 
     # Zoom the map to mainly focus on the US
     setView(-96, 37.8, zoom = 4)
-
+  
   # Save the map to an html file
   save_html(index_map, 
-            file = paste0(map_path, "/", map_name, ".html" ))
+            file = file.path(map_path, paste0(map_name, ".html")))
   return(index_map)
 }
-
-
