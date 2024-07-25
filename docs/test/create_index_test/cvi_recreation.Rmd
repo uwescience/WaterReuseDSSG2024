@@ -7,10 +7,14 @@ cvi <- read_csv("../../../data/CVI Data Excerpts_rename.csv")
 source("../../../code/create_index/get_pca_weights.R")
 
 cvi <- as.data.frame(cvi)
+
+cvi <- cvi %>% mutate(across(everything(), ~ ifelse(is.na(.), median(., na.rm = TRUE), .)))
+
 cvi <- na.omit(cvi)
 
 cvi_weights <- get_pca_weights(cvi, 
-                             excluded_cols = c("State", "County", "FIPS Code", "Geographic Coordinates"), 
+                             excluded_cols = 
+                               c("State", "County", "FIPS Code", "Geographic Coordinates"), 
                              scale=TRUE,
                              verbose=FALSE)
 
@@ -19,5 +23,21 @@ source("../../../code/create_index/weighted_average.R")
 cvi_index <- get_weighted_average(cvi, 
                                 cvi_weights, 
                                 excluded_cols = c("State", "County", "FIPS Code", "Geographic Coordinates"))
+
+location_df <- cvi %>% select(c("State", "County", "FIPS Code", "Geographic Coordinates")) %>% cbind(cvi_index)
+
+# get shapefile
+
+library(tigris)
+
+tracts_df <- tracts(cb=TRUE, year=2020)
+
+location_df <- left_join(tracts_df, location_df, by = c("GEOID"="FIPS Code"))
+
+src("~/Desktop/WaterReuseDSSG2024/geo-ndxr/prototype-dev/web_mapper.R")
+
+location_df <-st_as_sf(location_df)
+
+web_mapper(location_df, name_column = "County", index_value_column = "cvi_index", map_path = "~/Desktop", map_name = "test")
 ```
 
