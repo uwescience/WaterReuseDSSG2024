@@ -1,10 +1,11 @@
-crosswalk_raster <- function(data1, data2, method = "area", points = FALSE) {
+crosswalk_raster <- function(data, target, location_columns = NULL, extensive = FALSE) {
+  require(raster)
   #Args: 
     #data1: file of type raster
     #data2: point shapefile, polygon shapefile, or raster file
-    #method: "area" or "population", informs how combination is done (avg vs. sum)
-    #output_type: required only for raster/shapefile combination. Either "raster" or "shapefile"
-    #points: default FALSE. Set to TRUE if data1 contains point data (lat, lon)
+    #location_columns: 
+    #extensive: extensive = TRUE (spatially extensive, e.g population) or 
+                #extensive = FALSE (spatially intensive, e.g population density) 
   #Output: 
     # Joined/combined dataframe from raster and other file
   
@@ -13,19 +14,18 @@ crosswalk_raster <- function(data1, data2, method = "area", points = FALSE) {
     data2 <- st_transform(data2, st_crs(data1))
   }
   
-  combine_rasters <- function(raster1, raster2, method) {
-    if (method == "area") {
-      combined <- (raster1 + raster2) / 2  # Example: averaging the rasters
-    } else if (method == "population") {
-      combined <- raster1 + raster2  # Example: summing the rasters
-    } else {
-      stop("Invalid method for raster combination.")
-    }
+  combine_rasters <- function(raster1, raster2, extensive) {
+    if (extensive == FALSE) {
+      combined = mosaic(raster1, raster2, fun = mean)
+    } else if (extensive == TRUE) {
+      combined = mosaic(raster1, raster2, fun = max)
+    } 
     return(combined)
   }
   
   # Function for Raster/Point
-  raster_point_join <- function(raster, points) {
+  raster_point_join <- function(points, raster, location_columns) {
+    points <- st_as_sf(points, coords = location_columns, crs = st_crs(target))
     point_values <- exact_extract(raster, points, fun = "mean", progress = FALSE)
     point_values <- unlist(point_values)
     point_values[is.na(point_values)] <- 0  # Handle NA values
@@ -35,7 +35,7 @@ crosswalk_raster <- function(data1, data2, method = "area", points = FALSE) {
   
   # Function for Raster/Shapefile
   raster_shapefile_join <- function(raster, shapefile) {
-      if (method == "area") {
+      if (extensive == FALSE) {
         extracted_values <- exact_extract(raster, shapefile, "mean")  # mean values preserve area
         shapefile$extracted_values <- extracted_values
         return(shapefile)
@@ -48,13 +48,13 @@ crosswalk_raster <- function(data1, data2, method = "area", points = FALSE) {
   }
   
   # Determine the types of input data and call the appropriate function
-  if (inherits(data1, "Raster") && inherits(data2, "Raster")) {
-    return(combine_rasters(data1, data2, method))
-  } else if (inherits(data1, "Raster") && inherits(data2, "sf") && points == "points") {
-    return(raster_point_join(data1, data2))
-  } else if (inherits(data1, "Raster") && inherits(data2, "sf")) {
-    return(raster_shapefile_join(data1, data2))
+  if (inherits(data, "Raster") && inherits(target, "Raster")) {
+    return(combine_rasters(data, target, extensive))
+  } else if (inherits(target, "Raster") && length(location_columns) == 2) {
+    return(raster_point_join(data, target, location_columns))
+  } else if (inherits(data, "Raster") && inherits(target, "sf")) {
+    return(raster_shapefile_join(data, target))
   } else {
-    stop("Unsupported data types.")
+    stop("Unsupported data types. Check inputs.")
   }
 }
