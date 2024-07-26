@@ -45,8 +45,9 @@ apply_weight <- function(data, source_scale = NULL,
   } else if (tolower(method) == "weighted_mean") {
     processed_data <- joined_data %>%
       group_by({{ target_scale }} ) %>%
+      mutate(length = count( {{ target_scale }}))
       mutate(across(all_of(variable), 
-                    ~ weighted.mean(.x, weight_value, na.rm = TRUE),
+                    ~ (sum(.x * as.numeric(weight_value), na.rm = TRUE)/length),
                     .names = "{.col}_weighted.mean"))
     
   } else if (tolower(method) == "sum") {
@@ -71,7 +72,7 @@ apply_weight <- function(data, source_scale = NULL,
 }
 docstring(apply_weight)
 
-apply_weight(data = cvi, 
+sample <- apply_weight(data = cvi, 
               weight_data = tr_ct_area, 
               source_scale = "FIPS Code", 
               key = "tract.census.geoid",
