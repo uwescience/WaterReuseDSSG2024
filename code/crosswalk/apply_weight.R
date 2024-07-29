@@ -38,17 +38,15 @@ apply_weight <- function(data, source_scale = NULL,
   if (tolower(method) == "weighted_sum") {
     processed_data <- joined_data %>%
       group_by( {{ target_scale }} ) %>%
-      mutate(across(all_of(variable), 
-                    ~ sum(.x * 'weight_value', na.rm = TRUE),
+      summarize(across(all_of(variable), 
+                    ~ sum(.x * weight_value, na.rm = TRUE),
                     .names = "{.col}_weighted.sum")) 
     
   } else if (tolower(method) == "weighted_mean") {
     processed_data <- joined_data %>%
       group_by({{ target_scale }} ) %>%
-      mutate(length = count( {{ target_scale }}))
-      mutate(across(all_of(variable), 
-                    ~ (sum(.x * as.numeric(weight_value), na.rm = TRUE)/length),
-                    .names = "{.col}_weighted.mean"))
+    summarize(across(all_of(variable), ~ weighted.mean(., !!sym(weight_value), na.rm = TRUE),
+                     .names = "{.col}_weighted"))
     
   } else if (tolower(method) == "sum") {
     processed_data <- joined_data %>%
@@ -78,6 +76,6 @@ sample <- apply_weight(data = cvi,
               key = "tract.census.geoid",
               target_scale = "county.census.geoid",
               weight_value = "afact",
-              method = "weighted_mean",
+              method = "weighted_sum",
               variable = c("CVI_overall", "CVI_base_all"))
 

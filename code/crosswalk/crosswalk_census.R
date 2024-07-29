@@ -16,25 +16,36 @@ pm_tr_area <- read.csv("./code/crosswalk/weights_data/2020pm_tr_area.csv", heade
 tr_pm_population <- read.csv("./code/crosswalk/weights_data/2020tr_pm.csv", header = TRUE)[-1,]
 tr_pm_area <- read.csv("./code/crosswalk/weights_data/2020tr_pm_area.csv", header = TRUE)[-1,]
 
+
+process_data <- function(data) {
+  library(dplyr)
+  data$tract <- gsub("\\.", "", data$tract)
+  processed_data <- data %>%
+    mutate(afact = as.numeric(afact)) %>%
+    mutate(tract.census.geoid = paste0(county, tract)) %>%
+    rename(county.census.geoid = county) %>%
+    dplyr::select(county.census.geoid, afact, tract.census.geoid)
+  
+  return(processed_data)
+}
+
+
 # Process data function
 process_data <- function(data) {
-  if ("tract" %in% names(data)) {
-    data$tract <- gsub("\\.", "", data$tract)
-  } 
   if ("county" %in% names(data) && "tract" %in% names(data)) {
+    data$tract <- gsub("\\.", "", data$tract)
     data <- data %>%
-      mutate(tract.census.geoid = paste0(county, tract))
+      mutate(tract.census.geoid = paste0(county, tract)) %>%
+      rename(county.census.geoid = county) %>%
+    afact <- as.numeric(afact)
   } 
-  if ("county" %in% names(data) ) {
-    data <- data %>%
-      rename_with(~ifelse(. %in% "county", "county.census.geoid", .),
-                  .cols = "county") 
-  } 
+
   if ("puma22" %in% names(data)) {
     data <- data %>%
       rename_with(~ifelse(. %in% "puma22", "puma.census.geoid", .),
                   .cols = "puma22")
   } 
+
   return(data) }
 
 
@@ -55,13 +66,34 @@ crosswalk_census <- function(data,
                              weight_by, 
                              method,
                              variable) {
+  #' @param data dataframe input
+  #' @param source_scale character vector. should be one from the list. 
+  #'      "tract.census.geoid"
+  #'      "county.census.geoid"
+  #'      "puma.census.geoid"
+  #' @param target_scale character vector. should be one from the list. 
+  #'      "tract.census.geoid"
+  #'      "county.census.geoid"
+  #'      "puma.census.geoid"
+  #' @param weight_by values to be weighted by. "population" or "area"
+  #' @param method aggregation or apportioning method. "weighted_mean", "weighted_sum", "sum", and "mean"
+  #' @param variable a list of variables that need to be transformed into a different scale
+  #' @examples 
+  #' crosswalk_census(cvi, 
+  #'           source_scale = "tract.census.geoid", 
+  #'          target_scale = "county.census.geoid", 
+  #'          weight_by = "population", 
+  #'          method = "mean", 
+  #'          variable = "CVI_overall")
+  #'          
+  #'          
   if (!is.data.frame(data)) {
     stop("Input 'data' must be a dataframe.")
   }
   
   if (source_scale == "county.census.geoid" && target_scale == "tract.census.geoid") {
     if (weight_by == "population") {
-      processed_data<-apply_weight(data = data,
+      processed_data <- apply_weight(data = data,
                                    method = method,
                                    source_scale = source_scale,
                                    weight_data = ct_tr_population, 
@@ -90,7 +122,7 @@ crosswalk_census <- function(data,
                                    variable = variable,
                                    weight_value = "afact")
     } else if (weight_by == "area") {
-      processed_data<-apply_weight(data = data,
+      processed_data <- apply_weight(data = data,
                                    method = method,
                                    source_scale = source_scale,
                                    weight_data = tr_ct_population, 
@@ -101,7 +133,7 @@ crosswalk_census <- function(data,
     }
   } else if (source_scale == "puma.census.geoid" && target_scale == "tract.census.geoid") {
     if (weight_by == "population") {
-      processed_data<-apply_weight(data = data,
+      processed_data <- apply_weight(data = data,
                                    method = method,
                                    source_scale = source_scale,
                                    weight_data = pm_tr_population, 
@@ -110,7 +142,7 @@ crosswalk_census <- function(data,
                                    variable = variable,
                                    weight_value = "afact")
     } else if (weight_by == "area") {
-      processed_data<-apply_weight(data = data,
+      processed_data <- apply_weight(data = data,
                                    method = method,
                                    source_scale = source_scale,
                                    weight_data = pm_tr_area, 
@@ -121,7 +153,7 @@ crosswalk_census <- function(data,
     }
   } else if (source_scale == "tract.census.geoid" && target_scale == "puma.census.geoid") {
     if (weight_by == "population") {
-      processed_data<-apply_weight(data = data,
+      processed_data <- apply_weight(data = data,
                                    method = method,
                                    source_scale = source_scale,
                                    weight_data = tr_pm_population, 
@@ -130,7 +162,7 @@ crosswalk_census <- function(data,
                                    variable = variable,
                                    weight_value = "afact")
     } else if (weight_by == "area") {
-      processed_data<-apply_weight(data = data,
+      processed_data <- apply_weight(data = data,
                                    method = method,
                                    source_scale = source_scale,
                                    weight_data = tr_pm_area, 
