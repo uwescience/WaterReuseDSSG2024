@@ -1,12 +1,18 @@
 crosswalk_geom <- function(data, target, location_columns = NULL, extensive = FALSE, join_method = NULL) {
   
-  # Args: 
-    # data: point data (lat, lon) or a shapefile containing shapes (polygons, lines, etc.)
-    # target: shapefile containing shapes (polygons, lines, etc.). This is for the target boundaries/geographic levels (assumes larger than the starting level I think). 
-    # location_columns: required for points (e.g c("LATITUDE", "LONGITUDE") or c("lat", "lon") depending on data format), not required for shapefile data. 
-    # type: default is "shapes", input "points" otherwise. 
-  # Output: 
-    # A joined dataset (shapefile) containing the scales 
+  #' @description
+    #' Perform spatial crosswalks on point, shapefile, and raster data when a geo-id crosswalk is unavailable. 
+    #' 
+    #' @param data: point data (lat, lon) or a shapefile containing shapes (polygons, lines, etc.)
+    #' @param target: shapefile containing shapes (polygons, lines, etc.). This is for the target boundaries/geographic levels (assumes larger than the starting level I think). 
+    #' @param location_columns: required for points (e.g c("LATITUDE", "LONGITUDE") or c("lat", "lon") depending on data format), not required for shapefile data. 
+    #' @param extensive: TRUE if data of interest is spatially extensive, (e.g population) or FALSE if spatially intensive (e.g population density) 
+    #' @param join_method: in the case of shapefile to shapefile (multipoint and polygons, not points) crosswalks, choose "max_area" 
+    #'                    or "areal-weighted" to inherit values of source data based on maximum intersection or a area-weighted average
+    #'                    of all intersecting polygons. NULL in other cases, where the mean is taken by default.  
+  
+  #' @output 
+  #' Returns a joined dataset on the target scale (a shapefile). 
   
   if (length(location_columns) == 2) {
     
