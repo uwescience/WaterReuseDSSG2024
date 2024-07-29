@@ -15,7 +15,7 @@ layout: default
 
 **Data Scientist: Curtis Atkisson** 
 
-**DSSG Fellows: Jihyeon Bae, Nora Povejsil, Mbye Sallah, Daniel Vogler ** 
+**DSSG Fellows: Jihyeon Bae, Nora Povejsil, Mbye Sallah, Daniel Vogler** 
 
 # Abstract or executive summary
 Communities around the United States are thinking of alternative water systems to address local water challenges. One example of this is water reuse, which is defined by the Environmental Protection Agency (EPA) as “the practice of reclaiming water from a variety of sources, treating it, and reusing it for beneficial purposes.” The current social problem is that communities only see water reuse as an opportunity for areas that are experiencing water scarcity, rather than realizing it’s full potential to address a wide range of water challenges, like reducing combined sewer overflows, minimizing the nutrients that are discharged to the environment, and lowering flood risk.
