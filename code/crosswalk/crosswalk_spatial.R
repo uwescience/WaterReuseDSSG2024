@@ -30,6 +30,11 @@ crosswalk_spatial <- function(data, target, location_columns = NULL, extensive =
   #'  Raster/raster combinations take the mosaic mean of the two files. The output is a raster. Users must combine with another shapefile if they want a shapefile output. 
   #' 
   
+  require(sf)
+  require(raster)
+  require(dplyr)
+  require(exactextractr)
+  
   if (inherits(data, "Raster") | inherits(target, "Raster")) {
     return (crosswalk_raster(data, target, location_columns, extensive))
   }

@@ -1,0 +1,232 @@
+---
+title: "test_geomerge"
+output: html_document
+date: "2024-07-24"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Load packages 
+library(pacman)
+p_load(dplyr, sf, sp, geomerge, raster, tidyverse, tigris, rgdal)
+
+```
+
+```{r}
+# Load datasets 
+relative_path <- '~/Downloads/test_data/'
+
+drought_id <- read.csv('~/Downloads/test_data/drought_risk.csv')
+head(drought)
+
+cwns <- read.csv('~/Downloads/test_data/CWNS_merged.csv')
+
+cwns_point <- cwns %>% 
+  dplyr::select(MGD2042_total, LATITUDE, LONGITUDE)
+
+head(cwns_point)
+
+wastewater_raster <- raster('~/Downloads/test_data/CONUS_ww_raster.tif')
+head(wastewater_raster)
+
+coastal_vulnerabilities_csv <- read.csv('~/Downloads/test_data/SGD_Coastal_Vulnerabilities.csv')
+coastal_vulnerabilities_sh <-read_sf('~/Downloads/test_data/Catchment_CONUS_coastline/Catchment_CONUS_coastline.shp')
+
+counties_sf <- counties(state= "56")
+tracts_sf <- tracts(state = "56")
+
+head(counties_sf)
+```
+
+
+```{r}
+head(tracts_sf )
+
+subset_counties <- counties_sf %>% 
+  dplyr::select(geometry)
+
+subset_tracts <- tracts_sf %>% 
+  dplyr::select(ALAND)
+
+
+st_interpolate_aw(subset_tracts, subset_counties, extensive = FALSE)
+
+```
+```{r}
+head(counties_sf) 
+```
+```{r}
+10555073815 - 10555073815
+```
+```{r}
+st_interpolate_aw(subset_tracts, subset_counties, extensive = TRUE)
+```
+
+
+
+```{r}
+head(tracts_sf)
+```
+
+
+```{r}
+subset_counties <- counties_sf %>%
+  dplyr::select(ALAND)
+subset_tracts <- tracts_sf %>%
+  dplyr::select(geometry)
+st_interpolate_aw(subset_counties, subset_tracts, extensive = FALSE)
+
+```
+```{r}
+test <- st_interpolate_aw(subset_counties, subset_tracts, extensive = TRUE)
+```
+
+
+
+```{r}
+# Test points to shapes: cwns points to counties
+
+#convert points to a shapefile
+location_columns <-  c('LATITUDE', 'LONGITUDE')
+
+cwns_point_sf <- st_as_sf(cwns_point, coords = c('LATITUDE', 'LONGITUDE'), crs = st_crs(counties_sf))
+
+cwns_point_sf <- cwns_point_sf %>% 
+  na.omit(cwns_point_sf)
+
+cwns_point_sf_convert <- as(cwns_point_sf, "Spatial")
+
+counties_sf_convert <- as(counties_sf, "Spatial")
+
+head(cwns_point_sf_convert)
+cwns_point_sf_convert
+head(counties_sf_convert)
+counties_sf_convert
+nrow(cwns_point_sf_convert)
+nrow(counties_sf_convert)
+
+
+
+cwns_counties <- geomerge(cwns_point_sf_convert$MGD2042_total, target = counties_sf_convert, point.agg = "sum")
+head(cwns_counties) 
+
+
+```
+```{r}
+#debugging 
+# Load required libraries
+library(sp)
+
+# Load or create your point and polygon data
+# For this example, let's assume cwns_point_sf_convert and counties_sf_convert are already loaded
+
+# Ensure both datasets are in WGS84
+
+cwns_point_sf_convert <- spTransform(cwns_point_sf_convert, CRS("+proj=longlat +datum=WGS84"))
+
+counties_sf_convert <- spTransform(counties_sf_convert, CRS("+proj=longlat +datum=WGS84"))
+
+st_bbox(cwns_point_sf_convert)
+st_bbox(counties_sf_convert)
+
+# Inspect the structure of the datasets
+str(cwns_point_sf_convert)
+str(counties_sf_convert)
+
+# Perform a manual spatial join to inspect the output
+points.in.poly <- over(cwns_point_sf_convert, counties_sf_convert)
+cat("Points in polygon computed. Resulting structure:\n")
+print(str(points.in.poly))
+print(head(points.in.poly))
+
+# Check if points.in.poly has the same number of rows as cwns_point_sf_convert
+if (nrow(points.in.poly) != nrow(cwns_point_sf_convert)) {
+  stop("Error: Number of rows in points.in.poly does not match the number of rows in cwns_point_sf_convert.")
+}
+
+# Cropping the counties dataset to match the extent of points dataset
+cwns_extended <- (counties_sf_convert, st_bbox(cwns_point_sf_convert))
+
+# If everything looks good, proceed with the function call
+result <- geomerge(counties_sf_convert$COUNTYFP, target = counties_sf_convert, 
+                   point.agg = "sum")
+
+# Inspect the result
+summary(result)
+
+
+```
+```{r}
+#Expand the extent of cwns to match counties_sf 
+
+
+# Define the new bounding box
+counties_sf <- st_transform(counties_sf, crs = "WGS84")
+new_bbox <- st_bbox(counties_sf)
+
+# Create points for each corner of the bounding box
+points <- st_sfc(
+  st_point(c(new_bbox["xmin"], new_bbox["ymin"])),
+  st_point(c(new_bbox["xmax"], new_bbox["ymin"])),
+  st_point(c(new_bbox["xmax"], new_bbox["ymax"])),
+  st_point(c(new_bbox["xmin"], new_bbox["ymax"]))
+)
+
+# Create an empty data frame with NA values for each attribute in sf_data
+na_values <- rep(NA, ncol(cwns_point_sf) - 1)  # -1 because the geometry column is not included
+na_df <- data.frame(matrix(na_values, nrow = 4, ncol = length(na_values)))
+colnames(na_df) <- colnames(cwns_point_sf)[-ncol(cwns_point_sf)]  # Use the same column names except geometry
+
+# Combine the NA data frame with the new points
+new_points_sf <- st_sf(na_df, geometry = points, crs = "WGS84")
+cwns_point_sf <- st_transform(cwns_point_sf, crs = "WGS84")
+
+# Combine the new points with the original dataset
+combined_sf <- rbind(cwns_point_sf, new_points_sf)
+combined_sf <- st_transform(combined_sf, crs = st_crs(counties_sf))
+combined_sf
+
+combined_sf_sp <- as(combined_sf, "Spatial")
+
+counties_sf_convert
+combined_sf_sp
+
+result <- geomerge(combined_sf_sp$MGD2042_total, na.rm = TRUE, target = counties_sf_convert, 
+                   point.agg = "sum")
+
+
+```
+```{r}
+data(geomerge)
+
+# 1) Simple static integration of polygon data
+output <- geomerge(geoEPR,target=states,silent=TRUE)
+summary (output)
+
+
+# 2) Static integration for point, polygon, raster data
+output <- geomerge(ACLED$EVENT_TYPE,AidData$project_id,geoEPR,
+		   gpw,na.rm=TRUE,target=states)
+summary(output)
+plot(output)
+
+# 3) Dynamic point data integration for numeric variables
+output <- geomerge(ACLED$FATALITIES,AidData$commitme_1,geoEPR,
+		   target=states,time=c("2011-01-01", "2011-12-31","1"),
+		   t_unit='months',point.agg='sum')
+summary(output)
+plot(output)
+
+# 4) Population weighted assignment
+output <- geomerge(geoEPR,target=states,assignment='max(pop)',
+		   population.data = gpw)
+summary(output)
+plot(output)
+
+
+```
+
+

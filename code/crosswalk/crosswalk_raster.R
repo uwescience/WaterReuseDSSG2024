@@ -20,6 +20,7 @@ crosswalk_raster <- function(data, target, location_columns = NULL, extensive = 
   #' Raster/raster combinations take the mosaic mean of the two files. The output is a raster. Users must combine with another shapefile if they want a shapefile output. 
   #' 
   
+  
   # Function for Raster/Raster
   if (st_crs(data1) != st_crs(data2)) {
     data2 <- st_transform(data2, st_crs(data1))
