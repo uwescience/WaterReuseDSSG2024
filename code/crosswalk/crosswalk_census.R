@@ -17,27 +17,18 @@ tr_pm_population <- read.csv("./code/crosswalk/weights_data/2020tr_pm.csv", head
 tr_pm_area <- read.csv("./code/crosswalk/weights_data/2020tr_pm_area.csv", header = TRUE)[-1,]
 
 
-process_data <- function(data) {
-  library(dplyr)
-  data$tract <- gsub("\\.", "", data$tract)
-  processed_data <- data %>%
-    mutate(afact = as.numeric(afact)) %>%
-    mutate(tract.census.geoid = paste0(county, tract)) %>%
-    rename(county.census.geoid = county) %>%
-    dplyr::select(county.census.geoid, afact, tract.census.geoid)
-  
-  return(processed_data)
-}
-
 
 # Process data function
 process_data <- function(data) {
+  library(dplyr)
+  
+  data$afact <- as.numeric(data$afact)
+  
   if ("county" %in% names(data) && "tract" %in% names(data)) {
     data$tract <- gsub("\\.", "", data$tract)
     data <- data %>%
       mutate(tract.census.geoid = paste0(county, tract)) %>%
-      rename(county.census.geoid = county) %>%
-    afact <- as.numeric(afact)
+      rename(county.census.geoid = county) 
   } 
 
   if ("puma22" %in% names(data)) {
@@ -80,14 +71,16 @@ crosswalk_census <- function(data,
   #' @param variable a list of variables that need to be transformed into a different scale
   #' @examples 
   #' crosswalk_census(cvi, 
-  #'           source_scale = "tract.census.geoid", 
+  #'          source_scale = "tract.census.geoid", 
   #'          target_scale = "county.census.geoid", 
   #'          weight_by = "population", 
   #'          method = "mean", 
   #'          variable = "CVI_overall")
   #'          
   #'          
-  if (!is.data.frame(data)) {
+  #'          
+  #'          
+    if (!is.data.frame(data)) {
     stop("Input 'data' must be a dataframe.")
   }
   
@@ -102,7 +95,7 @@ crosswalk_census <- function(data,
                                    variable = variable,
                                    weight_value = "afact")
     } else if (weight_by == "area") {
-      processed_data<-apply_weight(data = data,
+      processed_data <- apply_weight(data = data,
                                    method = method,
                                    source_scale = source_scale,
                                    weight_data = ct_tr_area, 
@@ -178,3 +171,4 @@ crosswalk_census <- function(data,
   
   return(processed_data)
 }
+

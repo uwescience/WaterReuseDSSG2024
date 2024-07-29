@@ -32,26 +32,29 @@ apply_weight <- function(data, source_scale = NULL,
   }
   
   joined_data <- data %>%
-    left_join(weight_data, by = setNames(key, source_scale))
-  print(names(joined_data))
+    left_join(weight_data, by = setNames(key, source_scale),
+              copy = TRUE)
   
   if (tolower(method) == "weighted_sum") {
     processed_data <- joined_data %>%
-      group_by( {{ target_scale }} ) %>%
-      summarize(across(all_of(variable), 
-                    ~ sum(.x * weight_value, na.rm = TRUE),
-                    .names = "{.col}_weighted.sum")) 
+      dplyr::group_by(!!sym(target_scale)) %>%
+      dplyr::summarize(across(all_of(variable), 
+                    ~ sum(. * !!sym(weight_value), na.rm=TRUE),
+                    .names = "{.col}_weighted_sum")
+                    )
+    print(as.numeric(weight_value))
     
   } else if (tolower(method) == "weighted_mean") {
     processed_data <- joined_data %>%
-      group_by({{ target_scale }} ) %>%
-    summarize(across(all_of(variable), ~ weighted.mean(., !!sym(weight_value), na.rm = TRUE),
+    dplyr::group_by(!!sym(target_scale)) %>%
+    dplyr::summarize(across(all_of(variable), 
+                            ~ weighted.mean(., !!sym(weight_value), na.rm = TRUE),
                      .names = "{.col}_weighted"))
     
   } else if (tolower(method) == "sum") {
     processed_data <- joined_data %>%
       group_by( {{ target_scale }} ) %>%
-      mutate(across({{ variable }},  
+      dplyr::mutate(across({{ variable }},  
                     ~ sum(., na.rm = TRUE),
                     .names = "{.col}_sum"))
     
@@ -76,6 +79,6 @@ sample <- apply_weight(data = cvi,
               key = "tract.census.geoid",
               target_scale = "county.census.geoid",
               weight_value = "afact",
-              method = "weighted_sum",
+              method = "weighted_mean",
               variable = c("CVI_overall", "CVI_base_all"))
 
