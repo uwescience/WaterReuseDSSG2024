@@ -1,13 +1,25 @@
 crosswalk_raster <- function(data, target, location_columns = NULL, extensive = FALSE) {
   require(raster)
-  #Args: 
-    #data1: file of type raster
-    #data2: point shapefile, polygon shapefile, or raster file
-    #location_columns: 
-    #extensive: extensive = TRUE (spatially extensive, e.g population) or 
-                #extensive = FALSE (spatially intensive, e.g population density) 
-  #Output: 
-    # Joined/combined dataframe from raster and other file
+  #' @description
+  #' Perform spatial crosswalks on raster data and one of the following target types: raster or shapefile.    
+  #' 
+  #' @param data: point data (lat, lon) or a shapefile containing shapes (polygons, lines, etc.)
+  #' @param target: shapefile containing shapes (polygons, lines, etc.). This is for the target boundaries/geographic levels (assumes larger than the starting level I think). 
+  #' @param location_columns: required for points (e.g c("LATITUDE", "LONGITUDE") or c("lat", "lon") depending on data format), not required for shapefile data. 
+  #' @param extensive: TRUE if data of interest is spatially extensive, (e.g population) or FALSE if spatially intensive (e.g population density) 
+  #' @param join_method: in the case of shapefile to shapefile (multipoint and polygons, not points) crosswalks, choose "max_area" 
+  #'                    or "areal-weighted" to inherit values of source data based on maximum intersection or a area-weighted average
+  #'                    of all intersecting polygons. NULL in other cases, where the mean is taken by default.  
+  
+  #' @output 
+  #' Returns a joined dataset on the target scale (a shapefile). 
+  #' 
+  #' @Notes
+  #' Point data is maintained as points. User must rasterize resulting dataframe if they want the output of a point/raster join to be in raster form.
+  #' Raster/shapefile combinations will output a shapefile, not a raster. User must rasterize polygon data if they want the output to be a raster. 
+  #' Raster/raster combinations take the mosaic mean of the two files. The output is a raster. Users must combine with another shapefile if they want a shapefile output. 
+  #' 
+  
   
   # Function for Raster/Raster
   if (st_crs(data1) != st_crs(data2)) {
