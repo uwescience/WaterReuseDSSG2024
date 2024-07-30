@@ -36,7 +36,7 @@ location_df <- left_join(tracts_df, location_df, by = c("GEOID"="FIPS Code"))
 
 src("~/Desktop/WaterReuseDSSG2024/geo-ndxr/prototype-dev/web_mapper.R")
 
-location_df <-st_as_sf(location_df)
+location_df <- st_as_sf(location_df)
 
 web_mapper(location_df, name_column = "County", index_value_column = "cvi_index", map_path = "~/Desktop", map_name = "test")
 ```

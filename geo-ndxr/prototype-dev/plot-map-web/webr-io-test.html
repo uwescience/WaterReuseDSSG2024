@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WebR Example</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+  <script type="module">
+    import { WebR } from 'https://webr.r-wasm.org/latest/webr.mjs';
+
+    (async () => {
+      
+      const webr = new WebR();
+      await webr.init();
+
+      await webr.installPackages(["dplyr", "sf", "jsonlite", "geojsonsf"]);
+
+      const dataFilePath = "./data/test.geojson";
+      const pcaWeightsPath = "./scripts/get_pca_weights.R";
+      const weightedAvgPath = "./scripts/weighted_average.R";
+      const mapperPath = "./scripts/web_mapper.R"
+
+
+      // Function to fetch a file as text
+      const fetchText = async (filePath) => {
+        const response = await fetch(filePath);
+        return await response.text();
+      };
+
+
+      console.log("Sourcing R functions...");
+
+      let pcaResponse = await fetch(pcaWeightsPath);
+      let pcaText = await pcaResponse.text();
+      await webr.evalR(pcaText);
+
+      let weightedAvgResponse = await fetch(weightedAvgPath);
+      let weightedAvgText = await weightedAvgResponse.text();
+      await webr.evalR(weightedAvgText);
+
+      let mapperResponse = await fetch(mapperPath);
+      let mapperText = await mapperResponse.text();
+      await webr.evalR(mapperText);
+
+      console.log("R functions sourced fetched");
+
+      console.log("Fetching data...");
+
+      const geoJsonResponse = await fetch(dataFilePath);
+      const geoJsonData = await geoJsonResponse.json()
+
+      console.log("Data fetched");
+
+      console.log(geoJsonData);
+
+      const geoJsonString = JSON.stringify(geoJsonData);
+
+      // Define the main R script
+      const rScript = `
+      
+      library(dplyr)
+      library(jsonlite)
+      library(sf)
+      library(geojsonsf)
+
+      sf <- geojson_sf('${geoJsonString}')
+
+      print(names(sf))
+
+      weights <- get_pca_weights(data = sf, excluded_cols = c("geometry"))
+
+      print(weights)
+
+      index <- get_weighted_average(sf, weights, excluded_cols = c("geometry"))
+
+      print(index)
+
+      #web_mapper(data_with_shapes = index, 
+      #index_value_column = "index_value",
+      #name_column = NULL, 
+      #map_path = "./data",
+      #map_name = "GeoNDXR Map")
+      `;
+
+      // Execute the R script
+      const result = await webr.evalR(rScript);
+
+      console.log("Returned result from R script")
+
+      // Output the result to the web page
+      document.getElementById("output").innerText = result.output;
+    })();
+  </script>
+</head>
+<body>
+  <h1>WebR File Loader Example</h1>
+  <div id="output"></div>
+</body>
+</html>
