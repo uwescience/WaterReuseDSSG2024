@@ -9,6 +9,7 @@ output: html_document
 ```{r}
 library(tidyverse)
 library(leaflet)
+library(leaflet.providers)
 library(sf)
 library(rjson)
 ```
@@ -21,9 +22,10 @@ library(rjson)
 #### Create a map widget
 ```{r}
 leaflet_map <- leaflet() %>% 
-  addTiles() %>%
-  setView(-96, 37.8, zoom = 4)
-leaflet_map
+  setView(-96, 37.8, zoom = 4) %>%
+  addProviderTiles(providers$CartoDB.Positron) %>% 
+  addTiles(urlTemplate = "https://tiles.wmflabs.org/hikebike/{z}/{x}/{y}.png")
+  leaflet_map
 ```
 
 
