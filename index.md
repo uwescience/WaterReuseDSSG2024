@@ -18,7 +18,7 @@ layout: default
 **DSSG Fellows: Jihyeon Bae, Nora Povejsil, Mbye Sallah, Daniel Vogler** 
 
 <img src="{{ site.url }}{{ site.baseurl }}/assets/img/Jihyeon.jpg">
-  <img src="{{ site.url }}{{ site.baseurl }}/assets/img/Nora.jpg">
+<img src="{{ site.url }}{{ site.baseurl }}/assets/img/Nora.jpg">
 <img src="{{ site.url }}{{ site.baseurl }}/assets/img/Mbye.jpg">
 <img src="{{ site.url }}{{ site.baseurl }}/assets/img/Daniel.jpg">
 
