@@ -3,10 +3,8 @@ apply_weight <- function(data, source_scale = NULL,
                          weight_data = NULL, key = NULL, target_scale = NULL, 
                          variable = NULL,
                          method = NULL, weight_value = NULL) {
-  library(dplyr)
-  library(docstring)
   #' apply_weight
-  #' @description This function will assign weights to the data frame. If weights are used to 
+  #' @description This function will assign weights to the data frame. 
   #' @param data dataframe that contains the target scale
   #' @param weight_data dataframe that contains weights assigned to target scale
   #' @param source_scale character vector. name of the source_scale in data
@@ -24,7 +22,6 @@ apply_weight <- function(data, source_scale = NULL,
   #' method = "weighted_sum",
   #' variable = c("CVI_overall", "CVI_base_all"))
   #' 
-
   
   if (!is.character(data[[source_scale]])) {
     data <- data %>%
@@ -32,53 +29,30 @@ apply_weight <- function(data, source_scale = NULL,
   }
   
   joined_data <- data %>%
-    left_join(weight_data, by = setNames(key, source_scale),
-              copy = TRUE)
-  
-  if (tolower(method) == "weighted_sum") {
-    processed_data <- joined_data %>%
-      dplyr::group_by(!!sym(target_scale)) %>%
-      dplyr::summarize(across(all_of(variable), 
-                    ~ sum(. * !!sym(weight_value), na.rm=TRUE),
-                    .names = "{.col}_weighted_sum")
-                    )
-    print(as.numeric(weight_value))
-    
-  } else if (tolower(method) == "weighted_mean") {
-    processed_data <- joined_data %>%
-    dplyr::group_by(!!sym(target_scale)) %>%
-    dplyr::summarize(across(all_of(variable), 
-                            ~ weighted.mean(., !!sym(weight_value), na.rm = TRUE),
-                     .names = "{.col}_weighted"))
-    
-  } else if (tolower(method) == "sum") {
-    processed_data <- joined_data %>%
-      group_by( {{ target_scale }} ) %>%
-      dplyr::mutate(across({{ variable }},  
-                    ~ sum(., na.rm = TRUE),
-                    .names = "{.col}_sum"))
-    
-  } else if (tolower(method) == "mean") {
-    processed_data <- joined_data %>%
-    group_by( {{ target_scale }} ) %>%
-      mutate(across({{ variable }}, 
-                    ~ mean(., na.rm = TRUE),
-                    .names = "{.col}_mean"))
-    
-  } else {
-    stop("Invalid value for 'method'. Please specify either 'weighted_mean', 'weighted_sum', 'mean', or 'sum'.")
-  }
+    left_join(weight_data, by = setNames(key, source_scale), copy = TRUE)
+  print(joined_data)
+  processed_data <- joined_data %>%
+    group_by(!!sym(target_scale)) %>%
+    summarize(across(all_of(variable), 
+                     ~ switch(method,
+                              "weighted_sum" = sum(. * !!sym(weight_value), na.rm=TRUE),
+                              "weighted_mean" = weighted.mean(., !!sym(weight_value), na.rm = TRUE),
+                              "sum" = sum(., na.rm = TRUE),
+                              "mean" = mean(., na.rm = TRUE),
+                              stop("Invalid value for 'method'. Please specify either 'weighted_mean', 'weighted_sum', 'mean', or 'sum'.")
+                     ),
+                     .names = "{.col}_{tolower(method)}"))
   
   return(processed_data)
 }
-docstring(apply_weight)
 
+docstring(apply_weight)
 sample <- apply_weight(data = cvi, 
               weight_data = tr_ct_area, 
               source_scale = "FIPS Code", 
               key = "tract.census.geoid",
               target_scale = "county.census.geoid",
               weight_value = "afact",
-              method = "weighted_mean",
+              method = "weighted_sum",
               variable = c("CVI_overall", "CVI_base_all"))
 

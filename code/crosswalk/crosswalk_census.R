@@ -52,13 +52,14 @@ tr_pm_area <- process_data(tr_pm_area)
 
 # Crosswalk census function
 crosswalk_census <- function(data, 
+                             key,
                              source_scale,
                              target_scale,
                              weight_by, 
                              method,
                              variable) {
   #' @param data dataframe input
-  #' @param source_scale character vector. should be one from the list. 
+  #' @param key character vector. should be one from the list. 
   #'      "tract.census.geoid"
   #'      "county.census.geoid"
   #'      "puma.census.geoid"
@@ -70,105 +71,46 @@ crosswalk_census <- function(data,
   #' @param method aggregation or apportioning method. "weighted_mean", "weighted_sum", "sum", and "mean"
   #' @param variable a list of variables that need to be transformed into a different scale
   #' @examples 
-  #' crosswalk_census(cvi, 
-  #'          source_scale = "tract.census.geoid", 
-  #'          target_scale = "county.census.geoid", 
-  #'          weight_by = "population", 
-  #'          method = "mean", 
-  #'          variable = "CVI_overall")
+  #' result <- crosswalk_census(data = cvi,
+  #'           source_scale = "FIPS Code",
+  #'             key = "tract.census.geoid",
+  #'             target_scale = "county.census.geoid",
+  #'             weight_by = "population",
+  #'             method = "weighted_mean",
+  #'             variable = c("CVI_overall", "CVI_base_all"))
+
+print(result)
   #'          
-  #'          
-  #'          
-  #'          
-    if (!is.data.frame(data)) {
+  #'    
+  library(dplyr)
+  if (!is.data.frame(data)) {
     stop("Input 'data' must be a dataframe.")
   }
   
-  if (source_scale == "county.census.geoid" && target_scale == "tract.census.geoid") {
-    if (weight_by == "population") {
-      processed_data <- apply_weight(data = data,
-                                   method = method,
-                                   source_scale = source_scale,
-                                   weight_data = ct_tr_population, 
-                                   key = "county.census.geoid",
-                                   target_scale = "tract.census.geoid",
-                                   variable = variable,
-                                   weight_value = "afact")
-    } else if (weight_by == "area") {
-      processed_data <- apply_weight(data = data,
-                                   method = method,
-                                   source_scale = source_scale,
-                                   weight_data = ct_tr_area, 
-                                   key = "county.census.geoid",
-                                   target_scale = "tract.census.geoid",
-                                   variable = variable,
-                                   weight_value = "afact")
-    }
-  } else if (source_scale == "tract.census.geoid" && target_scale == "county.census.geoid") {
-    if (weight_by == "population") {
-      processed_data <- apply_weight(data = data,
-                                   method = method,
-                                   source_scale = source_scale,
-                                   weight_data = tr_ct_population, 
-                                   key = "tract.census.geoid",
-                                   target_scale = "county.census.geoid",
-                                   variable = variable,
-                                   weight_value = "afact")
-    } else if (weight_by == "area") {
-      processed_data <- apply_weight(data = data,
-                                   method = method,
-                                   source_scale = source_scale,
-                                   weight_data = tr_ct_population, 
-                                   key = "tract.census.geoid",
-                                   target_scale = "county.census.geoid",
-                                   variable = variable,
-                                   weight_value = "afact")
-    }
-  } else if (source_scale == "puma.census.geoid" && target_scale == "tract.census.geoid") {
-    if (weight_by == "population") {
-      processed_data <- apply_weight(data = data,
-                                   method = method,
-                                   source_scale = source_scale,
-                                   weight_data = pm_tr_population, 
-                                   key = "puma.census.geoid",
-                                   target_scale = "tract.census.geoid",
-                                   variable = variable,
-                                   weight_value = "afact")
-    } else if (weight_by == "area") {
-      processed_data <- apply_weight(data = data,
-                                   method = method,
-                                   source_scale = source_scale,
-                                   weight_data = pm_tr_area, 
-                                   key = "puma.census.geoid",
-                                   target_scale = "tract.census.geoid",
-                                   variable = variable,
-                                   weight_value = "afact")
-    }
-  } else if (source_scale == "tract.census.geoid" && target_scale == "puma.census.geoid") {
-    if (weight_by == "population") {
-      processed_data <- apply_weight(data = data,
-                                   method = method,
-                                   source_scale = source_scale,
-                                   weight_data = tr_pm_population, 
-                                   key = "tract.census.geoid",
-                                   target_scale = "puma.census.geoid",
-                                   variable = variable,
-                                   weight_value = "afact")
-    } else if (weight_by == "area") {
-      processed_data <- apply_weight(data = data,
-                                   method = method,
-                                   source_scale = source_scale,
-                                   weight_data = tr_pm_area, 
-                                   key = "tract.census.geoid",
-                                   target_scale = "puma.census.geoid",
-                                   variable = variable,
-                                   weight_value = "afact")
-    }
-  } else {
-    stop("Unsupported combination of source_scale, target_scale, and weight_by.")
-  }
+  weight_data <- switch(paste(key, target_scale, weight_by, sep = "_"),
+                        "county.census.geoid_tract.census.geoid_population" = ct_tr_population,
+                        "county.census.geoid_tract.census.geoid_area" = ct_tr_area,
+                        "tract.census.geoid_county.census.geoid_population" = tr_ct_population,
+                        "tract.census.geoid_county.census.geoid_area" = tr_ct_area,
+                        "puma.census.geoid_tract.census.geoid_population" = pm_tr_population,
+                        "puma.census.geoid_tract.census.geoid_area" = pm_tr_area,
+                        "tract.census.geoid_puma.census.geoid_population" = tr_pm_population,
+                        "tract.census.geoid_puma.census.geoid_area" = tr_pm_area,
+                        stop("Unsupported combination of source_scale, target_scale, and weight_by.")
+  )
   
+  processed_data <- apply_weight(data = data,
+                                 method = method,
+                                 weight_data = weight_data, 
+                                 source_scale = source_scale,
+                                 key = key,
+                                 target_scale = target_scale,
+                                 variable = variable,
+                                 weight_value = "afact")
   
   return(processed_data)
 }
+
+
+
 
