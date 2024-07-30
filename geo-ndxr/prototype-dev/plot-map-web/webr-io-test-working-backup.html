@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WebR Example</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+  <script type="module">
+    import { WebR } from 'https://webr.r-wasm.org/latest/webr.mjs';
+
+    (async () => {
+      
+      const webr = new WebR();
+      await webr.init();
+
+      await webr.installPackages(["base64enc", "dplyr", "sf"]);
+
+      const dataFilePath = "./data/clean-cvi-data.csv";
+      const pcaWeightsPath = "./scripts/get_pca_weights.R";
+      const weightedAvgPath = "./scripts/weighted_average.R";
+      const mapperPath = "./scripts/web_mapper.R"
+
+
+      // Function to fetch a file as text
+      const fetchText = async (filePath) => {
+        const response = await fetch(filePath);
+        return await response.text();
+      };
+
+      // Function to fetch and parse the CSV file
+      const fetchData = async (filePath) => {
+        const response = await fetch(filePath);
+        const csvText = await response.text();
+        return new Promise((resolve) => {
+          Papa.parse(csvText, {
+            header: true,
+            complete: (results) => {
+              resolve(results.data);
+            },
+          });
+        });
+      };
+
+      console.log("Sourcing R functions...");
+
+      let pcaResponse = await fetch(pcaWeightsPath);
+      let pcaText = await pcaResponse.text();
+      await webr.evalR(pcaText);
+
+      let weightedAvgResponse = await fetch(weightedAvgPath);
+      let weightedAvgText = await weightedAvgResponse.text();
+      await webr.evalR(weightedAvgText);
+
+      let mapperResponse = await fetch(mapperPath);
+      let mapperText = await mapperResponse.text();
+      await webr.evalR(mapperText);
+
+      console.log("R functions sourced fetched");
+
+      console.log("Fetching data...");
+
+      // Fetch and parse the CSV file
+      const parsedData = await fetchData(dataFilePath);
+
+      console.log("Data fetched");
+
+      // Convert parsed data to CSV string
+      const csvString = Papa.unparse(parsedData);
+
+      // Encode CSV string as base64
+      const base64String = btoa(csvString);
+
+
+      // Define the main R script
+      const rScript = `
+      
+        library(base64enc)
+        library(dplyr)
+        library(sf)
+
+        # Decode base64 string to CSV
+        base64String <- "${base64String}"
+        objString <- rawToChar(base64decode(base64String))
+
+        loaded_object <- unserialize(objString)
+        # Read CSV data
+        #data <- read.csv(text = csvString, stringsAsFactors = FALSE, sep = ',')
+
+        #data <- na.omit(data)
+        
+        #weights <- get_pca_weights(data, excluded_cols = c("GEOID", "geometry"))
+
+        #index <- get_weighted_average(data, 
+                                weights, 
+                                excluded_cols = c("GEOID", "geometry"))
+
+        #data$index <- index
+
+        #print(head(data$geometry))
+
+        # map_sf <- st_as_sf(data)
+
+        # web_mapper(map_sf, name_column = "GEOID", index_value_column = "index", map_path = "./", map_name = "test")
+      `;
+
+      // Execute the R script
+      const result = await webr.evalR(rScript);
+
+      console.log("Returned result from R script")
+
+      // Output the result to the web page
+      document.getElementById("output").innerText = result.output;
+    })();
+  </script>
+</head>
+<body>
+  <h1>WebR File Loader Example</h1>
+  <div id="output"></div>
+</body>
+</html>
