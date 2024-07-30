@@ -56,6 +56,7 @@ web_mapper <- function(data_with_shapes,
       color = "black",
       weight = 1,
       opacity = 1,
+      stroke = FALSE, 
       highlight = highlightOptions(
         weight = 5,
         color = "red",

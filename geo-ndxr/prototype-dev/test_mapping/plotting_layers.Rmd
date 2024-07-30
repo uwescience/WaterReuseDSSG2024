@@ -38,7 +38,8 @@ counties_sf <- read_sf("/Users/mbye/DSSG/WaterReuseDSSG2024/geo-ndxr/prototype-d
 #### Plot geojson shapefile on map
 ```{r}
 leaflet_shapes_map <-  leaflet_map %>% 
-  addPolygons(data = counties_sf)
+  addPolygons(data = counties_sf, stroke = FALSE)
+
 leaflet_shapes_map
 ```
 
