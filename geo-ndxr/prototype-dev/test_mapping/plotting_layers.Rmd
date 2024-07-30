@@ -11,6 +11,7 @@ library(tidyverse)
 library(leaflet)
 library(sf)
 library(rjson)
+library(htmltools)
 ```
 
 # See all the functions in leaflet
@@ -29,13 +30,14 @@ leaflet_map
 
 #### read the GeoJSON file
 ```{r}
-counties_sf <- read_sf("/Users/mbye/DSSG/WaterReuseDSSG2024/geo-ndxr/prototype-dev/test_mapping/test/counties.geojson")
+counties_sf <- st_read("/Users/mbye/DSSG/WaterReuseDSSG2024/geo-ndxr/prototype-dev/test_mapping/test/counties.geojson")
 ```
 
 
 #### Plot geojson shapefile on map
 ```{r}
 leaflet_shapes_map <-  leaflet_map %>% 
+  addTiles() %>%
   addPolygons(data = counties_sf)
 leaflet_shapes_map
 ```
@@ -63,16 +65,15 @@ pal <- colorNumeric(
 
 ```{r}
 leaflet_shapes_map <- leaflet(counties_sf) %>% 
-  addTiles() %>% 
   addPolygons(
     fillColor = ~pal(index_value),
     fillOpacity = 0.7,
-    color = "black",
+    color = NA,
     weight = 1,
     opacity = 1,
     highlight = highlightOptions(
       weight = 3,
-      color = "#666",
+      color = NA,
       fillOpacity = 0.7,
       bringToFront = TRUE
     ),
@@ -94,7 +95,7 @@ leaflet_shapes_map
 
 #### Save the map in html
 ```{r}
-saveWidget(leaflet_shapes_map,
+save_html(leaflet_shapes_map,
            file = "/Users/mbye/DSSG/WaterReuseDSSG2024/geo-ndxr/prototype-dev/test_mapping/index.html")
 ```
 
@@ -102,23 +103,12 @@ saveWidget(leaflet_shapes_map,
 #### Do the same thing using the web_mapper function
 ```{r}
 source("~/DSSG/WaterReuseDSSG2024/geo-ndxr/prototype-dev/web_mapper.R")
+```
 
 #### Map index data
+```{r}
 web_mapper(data_with_shapes = counties_sf,
            index_value_column = "index_value",
            name_column = "NAME")
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
 
