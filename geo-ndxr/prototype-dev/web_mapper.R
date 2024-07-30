@@ -23,6 +23,7 @@ web_mapper <- function(data_with_shapes,
   require(tidyverse)
   require(leaflet)
   require(htmltools)
+  require(leaflet.providers)
   
   # Check if map_path is NULL and set it to the current directory
   if (is.null(map_path)) {
@@ -42,7 +43,12 @@ web_mapper <- function(data_with_shapes,
   
   # Create the web index mapper
   index_map <- leaflet(data_with_shapes) %>%
-    addTiles() %>%
+    # addTiles() %>% 
+    
+    #Add greyscale tiles and roadless tiles 
+    addProviderTiles(providers$CartoDB.Positron) %>% 
+    addTiles(urlTemplate = "https://tiles.wmflabs.org/hikebike/{z}/{x}/{y}.png") %>%
+  
     # Add polygons to the map
     addPolygons(
       fillColor = ~pal(data_with_shapes[[index_value_column]]),
