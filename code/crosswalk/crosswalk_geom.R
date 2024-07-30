@@ -1,6 +1,6 @@
 crosswalk_geom <- function(data, target, location_columns = NULL, extensive = FALSE, join_method = NULL) {
-  
-  #' @description
+    #' crosswalk_geom function
+    #' @description
     #' Perform spatial crosswalks on point, shapefile, and raster data when a geo-id crosswalk is unavailable. 
     #' 
     #' @param data: point data (lat, lon) or a shapefile containing shapes (polygons, lines, etc.)
@@ -10,9 +10,8 @@ crosswalk_geom <- function(data, target, location_columns = NULL, extensive = FA
     #' @param join_method: in the case of shapefile to shapefile (multipoint and polygons, not points) crosswalks, choose "max_area" 
     #'                    or "areal-weighted" to inherit values of source data based on maximum intersection or a area-weighted average
     #'                    of all intersecting polygons. NULL in other cases, where the mean is taken by default.  
-  
-  #' @output 
-  #' Returns a joined dataset on the target scale (a shapefile). 
+    #' @output 
+    #' Returns a joined dataset on the target scale (a shapefile). 
   
   if (length(location_columns) == 2) {
     

@@ -54,10 +54,8 @@ crosswalk_id <- function(data,
   library(dplyr)
   library(roxygen2)
   library(docstring)
-  source("code/crosswalk/key_identifier.R")
   
   if (!is.null(data2)) {
-    identify_key(data, data2)
     
     merged_data <- data %>%
       left_join(data, data2, by = setNames(key, source_scale))
@@ -65,7 +63,13 @@ crosswalk_id <- function(data,
   }
   
   else{
-  crosswalk_file <- readr::read_csv("code/crosswalk/weights_data/census_reference_table.csv") 
+    
+  processed_data <- crosswalk_id(data=ndi,  
+                               data2=NULL, 
+                               source_scale = NULL,
+                               key = NULL)
+  root_dir <- config::get()
+  crosswalk_file <- readr::read_csv(paste0(root_dir,"/code/crosswalk/weights_data/census_reference_table.csv")) 
   crosswalk_file <- crosswalk_file[, -1]
              
   
