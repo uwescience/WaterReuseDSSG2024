@@ -36,7 +36,7 @@ web_mapper <- function(data_with_shapes,
   
   # Create a color palette based on the index value
   pal <- colorNumeric(
-    palette = "YlGnBu",
+    palette = "Blues",
     domain = data_with_shapes[[index_value_column]]
   )
   
@@ -47,12 +47,12 @@ web_mapper <- function(data_with_shapes,
     addPolygons(
       fillColor = ~pal(data_with_shapes[[index_value_column]]),
       fillOpacity = 0.7,
-      color = "black",
+      color = NA,
       weight = 1,
       opacity = 1,
       highlight = highlightOptions(
         weight = 5,
-        color = "red",
+        color = NA,
         fillOpacity = 0.7,
         bringToFront = TRUE
       ),
