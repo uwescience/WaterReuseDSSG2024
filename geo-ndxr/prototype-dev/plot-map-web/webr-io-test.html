@@ -11,7 +11,7 @@
       const webr = new WebR();
       await webr.init();
 
-      await webr.installPackages(["dplyr", "sf", "jsonlite", "geojsonsf"]);
+      await webr.installPackages(["dplyr", "sf", "jsonlite", "geojsonsf", "leaflet"]);
 
       const dataFilePath = "./data/test.geojson";
       const pcaWeightsPath = "./scripts/get_pca_weights.R";
@@ -60,6 +60,7 @@
       library(jsonlite)
       library(sf)
       library(geojsonsf)
+      library(leaflet)
 
       sf <- geojson_sf('${geoJsonString}')
 
@@ -70,14 +71,6 @@
       print(weights)
 
       index <- get_weighted_average(sf, weights, excluded_cols = c("geometry"))
-
-      print(index)
-
-      #web_mapper(data_with_shapes = index, 
-      #index_value_column = "index_value",
-      #name_column = NULL, 
-      #map_path = "./data",
-      #map_name = "GeoNDXR Map")
       `;
 
       // Execute the R script
