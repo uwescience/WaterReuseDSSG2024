@@ -23,15 +23,11 @@ Crosswalks are needed to align geospatial data that are on different scales. Sca
 To analyze datasets at different geospatial resolutions, pre-processing steps should take place to ensure aggregation (low-to-high resolution) and splitting ( high-to-low) are done smoothly. With the goal of helping web creators process their data sets, we provide functions and supporting data sets to allow crosswalks across nested and un-nested spatial units.
 
 
-
-
 ### Installation
 
 Make sure you edit the ["config.yml" file]("~/config.yml") and replace the template with your home directory path.
 
 ```{r eval = TRUE, warning = FALSE}
-
-
 config::get()
 library(dplyr)
 library(docstring)
@@ -79,12 +75,13 @@ cvi_appended <- crosswalk_id(cvi,
                              source_scale = "FIPS Code",
                              key = "tract.census.geoid")
 head(cvi_appended)
+
             
 ```
 
 Now that we have a dataframe with a bunch of identifiable ID columns, we can aggregate/split in many different directions. During this process, we might have to source population weighting data. [MCDC](https://mcdc.missouri.edu/applications/geocorr2022.html) provides these weights. Select source scale and target scale for states of interest. This will generate a .csv file that contains crosswalk weights. Users should download their own weight datasets of interest.
 
-```{r}
+```{r eval = FALSE}
 root_dir <- config::get()
 source(paste0(root_dir,"/code/crosswalk/apply_weight.R"))
 
@@ -107,7 +104,6 @@ While you can provide your own weight_data by using `apply_weight()` function, w
 
 ```{r}
 source(paste0(root_dir,"/code/crosswalk/crosswalk_census.R"))
-docstring(crosswalk_census)
 
 cvi_county <- cvi %>%
   crosswalk_census(key = "tract.census.geoid",
@@ -138,6 +134,7 @@ ndi_reduced <- ndi %>%
 
 head(ndi_reduced)
 ```
+
 ### Unnested crosswalk: `crosswalk_spatial`
 All of the functions above are useful for handling nested datasets. We further allow users to crosswalk un-nested datasets by using spatial_joins. 
 
@@ -160,7 +157,7 @@ Below is an example of a shape/shape conversion using the areal-weighted mean an
 
 ```{r eval = FALSE}
 
-aquifers <- st_read(paste0(root_dir,"data/aquifers_us/us_aquifers.shp"))
+aquifers <- st_read(paste0(root_dir,"/data/us_aquifers.shp"))
 head(aquifers)
 
 # aquifers <- st_transform(aquifers, crs = st_crs(counties_sf))
@@ -174,8 +171,9 @@ head(joined_sfs)
 
 
 #### Point to county
-```{r}
-cwns <- st_read(paste0(root_dir,"data/CWNS_merged.csv"))
+This changes point-level data to county-level. 
+```{r eval = FALSE}
+cwns <- st_read(paste0(root_dir,"/data/CWNS_merged.csv"))
 cwns <- cwns %>% 
   select(LATITUDE, 
          LONGITUDE, 

@@ -46,6 +46,4 @@ apply_weight <- function(data, source_scale = NULL,
   return(processed_data)
 }
 
-docstring(apply_weight)
-
 

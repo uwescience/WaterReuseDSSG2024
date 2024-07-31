@@ -7,7 +7,6 @@ crosswalk_census <- function(data,
                              weight_by, 
                              method,
                              variable) {
-  #' 
   #' crosswalk across census tract, county, and puma
   #' @description crosswalk for census
   #' @param data dataframe input
@@ -34,7 +33,9 @@ crosswalk_census <- function(data,
   #'             print(result)
   #'          
   #'    
-  #'    source("./code/crosswalk/apply_weight.R")
+  #'    
+  root_dir <- config::get()
+   source(paste0(root_dir, "/code/crosswalk/apply_weight.R"))
   
   # Read data files
   root_dir <- config::get()
