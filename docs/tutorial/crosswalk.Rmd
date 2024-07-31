@@ -139,39 +139,50 @@ ndi_reduced <- ndi %>%
 head(ndi_reduced)
 ```
 ### Unnested crosswalk: `crosswalk_spatial`
-All of the functions above are useful for handling nested dataset. We further allow users to crosswalk un-nested datasets by using spatial_joins. 
+All of the functions above are useful for handling nested datasets. We further allow users to crosswalk un-nested datasets by using spatial_joins. 
+
+Please read the docstrings for the wrapper function crosswalk_spatial for information on arguments. The function crosswalk_spatial relies on crosswalk_raster and crosswalk_geom, which deal with spatial conversions to/from rasters and shapefiles respectively. To look at the underlying methods of those functions, see crosswalk_raster.R and crosswalk_geom.R. 
+
+The function crosswalk_spatial can deal with point, polygon, multipoint, and raster data. Specify the data of interest and the data containing target geometries, which can be polygons or rasters. 
+
+The output will be a shapefile in all cases except raster/raster conversions. 
+
+Depending on the input data types, the output will take the mean, areal_weighted mean, or maximum area as an aggregation method. See the documentation of crosswalk_spatial for more details on this. 
 
 #### example
 ```{r}
 source(paste0(root_dir, "/code/crosswalk/crosswalk_spatial.R"))
-
-
 ```
 
-### Unnested crosswalk: `crosswalk_raster`
-All of the functions above are useful for handling nested dataset. We further allow users to crosswalk un-nested datasets by using spatial_joins. 
+#### Watershed to county: overlapping polygons 
 
-#### example
-```{r}
-source(paste0(root_dir, "/code/crosswalk/crosswalk_raster.R"))
+Below is an example of a shape/shape conversion using the areal-weighted mean and preserving the values as spatially intensive (in contrast to preserving a spatially extensive value, e.g. population). 
 
-
-```
-
-### Unnested crosswalk: `crosswalk_geom`
-All of the functions above are useful for handling nested dataset. We further allow users to crosswalk un-nested datasets by using spatial_joins. 
-
-#### Watershed to county
 ```{r eval = FALSE}
-source(paste0(root_dir, "/code/crosswalk/crosswalk_geom.R"))
 
 aquifers <- st_read(paste0(root_dir,"data/aquifers_us/us_aquifers.shp"))
 head(aquifers)
 
-aquifers <- st_transform(aquifers, crs = st_crs(counties_sf))
-aquifers <- st_make_valid(aquifers)
+# aquifers <- st_transform(aquifers, crs = st_crs(counties_sf))
+# aquifers <- st_make_valid(aquifers)
 
-joined_sfs <- crosswalk_geom(aquifers, counties_sf)
+joined_sfs <- crosswalk_spatial(aquifers, counties_sf, extensive = FALSE, join_method = "areal_weighted")
+
+head(joined_sfs)
+
+```
+
+
+#### Point to county
+```{r}
+cwns <- st_read(paste0(root_dir,"data/CWNS_merged.csv"))
+cwns <- cwns %>% 
+  select(LATITUDE, 
+         LONGITUDE, 
+         CURRENT_DESIGN_FLOW)
+
+joined_sfs <- crosswalk_spatial(cwns, counties, location_columns = c("LATITUDE", "LONGITUDE"))
+
 head(joined_sfs)
 
 ```
