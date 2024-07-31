@@ -1,0 +1,21 @@
+---
+title: "test_create_website"
+output: html_document
+date: "2024-07-30"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+setwd("/Users/npovejsil/Downloads/WaterReuseDSSG2024")
+getwd()
+```
+
+```{r}
+data = list(1, 2, 3)
+create_website(data, paste0(getwd(), "geo-ndxr/prototype-dev/test_mapping"))
+
+```
+
