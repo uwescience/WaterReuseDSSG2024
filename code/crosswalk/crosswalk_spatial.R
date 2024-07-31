@@ -6,6 +6,7 @@ source("code/crosswalk/crosswalk_raster.R")
 
 crosswalk_spatial <- function(data, target, location_columns = NULL, extensive = FALSE, join_method = NULL) {
   
+  #' crosswalk_spatial
   #' @description
   #' Perform spatial crosswalks on point, shapefile, and raster data when a geo-id crosswalk is unavailable. 
   #' 
@@ -17,10 +18,8 @@ crosswalk_spatial <- function(data, target, location_columns = NULL, extensive =
   #' @param join_method: in the case of shapefile to shapefile (multipoint and polygons, not points) crosswalks, choose "max_area" 
   #'                    or "areal_weighted" to inherit values of source data based on maximum intersection or a area-weighted average
   #'                    of all intersecting polygons. NULL in other cases, where the mean is taken by default.  
-  
   #' @output 
   #' Returns a joined dataset on the target scale (a shapefile, except in the case of raster/raster combinations, which returns a raster). 
-  
   #' @Notes
   #' Relies on functions crosswalk_geom.R (data, target, location_columns, extensive, join_method) and crosswalk_raster.R (data, target, location_columns, extensive). 
   #' This function will automatically detect geometry columns associated with shapefiles. 

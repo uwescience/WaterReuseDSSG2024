@@ -1,4 +1,5 @@
 ---
+title: "Crosswalk Helper Functions"
 output: github_document
 date: "2024-07-30"
 ---
@@ -18,14 +19,22 @@ theme_set(theme_light())
 
 # Crosswalk: tools for web creators
 
-Crosswalks are needed to align geospatial data that are on different scales. Scales here are referring to units of analysis (county, census tracts, blocks, watershed etc.) 
+Crosswalks align geospatial data that are on different scales. Scales refer to units of analysis (county, census tracts, blocks, watershed etc.)
 
 To analyze datasets at different geospatial resolutions, pre-processing steps should take place to ensure aggregation (low-to-high resolution) and splitting ( high-to-low) are done smoothly. With the goal of helping web creators process their data sets, we provide functions and supporting data sets to allow crosswalks across nested and un-nested spatial units.
 
-
 ### Installation
 
-Make sure you edit the ["config.yml" file]("~/config.yml") and replace the template with your home directory path.
+Once you [git clone](https://git-scm.com/docs/git-clone) or download the Github [Repository](https://github.com/uwescience/WaterReuseDSSG2024), identify where it is located at. Make sure you edit the `config.yml` file and replace the template with your home directory path. You can open and edit the `config.yml` file by using text editors of your choice. Make sure to save the file and be mindful of white spaces. 
+
+For example, if you download and unzip the "WaterReuseDSSG2024" Github Repo in Downloads folder, my config.yml file would look like below.
+
+```{r eval = FALSE, warning = FALSE}
+config::get()
+```
+      $home_path
+      [1] "/Users/your_name/Downloads"
+
 
 ```{r eval = TRUE, warning = FALSE}
 config::get()
@@ -36,16 +45,23 @@ library(readr)
 
 ### Crosswalk id example: the `crosswalk_id` function
 
-National Drought Index [dataset] is at county level. Each row gives information about county, in FIPS code. For more details about the FIPS code, refer to the census bureau [website](https://www.census.gov/library/reference/code-lists/ansi/ansi-codes-for-states.html).
+First, we introduce the `crosswalk_id` function that appends a battery of ID columns that correspond to your data's level of analysis. 
+
+We use the National Drought Index [dataset] data which is at county level as an example. Unique identifier of each row is FIPS county code. For more details about the FIPS code, refer to the census bureau [website](https://www.census.gov/library/reference/code-lists/ansi/ansi-codes-for-states.html).
 
 ```{r}
 root_dir <- config::get()
 ndi <- read_csv(paste0(root_dir,"/data/drought_risk.csv"))
+head(ndi)
 ```
 
-The `crosswalk_id` function will append a list of additional IDs including census tracts and states, for each county. You have to tell the function what your data's geospatial resolution is. For example, by setting `source_scale = "FIPS"` and `key = "county.census.geoid"`, you are telling the `crosswalk_id()` function that your column "FIPS" is county code. Geospatial level of your source_scale and key should match. 
+The `crosswalk_id` function will append a list of IDs including census tracts and states, for each county. You have to tell the function what your data's geospatial resolution is. For example, by setting `source_scale = "FIPS"` and `key = "county.census.geoid"`, you are telling the `crosswalk_id()` function that your column "FIPS" is referring to the FIPS county code. Geospatial level of your source_scale and key should match. 
+
+If your data contains some of the inconsistent FIPS Codes, use our `countyfips_helper()` function to pad 4 digits with zero so that all of your FIPS codes are in right 5-digits shape. For example, some of the data sets can contain FIPS code as $1234$ instead of $01234$. 
+
 ```{r}
 source(paste0(root_dir, "/code/crosswalk/crosswalk_id.R"))
+#docstring(crosswalk_id)
 
 processed_data <- crosswalk_id(data=ndi,  
                                data2=NULL, 
@@ -55,55 +71,68 @@ processed_data <- crosswalk_id(data=ndi,
 head(processed_data)
 names(processed_data) 
 ```
-You will see a list of new id columns appended to each county-level observation. This set of census-related columns will be provided to users as a *default*. However, you can specify an external reference table for ID crosswalk by specifying `data2=NULL`. If your data and data2 contain a lot of columns and hence if it is hard to manually check a list of variables that exist in both data sets, refer to `identify_key()` helpfer function. 
+
+You will see a list of new id columns appended to each county-level observation. This set of census-related columns will be provided to users as a *default*. However, you can specify an external reference table for ID crosswalk by specifying `data2=NULL`. If your data and data2 contain a lot of columns and hence if it is hard to manually check a list of variables that exist in both data sets, refer to `identify_key()` helper function.
+
 
 ### Crosswalk with weights dataset: `apply_weight` function
 
-Let's use [Climate Vulnerabilitly Index (CVI) data](https://climatevulnerabilityindex.org) as an example for this function. 
+If you want to crosswalk *not just* the ID columns, but want to reassign values to your target scale, `apply_weight` function can be useful. Let's use [Climate Vulnerabilitly Index (CVI) data](https://climatevulnerabilityindex.org) as an example for this function.
+
 ```{r}
 library(readr)
 cvi <- read_csv(paste0(root_dir, "/data/CVI Data Excerpts_rename.csv"))
 head(cvi)
 ```
-Note that the unit of cvi dataset is census tract. Our goal is to walk census tract level to county (upward). 
--   Aggregation: We can simply add up the components to fill in the information at the higher level. For example, by adding up the number of CVI across all of the census tracts, we get the total number for county.
--   Weighting: Even if we have information for a subset of data at the low level, we can estimate the value for the total by weighting. Note that [IPUMS](https://www.nhgis.org/geographic-crosswalks) discusses these two approaches more extensively.
 
+Note that the cvi dataset is on the census tract level. Our goal is to walk census tract level to county (upward). There are two ways of assigning values to higher levels.
+
+- Aggregation: We can simply add up the components to fill in the information at the higher level. For example, by adding up the number of CVI across all of the census tracts, we get the total number for county. 
+- Weighting: given with the data for the components, we can estimate the value of the total by weighting. Note that [IPUMS](https://www.nhgis.org/geographic-crosswalks) discusses these two approaches more extensively.
+
+First, use `crosswalk_id` function to assign county codes for each of the census tract.
 ```{r}
 cvi_appended <- crosswalk_id(cvi, 
                              data2 = NULL,
                              source_scale = "FIPS Code",
                              key = "tract.census.geoid")
 head(cvi_appended)
-
-            
 ```
 
-Now that we have a dataframe with a bunch of identifiable ID columns, we can aggregate/split in many different directions. During this process, we might have to source population weighting data. [MCDC](https://mcdc.missouri.edu/applications/geocorr2022.html) provides these weights. Select source scale and target scale for states of interest. This will generate a .csv file that contains crosswalk weights. Users should download their own weight datasets of interest.
+Now that we have a dataframe with a bunch of identifiable ID columns, we can aggregate/split in many different directions. During this process, we might have to source population/area weighting data. [MCDC](https://mcdc.missouri.edu/applications/geocorr2022.html) provides these weights. Select source scale and target scale for states of interest. This will generate a .csv file that contains crosswalk weights. Users should find and save their own weight data of interest. To be compatible with relative paths, make sure to move weight data to the ["/code/crosswalk/weights_data"] directory. 
 
-```{r eval = FALSE}
+```{r eval = TRUE}
 root_dir <- config::get()
 source(paste0(root_dir,"/code/crosswalk/apply_weight.R"))
+source(paste0(root_dir, "/code/crosswalk/process_mcdc_data.R"))
+#docstring(apply_weight)
 
-weight_data <- read.csv(paste0(root_dir, "/code/crosswalk/weights_data/2020tr_ct_area.csv"))
+weight_data <- read.csv(paste0(root_dir, "/code/crosswalk/weights_data/2020tr_ct_area.csv"), header = TRUE)[-1,] 
+weight_data <- process_data(weight_data)
+names(weight_data)
+```
 
-cvi_aggregated <- cvi_appended %>%
+In the `apply_weight` function, you have to specify key = "tract.census.geoid" to let the function know that the source_scale = "FIPS Code" is actually referring to census tract-level identifier code. Unlike the earlier example, now we get crosswalked *values* for the variables of interest.
+```{r}
+cvi_aggregated <- cvi %>%
   apply_weight(source_scale = "FIPS Code",
                weight_data = weight_data,
-               key = "tract.census.geoid",
-               variable = c("CVI_Overall", "CVI_base_all"),
-               method = "sum",
+               key = "tract.census.geoid", 
+               target_scale = "county.census.geoid",
+               variable = c("CVI_overall", "CVI_base_all"),
+               method = "mean",
                weight_value = "afact")
 ```
 
-
-
 ### Census crosswalks as default: `crosswalk_census` function
-####   ⬆️ Upward crosswalk: CVI example
+For the web creators' convenience, we provide additional function that reads in mostly used weight data sets. This function does not require you to feed in weight_data, because we provide it for you!
+
+#### ⬆️ Upward crosswalk: CVI example
 While you can provide your own weight_data by using `apply_weight()` function, we provide a default dataset to allow easy aggregation and splitting across three mostly-used resolutions: *census tract, county, and Public Use Microdata Area (PUMA).*
 
 ```{r}
 source(paste0(root_dir,"/code/crosswalk/crosswalk_census.R"))
+#docstring(crosswalk_census)
 
 cvi_county <- cvi %>%
   crosswalk_census(key = "tract.census.geoid",
@@ -115,12 +144,14 @@ cvi_county <- cvi %>%
 head(cvi_county)
 print(dim(cvi_county))
 ```
+
 The function `crosswalk_census` will print out the intermediary dataframe where `left_join` of data and embedded weight data happens. The final output dataframe, "cvi_county" has the right number of rows (3087), where each row corresponds to county.
 
-####  ⬇️ Downward crosswalk: NDI example
+#### ⬇️ Downward crosswalk: NDI example
+
 In the previous example, we used NDI dataset - at county level. Using `crosswalk_census()` function, we can aportion county-level value downwards to the census tract level. If we want this data to talk to the census-tract level data, we can automatically let all of the census-tracts to inherit that value from the upstream. (And census tracts *always* fall under the county.) Assignment borrowing or inheritance is appropriate in cases where the values at the higher level are not shared or distributed down to lower levels.
 
-But for the sake of this tutorial, let's assume that we want to split county-level value into multiple census tracts. In case of downward crosswalk, only `method = "weighted_sum"` makes sense since downward aportioning is relevant to inverse weighting. The other options (mean, sum, weighted_mean) would simply return higher-resolution values. 
+But for the sake of this tutorial, let's assume that we want to split county-level value into multiple census tracts. In case of downward crosswalk, only `method = "weighted_sum"` makes sense since downward aportioning is relevant to inverse weighting. The other options (mean, sum, weighted_mean) would simply return higher-resolution values.
 
 ```{r}
 ndi_reduced <- ndi %>%
@@ -136,24 +167,27 @@ head(ndi_reduced)
 ```
 
 ### Unnested crosswalk: `crosswalk_spatial`
-All of the functions above are useful for handling nested datasets. We further allow users to crosswalk un-nested datasets by using spatial_joins. 
 
-Please read the docstrings for the wrapper function crosswalk_spatial for information on arguments. The function crosswalk_spatial relies on crosswalk_raster and crosswalk_geom, which deal with spatial conversions to/from rasters and shapefiles respectively. To look at the underlying methods of those functions, see crosswalk_raster.R and crosswalk_geom.R. 
+All of the functions above are useful for handling nested datasets. We further allow users to crosswalk un-nested datasets by using spatial_joins.
 
-The function crosswalk_spatial can deal with point, polygon, multipoint, and raster data. Specify the data of interest and the data containing target geometries, which can be polygons or rasters. 
+Please read the docstrings for the wrapper function crosswalk_spatial for information on arguments. The function crosswalk_spatial relies on crosswalk_raster and crosswalk_geom, which deal with spatial conversions to/from rasters and shapefiles respectively. To look at the underlying methods of those functions, see crosswalk_raster.R and crosswalk_geom.R.
 
-The output will be a shapefile in all cases except raster/raster conversions. 
+The function crosswalk_spatial can deal with point, polygon, multipoint, and raster data. Specify the data of interest and the data containing target geometries, which can be polygons or rasters.
 
-Depending on the input data types, the output will take the mean, areal_weighted mean, or maximum area as an aggregation method. See the documentation of crosswalk_spatial for more details on this. 
+The output will be a shapefile in all cases except raster/raster conversions.
+
+Depending on the input data types, the output will take the mean, areal_weighted mean, or maximum area as an aggregation method. See the documentation of crosswalk_spatial for more details on this.
 
 #### example
+
 ```{r}
 source(paste0(root_dir, "/code/crosswalk/crosswalk_spatial.R"))
+#docstring(crosswalk_spatial)
 ```
 
-#### Watershed to county: overlapping polygons 
+#### Watershed to county: overlapping polygons
 
-Below is an example of a shape/shape conversion using the areal-weighted mean and preserving the values as spatially intensive (in contrast to preserving a spatially extensive value, e.g. population). 
+Below is an example of a shape/shape conversion using the areal-weighted mean and preserving the values as spatially intensive (in contrast to preserving a spatially extensive value, e.g. population).
 
 ```{r eval = FALSE}
 
@@ -169,9 +203,10 @@ head(joined_sfs)
 
 ```
 
-
 #### Point to county
-This changes point-level data to county-level. 
+
+This changes point-level data to county-level.
+
 ```{r eval = FALSE}
 cwns <- st_read(paste0(root_dir,"/data/CWNS_merged.csv"))
 cwns <- cwns %>% 
@@ -184,5 +219,3 @@ joined_sfs <- crosswalk_spatial(cwns, counties, location_columns = c("LATITUDE",
 head(joined_sfs)
 
 ```
-
-
