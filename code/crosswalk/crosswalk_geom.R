@@ -21,7 +21,7 @@ crosswalk_geom <- function(data, target, location_columns = NULL, extensive = FA
     # Perform the spatial join to find the containing shape for each point
     joined <- st_join(points, target, join = st_contains, left = TRUE)
     
-    } else if (method == "max_area") {
+    } else if (join_method == "max_area") {
       # Ensure data is a spatial object and has the same CRS as the target
       data <- st_transform(data, crs = st_crs(target))
       data <- st_make_valid(data)
@@ -30,7 +30,7 @@ crosswalk_geom <- function(data, target, location_columns = NULL, extensive = FA
       joined <- st_join(data, target, join = st_intersects, largest = TRUE)
       
       
-      } else if (method == "areal_weighted") {
+      } else if (join_method == "areal_weighted") {
         # Ensure data is a spatial object and has the same CRS as the target
         data <- st_transform(data, crs = st_crs(target))
         data <- st_make_valid(data)
