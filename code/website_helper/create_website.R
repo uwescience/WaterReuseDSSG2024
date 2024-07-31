@@ -10,7 +10,7 @@ create_website <- function(data, filepath, control_list = NULL) {
   html_contents <- readLines(new_path)
   
   # Regex pattern to separate the script - insert point for new functions/code. 
-  footer <- "</body> </html> <div"
+  footer <- "</body> </html>"
   
   html_split <- strsplit(html_contents, footer)
   html_appended <- paste(html_split[1], "some javascript output", html_split[2])
