@@ -47,12 +47,5 @@ apply_weight <- function(data, source_scale = NULL,
 }
 
 docstring(apply_weight)
-sample <- apply_weight(data = cvi, 
-              weight_data = tr_ct_area, 
-              source_scale = "FIPS Code", 
-              key = "tract.census.geoid",
-              target_scale = "county.census.geoid",
-              weight_value = "afact",
-              method = "weighted_sum",
-              variable = c("CVI_overall", "CVI_base_all"))
+
 

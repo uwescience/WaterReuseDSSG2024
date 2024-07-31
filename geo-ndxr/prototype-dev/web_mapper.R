@@ -8,7 +8,7 @@
 #' @param index_value_column A column name containing the index values to be plotted 
 #' @param name_column A column name containing the counties or state to be plotted
 #' @param map_path The path in which the created map will be saved
-#' @param map_name the name of created map
+#' @param map_name the name of the created map
 #'  
 #' @return A html file with the map
 #' @export
@@ -24,6 +24,7 @@ web_mapper <- function(data_with_shapes,
   require(leaflet)
   require(htmltools)
   require(leaflet.providers)
+  require(leaflet.extras)  # Required for easyButton
   
   # Check if map_path is NULL and set it to the current directory
   if (is.null(map_path)) {
@@ -43,11 +44,10 @@ web_mapper <- function(data_with_shapes,
   
   # Create the web index mapper
   index_map <- leaflet(data_with_shapes) %>%
-    # addTiles() %>% 
-    
-    #Add greyscale tiles and roadless tiles 
+
+    # Add greyscale tiles and roadless tiles 
     addProviderTiles(providers$CartoDB.Positron) %>% 
-    addTiles(urlTemplate = "https://tiles.wmflabs.org/hikebike/{z}/{x}/{y}.png") %>%
+    addTiles(urlTemplate = "https://tiles.wmflabs.org/hikebike/{z}/{x}/{y}.png") %>% 
   
     # Add polygons to the map
     addPolygons(
@@ -75,10 +75,20 @@ web_mapper <- function(data_with_shapes,
       position = "bottomright"
     ) %>% 
     # Zoom the map to mainly focus on the US
-    setView(-96, 37.8, zoom = 4)
+    setView(-96, 37.8, zoom = 4) %>%
+    # Add a button to return to the US boundaries
+    addEasyButton(easyButton(
+      icon = "fa-globe",
+      title = "Return to US view",
+      onClick = JS("function(btn, map){ map.setView([37.8, -96], 4); }")
+    ))
   
+  # Get map data
+  data = getMapData(index_map)
+  # save the map data in csv format
+  write.csv(data, file = paste0(map_path, "/", map_name, ".csv"))
   # Save the map to an html file
   save_html(index_map, 
-            file = file.path(map_path, paste0(map_name, ".html")))
+            file = paste0(map_path, "/", map_name, ".html"))
   return(index_map)
 }
