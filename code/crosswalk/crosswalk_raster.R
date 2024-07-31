@@ -1,5 +1,4 @@
 crosswalk_raster <- function(data, target, location_columns = NULL, extensive = FALSE) {
-  require(raster)
   #' @description
   #' Perform spatial crosswalks on raster data and one of the following target types: raster or shapefile.    
   #' 
@@ -22,50 +21,67 @@ crosswalk_raster <- function(data, target, location_columns = NULL, extensive = 
   
   
   # Function for Raster/Raster
+  
   if (st_crs(data1) != st_crs(data2)) {
     data2 <- st_transform(data2, st_crs(data1))
   }
   
-  combine_rasters <- function(raster1, raster2, extensive) {
-    if (extensive == FALSE) {
-      combined = mosaic(raster1, raster2, fun = mean)
-    } else if (extensive == TRUE) {
-      combined = mosaic(raster1, raster2, fun = max)
-    } 
-    return(combined)
+  combine_rasters <- function(raster1, raster2) {
+    
+    #preprocess rasters so that they share the same extent and resolution 
+    raster2_resampled <- resample(raster2, raster1, method = "bilinear")
+    extent(raster2_resampled) <- extent(raster1)
+    
+    stacked_raster <- stack(raster1, raster2_resampled)
+    
+    # Assign names to each layer
+    names(stacked_raster) <- c("data_raster1", "target_raster2")
+    
+    return(stacked_raster)
   }
   
   # Function for Raster/Point
   raster_point_join <- function(points, raster, location_columns) {
+    
     points <- st_as_sf(points, coords = location_columns, crs = st_crs(target))
-    point_values <- exact_extract(raster, points, fun = "mean", progress = FALSE)
-    point_values <- unlist(point_values)
-    point_values[is.na(point_values)] <- 0  # Handle NA values
-    combined <- cbind(st_as_sf(points), raster_value = point_values)
-    return(combined)
+    
+    #turn raster in polygons, boxes and then do areal_weighted mean - st_make_grid 
+    polygonized_raster <- rasterToPolygons(raster, n = 4)
+    
+    #transform in sf object
+    polygonized_raster <- st_as_sf(polygonized_raster)
+    polygonized_raster <- st_transform(data, crs = st_crs(shapefile))
+    polygonized_raster <- st_make_valid(data)
+    
+    #calculate spatial join - potential issue
+    joined_table <- st_join(polygonized_raster, points, join = st_contains, left = TRUE)
+    
+    return(joined_table)
   }
   
   # Function for Raster/Shapefile
-  raster_shapefile_join <- function(raster, shapefile) {
-      if (extensive == FALSE) {
-        extracted_values <- exact_extract(raster, shapefile, "mean")  # mean values preserve area
-        shapefile$extracted_values <- extracted_values
-        return(shapefile)
+  raster_shapefile_join <- function(raster, shapefile, extensive) {
+
+        #turn raster in polygons, boxes and then do areal_weighted mean - st_make_grid 
+        polygonized_raster <- rasterToPolygons(raster, n = 4)
+        
+        #transform in sf object
+        polygonized_raster <- st_as_sf(polygonized_raster)
+        polygonized_raster <- st_transform(data, crs = st_crs(shapefile))
+        polygonized_raster <- st_make_valid(data)
+        
+        #take the areal-weighted mean/sum of the polygonized raster and shapefile polygons
+        new_shapefile <- st_interpolate_aw(polygonized_raster, shapefile, extensive = extensive)
+        return(new_shapefile)
       }
-    else {
-      extracted_values <- exact_extract(raster, shapefile, "sum") # sum preserves population
-      shapefile$extracted_values <- extracted_values
-      return(shapefile)
-    }
-  }
   
   # Determine the types of input data and call the appropriate function
   if (inherits(data, "Raster") && inherits(target, "Raster")) {
-    return(combine_rasters(data, target, extensive))
+    return(combine_rasters(data, target))
   } else if (inherits(target, "Raster") && length(location_columns) == 2) {
     return(raster_point_join(data, target, location_columns))
   } else if (inherits(data, "Raster") && inherits(target, "sf")) {
-    return(raster_shapefile_join(data, target))
+    return(raster_shapefile_join(data, target, extensive))
   } else {
     stop("Unsupported data types. Check inputs.")
   }
