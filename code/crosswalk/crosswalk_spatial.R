@@ -15,7 +15,7 @@ crosswalk_spatial <- function(data, target, location_columns = NULL, extensive =
   #' @param location_columns: only required for points (e.g c("LATITUDE", "LONGITUDE") or c("lat", "lon") depending on data format), not required for shapefile or raster data. 
   #' @param extensive: TRUE if data of interest is spatially extensive, (e.g population) or FALSE if spatially intensive (e.g population density) 
   #' @param join_method: in the case of shapefile to shapefile (multipoint and polygons, not points) crosswalks, choose "max_area" 
-  #'                    or "areal-weighted" to inherit values of source data based on maximum intersection or a area-weighted average
+  #'                    or "areal_weighted" to inherit values of source data based on maximum intersection or a area-weighted average
   #'                    of all intersecting polygons. NULL in other cases, where the mean is taken by default.  
   
   #' @output 
