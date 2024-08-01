@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Default Title</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+        }
+
+        #checkbox-menu {
+            margin-top: 20px;
+        }
+
+        #description {
+            margin-top: 10px;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 id="page-title">Default Title</h1>
+    <div id="map"></div>
+    <div id="description"></div>
+    <div id="checkbox-menu"></div>
+    <button id="submit-button">SUBMIT</button>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://webr.r-wasm.org/latest/webr.mjs" type="module"></script>
+    <script type="module">
+        import { WebR } from 'https://webr.r-wasm.org/latest/webr.mjs';
+
+        async function setWebsiteTitleAndDescription() {
+            try {
+                const response = await fetch('options.json');
+                const data = await response.json();
+                if (data.website_title) {
+                    document.title = data.website_title;
+                    document.getElementById('page-title').textContent = data.website_title;
+                }
+                if (data.description) {
+                    document.getElementById('description').textContent = data.description;
+                }
+            } catch (error) {
+                console.error('Error fetching the options.json file:', error);
+            }
+        }
+
+        async function createCheckboxes() {
+            try {
+                const response = await fetch('menu_options.json');
+                const data = await response.json();
+                const menu = document.getElementById('checkbox-menu');
+                for (const key in data) {
+                    if (data.hasOwnProperty(key)) {
+                        const container = document.createElement('div');
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.id = key;
+                        checkbox.name = key;
+                        const label = document.createElement('label');
+                        label.htmlFor = key;
+                        label.textContent = data[key];
+                        container.appendChild(checkbox);
+                        container.appendChild(label);
+                        menu.appendChild(container);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching the menu_options.json file:', error);
+            }
+        }
+
+        async function recordSelection() {
+            const selectedOptions = [];
+            const checkboxes = document.querySelectorAll('#checkbox-menu input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    selectedOptions.push(checkbox.name);
+                }
+            });
+            const selectedOptionsString = JSON.stringify(selectedOptions);
+
+            // Initialize WebR and run the R script
+            const webr = new WebR();
+            await webr.init();
+            let scriptResponse = await fetch('webr-script.R');
+            let scriptText = await scriptResponse.text();
+            await webr.evalR(scriptText);
+            await webr.evalR(`test('${selectedOptionsString}')`);
+            console.log("Recalculated")
+        }
+
+        function initializeMap() {
+            const map = L.map('map').setView([37.8, -96.9], 4);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            fetch('test.geojson')
+                .then(response => response.json())
+                .then(data => {
+                    L.geoJSON(data).addTo(map);
+                })
+                .catch(error => console.error('Error fetching the .geojson file:', error));
+        }
+
+        document.getElementById('submit-button').addEventListener('click', recordSelection);
+
+        setWebsiteTitleAndDescription();
+        createCheckboxes();
+        initializeMap();
+    </script>
+</body>
+
+</html>
