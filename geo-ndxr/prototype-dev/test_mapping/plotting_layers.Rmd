@@ -13,6 +13,7 @@ library(leaflet.providers)
 library(sf)
 library(rjson)
 library(htmltools)
+library(geojsonio)
 ```
 
 # See all the functions in leaflet
@@ -53,6 +54,10 @@ counties_sf <-  counties_sf %>%
   mutate(index_value = runif(n()))
 ```
 
+##### Save data to geoJSON
+```{r}
+geojson_write(counties_sf, file = "~/DSSG/WaterReuseDSSG2024/geo-ndxr/prototype-dev/test_mapping.counties_sf.geojson")
+```
 
 
 #### Create a color palette based on the index_value column
