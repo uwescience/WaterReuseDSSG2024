@@ -28,7 +28,7 @@ edit_options <- function(website_title, description, menu_options) {
   require(rjson)
   
   #fix the relative path
-  options <- fromJSON(file= paste0(getwd(), "/geo-ndxr/prototype-dev/learning-checkboxes/learning-dynamic-checkboxes/options.json"))
+  options <- read_json(path= paste0(getwd(), "/geo-ndxr/prototype-dev/learning-checkboxes/learning-dynamic-checkboxes/options.json"), simplify = TRUE)
   
   #replace content with input strings/lists
   options$website_title <- website_title
@@ -36,9 +36,9 @@ edit_options <- function(website_title, description, menu_options) {
   options$menu_options <- menu_options
   
   # Specify the file to overwrite (options.json)
-  out = file(paste0(getwd(), "/geo-ndxr/prototype-dev/learning-checkboxes/learning-dynamic-checkboxes/options.json"))
+  out <- file(paste0(getwd(), "/geo-ndxr/prototype-dev/learning-checkboxes/learning-dynamic-checkboxes/options.json"))
   
   # Write the file contents in JSON format
-  toJSON(options, pretty = TRUE, auto_unbox = TRUE) %>%
-    write(out)
+  write_json(x= options, path = out, simplifyVector = TRUE)
 }
+
