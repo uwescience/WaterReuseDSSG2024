@@ -17,9 +17,9 @@ function getColor(d) {
 }
 
 // Function to style each feature (polygon) based on its properties
-function style(feature) {
+function style(feature, indexKey) {
     return {
-        fillColor: getColor(feature.properties.index_value),
+        fillColor: getColor(feature.properties[indexKey]),
         weight: 2,
         opacity: 1,
         color: NaN,
@@ -69,18 +69,21 @@ info.onAdd = function (map) {
 // Method to update the control based on feature properties
 info.update = function (props) {
     this._div.innerHTML = '<h4>Index Value</h4>' +  (props ?
-        '<b>' + props.NAME + '</b><br />' + props.index_value + '</b>'
+        '<b>' + props.NAME + '</b><br />' + props.indexKey + '</b>'
         : 'Hover over a layer');
 };
 
 
 
 // Fetch the GeoJSON data and add it to the map with styling and interaction
+
 fetch('./counties_sf.geojson')
     .then(response => response.json())
     .then(data => {
         geojson = L.geoJson(data,  {
-            style: style,
+            style: function(feature) {
+                return style(feature, 'index_value');
+            },
             onEachFeature: onEachFeature
         }).addTo(map);
 
@@ -93,23 +96,25 @@ fetch('./counties_sf.geojson')
 
 // Function to update the map based on selected indicators
 function updateMap() {
-    
 // Remove all existing layers from the map
     map.removeLayer(geojson)
 
-// // Fetch the GeoJSON data and add it to the map with styling and interaction
-// fetch('./counties_sf.geojson')
-//     .then(response => response.json())
-//     .then(data => {
-//         geojson = L.geoJson(data,  {
-//             style: style,
-//             onEachFeature: onEachFeature
-//         }).addTo(map);
+    // Fetch the GeoJSON data and add it to the map with styling and interaction
+    fetch('./counties_sf.geojson')
+    .then(response => response.json())
+    .then(data => {
+        geojson = L.geoJson(data,  {
+            style: function(feature) {
+                return style(feature, 'index_value2');
+            },
+            onEachFeature: onEachFeature
+        }).addTo(map);
 
-//         // Add the info control to the map
-//     info.addTo(map);
-//     })
-//     .catch(error => console.error('Error fetching the GeoJSON data:', error));
+        // Add the info control to the map
+    info.addTo(map);
+    })
+    .catch(error => console.error('Error fetching the GeoJSON data:', error));
+
 };
 
 
