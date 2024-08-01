@@ -4,7 +4,7 @@ crosswalk_raster <- function(data, target, location_columns = NULL, extensive = 
   #' 
   #' @param data: point data (lat, lon) or a shapefile containing shapes (polygons, lines, etc.)
   #' @param target: shapefile containing shapes (polygons, lines, etc.). This is for the target boundaries/geographic levels (assumes larger than the starting level I think). 
-  #' @param location_columns: required for points (e.g c("LATITUDE", "LONGITUDE") or c("lat", "lon") depending on data format), not required for shapefile data. 
+  #' @param location_columns: required for points (e.g c("LONGITUDE", "LATITUDE") or c("lon", "lat") longitude first, latitude second). Not required for shapefile data. 
   #' @param extensive: TRUE if data of interest is spatially extensive, (e.g population) or FALSE if spatially intensive (e.g population density) 
   #' @param join_method: in the case of shapefile to shapefile (multipoint and polygons, not points) crosswalks, choose "max_area" 
   #'                    or "areal-weighted" to inherit values of source data based on maximum intersection or a area-weighted average
@@ -17,7 +17,7 @@ crosswalk_raster <- function(data, target, location_columns = NULL, extensive = 
   #' Point data is maintained as points. User must rasterize resulting dataframe if they want the output of a point/raster join to be in raster form.
   #' Raster/shapefile combinations will output a shapefile, not a raster. User must rasterize polygon data if they want the output to be a raster. 
   #' Raster/raster combinations take the mosaic mean of the two files. The output is a raster. Users must combine with another shapefile if they want a shapefile output. 
-  #' 
+  #' @export
   
   
   # Function for Raster/Raster
@@ -71,7 +71,7 @@ crosswalk_raster <- function(data, target, location_columns = NULL, extensive = 
         polygonized_raster <- st_make_valid(data)
         
         #take the areal-weighted mean/sum of the polygonized raster and shapefile polygons
-        new_shapefile <- st_interpolate_aw(polygonized_raster, shapefile, extensive = extensive)
+        new_shapefile <- st_interpolate_aw(polygonized_raster, shapefile, extensive = extensive, na.rm = TRUE, keep_na = TRUE)
         return(new_shapefile)
       }
   
