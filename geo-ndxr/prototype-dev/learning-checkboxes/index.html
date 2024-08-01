@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Checkbox Example</title>
+</head>
+<body>
+    <h2>Select your favorite fruits:</h2>
+    <form id="fruitForm">
+        <input type="checkbox" id="apple" name="fruit" value="Apple">
+        <label for="apple"> Apple</label><br>
+        <input type="checkbox" id="banana" name="fruit" value="Banana">
+        <label for="banana"> Banana</label><br>
+        <input type="checkbox" id="cherry" name="fruit" value="Cherry">
+        <label for="cherry"> Cherry</label><br>
+        <input type="checkbox" id="date" name="fruit" value="Date">
+        <label for="date"> Date</label><br><br>
+        <input type="button" value="Submit" onclick="getCheckedFruits()">
+    </form>
+
+    <script>
+        function getCheckedFruits() {
+            // Get all checkboxes
+            var checkboxes = document.querySelectorAll('input[name="fruit"]:checked');
+            
+            // Array to store checked values
+            var checkedValues = [];
+            
+            // Loop through checked checkboxes and store values
+            checkboxes.forEach((checkbox) => {
+                checkedValues.push(checkbox.value);
+            });
+
+            // Store the array in a JavaScript variable
+            console.log(checkedValues);
+        }
+    </script>
+</body>
+</html>
