@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>My Map</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+     <!-- Make sure you put this AFTER Leaflet's CSS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""></script>
+</head>
+<body>
+    <h1>My Map</h1>
+    <!-- Checkbox inputs for selecting indicators -->
+    <label>Select indicators:</label><br/>
+    <input type="checkbox" id="indicator1" value="1"> Indicator 1<br/>
+    <input type="checkbox" id="indicator2" value="2"> Indicator 2<br/>
+    <input type="checkbox" id="indicator3" value="3"> Indicator 3<br/>
+    <input type="checkbox" id="indicator4" value="4"> Indicator 4<br/>
+    
+    <!-- Button to update the map based on selected indicators -->
+    <button onclick="updateMap()">Submit</button>
+    
+    <div id="map"></div>
+
+    <!-- Leaflet map container -->
+    <div class="leaflet html-widget html-fill-item" id="htmlwidget-e1ae6b7f079916073c79" style="width:100%;height:400px;"></div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>
