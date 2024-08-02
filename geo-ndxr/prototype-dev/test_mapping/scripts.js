@@ -5,21 +5,26 @@ var tiles = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
 
+var selectedIndexKey = 'index_value';
+var colorScale;
+
+// Function to calculate the color scale based on data values
+function calculateColorScale(data, indexKey) {
+    var values = data.features.map(feature => feature.properties[indexKey]);
+    var min = Math.min(...values);
+    var max = Math.max(...values);
+    colorScale = chroma.scale(['white','blue']).domain([min, max]);
+}
 
 // Function to get color based on data value
 function getColor(d) {
-    return d > 0.8 ? '#084594' :
-           d > 0.6 ? '#2171b5' :
-           d > 0.4 ? '#4292c6' :
-           d > 0.2 ? '#6baed6' :
-           d > 0 ? '#9ecae1' :
-                   '#c6dbef';
+    return colorScale(d).hex();
 }
 
 // Function to style each feature (polygon) based on its properties
-function style(feature, indexKey) {
+function style(feature) {
     return {
-        fillColor: getColor(feature.properties[indexKey]),
+        fillColor: getColor(feature.properties[selectedIndexKey]),
         weight: 2,
         opacity: 1,
         color: NaN,
@@ -67,12 +72,11 @@ info.onAdd = function (map) {
 };
 
 // Method to update the control based on feature properties
-info.update = function (props) {
+info.update = function (props, indexKey) {
     this._div.innerHTML = '<h4>Index Value</h4>' +  (props ?
-        '<b>' + props.NAME + '</b><br />' + props.indexKey + '</b>'
+        '<b>' + props.NAME + '</b><br />' + props[selectedIndexKey] + '</b>'
         : 'Hover over a layer');
 };
-
 
 
 // Fetch the GeoJSON data and add it to the map with styling and interaction
@@ -80,9 +84,11 @@ info.update = function (props) {
 fetch('./counties_sf.geojson')
     .then(response => response.json())
     .then(data => {
+        calculateColorScale(data, selectedIndexKey);
+
         geojson = L.geoJson(data,  {
             style: function(feature) {
-                return style(feature, 'index_value');
+                return style(feature, selectedIndexKey);
             },
             onEachFeature: onEachFeature
         }).addTo(map);
@@ -103,6 +109,7 @@ function updateMap() {
     fetch('./counties_sf.geojson')
     .then(response => response.json())
     .then(data => {
+        calculateColorScale(data, selectedIndexKey);
         geojson = L.geoJson(data,  {
             style: function(feature) {
                 return style(feature, 'index_value2');
@@ -116,5 +123,11 @@ function updateMap() {
     .catch(error => console.error('Error fetching the GeoJSON data:', error));
 
 };
+
+// Add EasyButton to return to US view
+L.easyButton('fa-solid fa-flag-usa', function(btn, map) {
+    map.setView([37.8, -96], 4);
+}, 'Return to US view').addTo(map);
+
 
 

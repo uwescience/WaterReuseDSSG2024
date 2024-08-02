@@ -50,13 +50,15 @@ leaflet_shapes_map
 #### Test mapping choropleth
 ##### Generate a new column in counties sf with values between 0 to 1
 ```{r}
-counties_sf <-  counties_sf %>% 
-  mutate(index_value = runif(n()))
+counties_sf <-  counties_sf %>%
+  mutate(
+    index_value = runif(n()),
+    index_value2 = runif(n(), min = 0, max = 100))
 ```
 
 ##### Save data to geoJSON
 ```{r}
-geojson_write(counties_sf, file = "~/DSSG/WaterReuseDSSG2024/geo-ndxr/prototype-dev/test_mapping.counties_sf.geojson")
+geojson_write(counties_sf, file = "~/DSSG/WaterReuseDSSG2024/geo-ndxr/prototype-dev/test_mapping/counties_sf.geojson")
 ```
 
 
