@@ -12,8 +12,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js"></script>
-
-
 </head>
 <body>
     <h1>My Map</h1>
@@ -27,8 +25,32 @@
     <!-- Button to update the map based on selected indicators -->
     <button onclick="updateMap()">Submit</button>
     
-    <div id="map" style="height: 600px;"></div>
+    <div id="map" style="height: 1000px; width: 1500px;"></div>
 
     <script src="scripts.js"></script>
+    <script>
+        var geojsonData;
+
+        // Fetch the GeoJSON data once and store it in a global variable
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('./counties_sf.geojson')
+                .then(response => response.json())
+                .then(data => {
+                    geojsonData = data;
+                    plot_map(data, 'index_value');
+                })
+                .catch(error => console.error('Error fetching the GeoJSON data:', error));
+        });
+
+        function updateMap() {
+            if (geojsonData) {
+                // Assuming you want to change the index value based on user input
+                var selectedIndexKey = 'index_value2'; // Update this based on your input
+                plot_map(geojsonData, selectedIndexKey);
+            } else {
+                console.error('GeoJSON data is not available.');
+            }
+        }
+    </script>
 </body>
 </html>
