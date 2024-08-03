@@ -76,7 +76,7 @@
             }
         }
 
-        async function recordSelection() {
+        async function recalculate() {
             const selectedOptions = [];
             const checkboxes = document.querySelectorAll('#checkbox-menu input[type="checkbox"]');
             checkboxes.forEach(checkbox => {
@@ -89,7 +89,7 @@
             // Initialize WebR and run the R script
             const webr = new WebR();
             await webr.init();
-            let scriptResponse = await fetch('webr-script.R');
+            let scriptResponse = await fetch('get-new-polygons.txt');
             let scriptText = await scriptResponse.text();
             await webr.evalR(scriptText);
             await webr.evalR(`test('${selectedOptionsString}')`);
@@ -110,7 +110,7 @@
                 .catch(error => console.error('Error fetching the .geojson file:', error));
         }
 
-        document.getElementById('submit-button').addEventListener('click', recordSelection);
+        document.getElementById('submit-button').addEventListener('click', recalculate);
 
         setWebsiteTitleAndDescription();
         createCheckboxes();

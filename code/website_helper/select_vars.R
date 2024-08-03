@@ -1,5 +1,3 @@
-require(dplyr)
-
 filter_data <- function(data,
                            cols_to_keep,
                            cols_to_ignore = c()) {
@@ -27,11 +25,11 @@ filter_data <- function(data,
   #' The geometry column in a simple feature (sf) object is automatically
   #' disregarded and does not need to be specified in the argument
   
-  num_data <- data %>% select(-c(cols_to_ignore))
+  num_data <- data %>% select(-all_of(cols_to_ignore))
   
-  qual_data <- data %>% select(c(cols_to_ignore))
+  qual_data <- data %>% select(all_of(cols_to_ignore))
   
-  filtered_data <- num_data %>% select(cols_to_keep)
+  filtered_data <- num_data %>% select(all_of(cols_to_keep))
   
   # using cbind makes this run much faster than using a spatial
   # join, but introduces a redundant geometry column,
@@ -39,7 +37,7 @@ filter_data <- function(data,
   filtered_data <- cbind(qual_data, filtered_data)
   
   if ("geometry.1" %in% names(filtered_data)) {
-    filtered_data <- filtered_data %>% select(-c("geometry.1"))
+    filtered_data <- filtered_data %>% select(-all_of("geometry.1"))
   }
   
   return(filtered_data)
