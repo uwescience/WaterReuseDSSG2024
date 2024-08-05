@@ -8,26 +8,27 @@ layout: default
 # GeoNdxR: Water Reuse Index and *Beyond*
 
 ## The Team
-<div style="display: flex; flex-wrap: wrap; justify-content: center;">
-  **Project Lead** 
-  <div style="width: 25%; text-align: center; padding: 10px;">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-around; text-align: center;">
+
+  <div style="width: 25%; padding: 10px;">
+    <p><strong>Project Lead</strong></p>
     <img src="{{ site.url }}{{ site.baseurl }}/assets/img/Miriam.png" alt="Miriam Hacker" style="width:200px; height:200px; object-fit: cover;">
     <p style="margin: 0;">Miriam Hacker</p>
   </div>
-  
-  **Project Advisor**
-  <div style="width: 25%; text-align: center; padding: 10px;">
+
+  <div style="width: 25%; padding: 10px;">
+    <p><strong>Project Advisor</strong></p>
     <img src="{{ site.url }}{{ site.baseurl }}/assets/img/Carolyn.jpg" alt="Carolyn Hayek" style="width:200px; height:200px; object-fit: cover;">
     <p style="margin: 0;">Carolyn Hayek</p>
   </div>
-  
-  
-  **Data Scientist** 
-  <div style="width: 25%; text-align: center; padding: 10px;">
+
+  <div style="width: 25%; padding: 10px;">
+    <p><strong>Data Scientist</strong></p>
     <img src="{{ site.url }}{{ site.baseurl }}/assets/img/Curtis.jpg" alt="Curtis Atkisson" style="width:200px; height:200px; object-fit: cover;">
     <p style="margin: 0;">Curtis Atkisson</p>
   </div>
-</div>  
+
+</div>
 
 
 ### DSSG Fellows:
