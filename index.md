@@ -31,10 +31,8 @@ layout: default
 </div>
 
 
-### DSSG Fellows:
-
-
 <div style="display: flex; flex-wrap: wrap; justify-content: center;">
+  <p><strong>DSSG Fellows</strong></p>
   <div style="width: 25%; text-align: center; padding: 10px;">
     <img src="{{ site.url }}{{ site.baseurl }}/assets/img/Jihyeon.jpg" alt="Jihyeon Bae" style="width:200px; height:200px; object-fit: cover;">
     <p style="margin: 0;">Jihyeon Bae</p>
