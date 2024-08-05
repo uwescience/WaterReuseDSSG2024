@@ -18,19 +18,19 @@ layout: default
 <!-- **DSSG Fellows: Jihyeon Bae, Nora Povejsil, Mbye Sallah, Daniel Vogler** -->
 
 <div style="display: flex; flex-wrap: wrap;">
-  <div style="flex: 50%; text-align: center; padding: 10px;">
+  <div style="flex: 25%; text-align: center; padding: 10px;">
     <img src="{{ site.url }}{{ site.baseurl }}/assets/img/Jihyeon.jpg" alt="Jihyeon Bae" style="width:100%;">
     <p>Jihyeon Bae</p>
   </div>
-  <div style="flex: 50%; text-align: center; padding: 10px;">
+  <div style="flex: 25%; text-align: center; padding: 10px;">
     <img src="{{ site.url }}{{ site.baseurl }}/assets/img/Nora.jpg" alt="Nora Povejsil" style="width:100%;">
     <p>Nora Povejsil</p>
   </div>
-  <div style="flex: 50%; text-align: center; padding: 10px;">
+  <div style="flex: 25%; text-align: center; padding: 10px;">
     <img src="{{ site.url }}{{ site.baseurl }}/assets/img/Mbye.jpg" alt="Mbye Sallah" style="width:100%;">
     <p>Mbye Sallah</p>
   </div>
-  <div style="flex: 50%; text-align: center; padding: 10px;">
+  <div style="flex: 25%; text-align: center; padding: 10px;">
     <img src="{{ site.url }}{{ site.baseurl }}/assets/img/Daniel.jpg" alt="Daniel Vogler" style="width:100%;">
     <p>Daniel Vogler</p>
   </div>
