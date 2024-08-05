@@ -11,7 +11,7 @@ layout: default
 
 **Project Lead:** 
                     <div style="width: 25%; text-align: center; padding: 10px;">
-                      <img src="{{ site.url }}{{ site.baseurl }}/assets/img/Miriam Hacker.jpg" alt="Miriam Hacker" style="width:200px; height:200px; object-fit: cover;">
+                      <img src="{{ site.url }}{{ site.baseurl }}/assets/img/Miriam.jpg" alt="Miriam Hacker" style="width:200px; height:200px; object-fit: cover;">
                       <p style="margin: 0;">Miriam Hacker</p>
                     </div>
 
