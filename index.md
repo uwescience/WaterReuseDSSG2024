@@ -15,7 +15,7 @@ layout: default
 
 **Data Scientist: Curtis Atkisson** 
 
-<!-- **DSSG Fellows: Jihyeon Bae, Nora Povejsil, Mbye Sallah, Daniel Vogler** -->
+### DSSG Fellows:
 
 
 <div style="display: flex; flex-wrap: wrap; justify-content: center;">
