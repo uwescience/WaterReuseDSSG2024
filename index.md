@@ -19,19 +19,19 @@ layout: default
 
 
 <div style="display: flex; flex-wrap: wrap; justify-content: center;">
-  <div style="width: 50%; text-align: center; padding: 10px;">
+  <div style="width: 25%; text-align: center; padding: 10px;">
     <img src="{{ site.url }}{{ site.baseurl }}/assets/img/Jihyeon.jpg" alt="Jihyeon Bae" style="width:200px; height:200px; object-fit: cover;">
     <p style="margin: 0;">Jihyeon Bae</p>
   </div>
-  <div style="width: 50%; text-align: center; padding: 10px;">
+  <div style="width: 25%; text-align: center; padding: 10px;">
     <img src="{{ site.url }}{{ site.baseurl }}/assets/img/Nora.jpg" alt="Nora Povejsil" style="width:200px; height:200px; object-fit: cover;">
     <p style="margin: 0;">Nora Povejsil</p>
   </div>
-  <div style="width: 50%; text-align: center; padding: 10px;">
+  <div style="width: 25%; text-align: center; padding: 10px;">
     <img src="{{ site.url }}{{ site.baseurl }}/assets/img/Mbye.jpg" alt="Mbye Sallah" style="width:200px; height:200px; object-fit: cover;">
     <p style="margin: 0;">Mbye Sallah</p>
   </div>
-  <div style="width: 50%; text-align: center; padding: 10px;">
+  <div style="width: 25%; text-align: center; padding: 10px;">
     <img src="{{ site.url }}{{ site.baseurl }}/assets/img/Daniel.jpg" alt="Daniel Vogler" style="width:200px; height:200px; object-fit: cover;">
     <p style="margin: 0;">Daniel Vogler</p>
   </div>
