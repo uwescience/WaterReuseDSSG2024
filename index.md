@@ -10,10 +10,10 @@ layout: default
 ## The Team
 
 **Project Lead:** 
-                    <div style="width: 25%; text-align: center; padding: 10px;">
-                      <img src="{{ site.url }}{{ site.baseurl }}/assets/img/Miriam.jpg" alt="Miriam Hacker" style="width:200px; height:200px; object-fit: cover;">
-                      <p style="margin: 0;">Miriam Hacker</p>
-                    </div>
+<div style="width: 25%; text-align: center; padding: 10px;">
+  <img src="{{ site.url }}{{ site.baseurl }}/assets/img/Miriam.png" alt="Miriam Hacker" style="width:200px; height:200px; object-fit: cover;">
+  <p style="margin: 0;">Miriam Hacker</p>
+</div>
 
 **Project Advisor: Carolyn Hayek**
 
