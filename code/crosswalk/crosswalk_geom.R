@@ -26,6 +26,7 @@ crosswalk_geom <- function(data, target, location_columns = NULL, extensive = FA
       # Ensure data is a spatial object and has the same CRS as the target
       data <- st_transform(data, crs = st_crs(target))
       data <- st_make_valid(data)
+      data <- st_make_valid(target)
       
       # Perform the spatial join for assigning source values to target polygons with the maximum area coverage of the source polygons
       joined <- st_join(data, target, join = st_intersects, largest = TRUE)
