@@ -18,20 +18,20 @@ layout: default
 <!-- **DSSG Fellows: Jihyeon Bae, Nora Povejsil, Mbye Sallah, Daniel Vogler** -->
 
 
-<div style="display: flex; flex-wrap: wrap;">
-  <div style="flex: 50%; text-align: center; padding: 10px;">
+<div style="display: flex; flex-wrap: wrap; justify-content: center;">
+  <div style="flex: 0 0 50%; text-align: center; padding: 10px;">
     <img src="{{ site.url }}{{ site.baseurl }}/assets/img/Jihyeon.jpg" alt="Jihyeon Bae" style="width:200px; height:200px; object-fit: cover;">
     <p>Jihyeon Bae</p>
   </div>
-  <div style="flex: 50%; text-align: center; padding: 10px;">
+  <div style="flex: 0 0 50%; text-align: center; padding: 10px;">
     <img src="{{ site.url }}{{ site.baseurl }}/assets/img/Nora.jpg" alt="Nora Povejsil" style="width:200px; height:200px; object-fit: cover;">
     <p>Nora Povejsil</p>
   </div>
-  <div style="flex: 50%; text-align: center; padding: 10px;">
+  <div style="flex: 0 0 50%; text-align: center; padding: 10px;">
     <img src="{{ site.url }}{{ site.baseurl }}/assets/img/Mbye.jpg" alt="Mbye Sallah" style="width:200px; height:200px; object-fit: cover;">
     <p>Mbye Sallah</p>
   </div>
-  <div style="flex: 50%; text-align: center; padding: 10px;">
+  <div style="flex: 0 0 50%; text-align: center; padding: 10px;">
     <img src="{{ site.url }}{{ site.baseurl }}/assets/img/Daniel.jpg" alt="Daniel Vogler" style="width:200px; height:200px; object-fit: cover;">
     <p>Daniel Vogler</p>
   </div>
