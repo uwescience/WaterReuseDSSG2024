@@ -16,6 +16,8 @@
 
 ## Water Reuse Specific Terminology
 
+**Water Reuse:** 
+
 **NPDES:** [National Pollutant Discharge Elimination System]([url](https://www.epa.gov/npdes/npdes-permit-basics)), a permitting program set up by the US Environmental Protection Agency. **NPDES requires most wastewater facilities to report data about the substances they discharge, a key data source for this project.**
 
 **Watershed:**
