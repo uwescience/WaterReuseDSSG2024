@@ -50,14 +50,29 @@ leaflet_shapes_map
 #### Test mapping choropleth
 ##### Generate a new column in counties sf with values between 0 to 1
 ```{r}
-counties_sf <-  counties_sf %>% 
-  mutate(index_value = runif(n()))
+counties_sf <-  counties_sf %>%
+  mutate(
+    index_value = runif(n()),
+    index_value2 = runif(n(), min = 0, max = 100))
 ```
 
 ##### Save data to geoJSON
 ```{r}
-geojson_write(counties_sf, file = "~/DSSG/WaterReuseDSSG2024/geo-ndxr/prototype-dev/test_mapping.counties_sf.geojson")
+geojson_write(counties_sf, file = "~/DSSG/WaterReuseDSSG2024/geo-ndxr/prototype-dev/test_mapping/counties_sf.geojson")
 ```
+
+```{r}
+state_sf <- st_read("/Users/mbye/DSSG/WaterReuseDSSG2024/geo-ndxr/prototype-dev/test_mapping/gz_2010_us_040_00_5m.json")
+state_sf <- state_sf %>%
+  mutate(X1 = runif(n(), min = 0, max = 100),
+         X2 = runif(n(), min = 0, max = 10),
+         X3 = runif(n(), min = 0, max = 50),
+         X4 = runif(n(), min = 0, max = 75),
+         X5 = runif(n(), min = 0, max = 57))
+geojson_write(state_sf, file = "~/DSSG/WaterReuseDSSG2024/geo-ndxr/prototype-dev/test_mapping/state_sf.geojson")
+```
+
+
 
 
 #### Create a color palette based on the index_value column
