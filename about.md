@@ -4,10 +4,6 @@ title: Meet the Team
 ---
 ---
 
-## The Team
-
-<p><strong>DSSG Fellows:</strong></p>
-
 <div class="team-member">
   <img src="{{ site.url }}{{ site.baseurl }}/assets/img/Jihyeon.jpg" alt="Jihyeon Bae" class="team-photo">
   <div class="bio-content">
