@@ -7,72 +7,17 @@ date: "2024-08-05"
 # ATTAINS dataset cleaning
 buffer PWSIDs by (60 miles) and crosswalk that with water assessment units. (1 if they overlap, 0 if they don't)  NOTE: There can be more than one PWSID associated with each assessment unit and more than one assessment unit associated with each PWSID
 ```{r}
-library(dplyr)
-config::get()
-library(readr)
-attains <- read_csv("../../data/ATTAINS_attributes.csv")
 
-
-```
-
-# DW service area
-```{r}
+library(tidyverse)
 library(sf)
-dw <- read_sf("../../data/EPA PWS boundaries/EPA_CWS_V1.shp")
+source("~/Downloads/crosswalk_spatial.R")
 
-# Convert 60 miles to meters
-# 1 mile is approximately 1609.34 meters
-buffer_distance <- 60 * 1609.34
+attains_huc_sf <- readRDS("~/Downloads/attains_huc_sf.rds")
+dw_buffered <- readRDS("~/Downloads/dw_buffered.rds")
 
-# Buffer the geometry column 
-dw_buffered <- dw %>%
-  dplyr::mutate(geometry = st_buffer(geometry, dist = buffer_distance))
-
-crs = st_crs(4326)
-dw_buffered <- st_transform(dw_buffered, crs = crs)
-names(attains)
+attains_xwalk <- crosswalk_spatial(data = attains_huc_sf , 
+                         target = dw_buffered,
+                         join_method = "max_area"
+                      )
 ```
 
-# crosswalk DW with ATTAINS
-```{r}
-huc <- read_sf("../../data/huc12_boundaries/huc12_boundaries.shp")
-huc <- huc %>%
-  dplyr::select(huc12, geometry)
-
-crs = st_crs(4326)
-huc <- st_transform(huc, crs = crs)
-
-attains <- attains %>%
-  dplyr::select(huc12, use_case_fishing, use_case_cult, use_case_rec, 
-                is_impaired, water_size, water_size_units, rec_cult_impaired)
-
-attains_huc <- attains %>%
-  dplyr::right_join(huc, by = "huc12")
-
-attains_huc_sf <- st_sf(
-  attains_huc,
-  geometry = attains_huc$geometry
-)
-
-
-
-attains_xwalk <- st_join(dw_buffered, attains_huc_sf, join = st_intersects,largest = TRUE)
-```
-
-#variable creation
-```{r}
-attains_cleaned <- attains_xwalk %>%
-  group_by(PWSID) %>%
-  summarise(
-    water_area_sum = sum(water_area, na.rm = TRUE),
-    water_area_sum_na_use_case = sum(water_area[is.na(use_case_rec) | 
-                                                is.na(use_case_fishing) | 
-                                                is.na(use_case_cult) & 
-                                                water_units != "miles"], na.rm = TRUE),
-    water_area_sum_impaired = sum(water_area[rec_cult_impaired == 1 & 
-                                            water_units != "miles"], na.rm = TRUE),
-    water_area_sum_impaired_miles = sum(water_area[rec_cult_impaired == 1 & 
-                                            water_units == "miles"], na.rm = TRUE)
-  )
-
-```
