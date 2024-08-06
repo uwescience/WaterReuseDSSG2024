@@ -36,6 +36,7 @@ crosswalk_geom <- function(data, target, location_columns = NULL, extensive = FA
         # Ensure data is a spatial object and has the same CRS as the target
         data <- st_transform(data, crs = st_crs(target))
         data <- st_make_valid(data)
+        target <- st_make_valid(target)
         # Perform the spatial join using areal aggregation extensive = TRUE (spatially extensive, e.g population) or extensive = FALSE (spatially intensive, e.g population density) 
         joined <- st_interpolate_aw(data, target, extensive = extensive, na.rm = TRUE, keep_na = TRUE)
   }

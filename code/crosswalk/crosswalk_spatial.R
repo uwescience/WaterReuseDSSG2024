@@ -46,6 +46,6 @@ crosswalk_spatial <- function(data, target, location_columns = NULL, extensive =
     return (crosswalk_raster(data, target, location_columns, extensive))
   }
   else {
-    return (crosswalk_geom(data, target, location_columns = location_columns, extensive = extensive, join_method = join_method))
+    return (crosswalk_geom(data, target, location_columns, extensive, join_method))
   }
 }
