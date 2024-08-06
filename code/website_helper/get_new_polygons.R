@@ -1,0 +1,23 @@
+library(dplyr)
+library(jsonlite)
+library(sf)
+library(geojsonsf)
+library(leaflet)
+
+sf <- geojson_sf('${geoJsonString}')
+
+cols_to_keep = fromJSON('${userSelection}')
+
+# keeps the subset of variables the user selects
+sf <- filter_data(sf,
+                  cols_to_keep = cols_to_keep)
+
+weights <- get_pca_weights(data = sf, excluded_cols = c("geometry"))
+
+index <- get_weighted_average(sf, weights, excluded_cols = c("geometry"))
+
+sf <- cbind(sf, index)
+
+geo_index <- sf_geojson(sf)
+
+return(geo_index)

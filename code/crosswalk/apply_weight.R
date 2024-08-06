@@ -13,14 +13,14 @@ apply_weight <- function(data, source_scale = NULL,
   #' @param weight_value character vector. name of the variable that contains weight values
   #' @param method aggregation or apportioning method. "weighted_mean", "weighted_sum", "sum", and "mean"
   #' @param variable variable of interest. can be a list of multiple variables
-  #' @examples apply_weight( data = cvi, 
-  #' weight_data = tr_zc_area, 
-  #' source_scale = "FIPS Code", 
-  #' key = "tract.census.geoid",
-  #' target_scale = "county.census.geoid",
-  #' weight_value = "afact",
-  #' method = "weighted_sum",
-  #' variable = c("CVI_overall", "CVI_base_all"))
+  #' @examples cvi_aggregated <- cvi %>%
+  #'                 apply_weight(source_scale = "FIPS Code",
+  #'                  weight_data = weight_data,
+  #'                  key = "tract.census.geoid", 
+  #'                  target_scale = "county.census.geoid",
+  #'                  variable = c("CVI_Overall", "CVI_base_all"),
+  #'                  method = "mean",
+  #'                  weight_value = "afact")
   #' 
   
   if (!is.character(data[[source_scale]])) {
@@ -30,7 +30,7 @@ apply_weight <- function(data, source_scale = NULL,
   
   joined_data <- data %>%
     left_join(weight_data, by = setNames(key, source_scale), copy = TRUE)
-  print(joined_data)
+
   processed_data <- joined_data %>%
     group_by(!!sym(target_scale)) %>%
     summarize(across(all_of(variable), 
@@ -45,7 +45,5 @@ apply_weight <- function(data, source_scale = NULL,
   
   return(processed_data)
 }
-
-docstring(apply_weight)
 
 

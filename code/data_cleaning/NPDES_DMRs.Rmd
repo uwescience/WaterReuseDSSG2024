@@ -1,0 +1,141 @@
+---
+title: "Water Reuse Data Cleaning - NPDES DMRs"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  pdf_document: default
+---
+
+<!-- # Executive Summary -->
+<!-- * This document computes `path_load` and `temp_load` variables -->
+<!-- * `path_load` has null values `r na_counts_newvar$path_load`% -->
+
+---
+```{r}
+library(sf)
+library(dplyr)
+library(conflicted)
+
+
+conflicts_prefer(dplyr::select)
+```
+
+Loading the dataset:
+
+```{r}
+datasets_root <- config::get("datasets_path")
+dataset_path <- "Drivers/DMR_combined_WW/DMR_combined_WW.csv"
+df <- read.csv(paste0(datasets_root, dataset_path))
+#View(df)
+```
+
+Examining where there are `NA` values:
+
+```{r}
+na_counts <- sapply(df, function(x) mean(is.na(x)))
+print(na_counts)
+```
+A tiny number of facility latitudes and longitudes are `NA`. These need to be dropped, otherwise the geospatial functions employed later in this analysis will throw errors.
+
+```{r}
+conflicts_prefer(dplyr::filter)
+df <- df %>% filter(!is.na(Facility_Latitude) & !is.na(Facility_Longitude))
+```
+First task: construct `path_load` variable. `path_load = Path_count_max * Path_Avg_flow`.
+
+```{r}
+df$path_load = df$Path_count_max * df$Path_Avg_Flow
+```
+
+Second task: construct `temp_load` variable. `temp_load = Temp_max * Temp_Avg_Flow`.
+
+```{r}
+df$temp_load = df$Temp_max * df$Temp_Avg_Flow
+```
+
+Let's check how many `NA` values are in the constructed variables:
+
+```{r}
+na_counts_newvar <- df %>% 
+  select(c("FRS_ID", "Path_count_max","Path_Avg_Flow",
+           "path_load", "Temp_max", "Temp_Avg_Flow", "temp_load")) %>% 
+  sapply(function(x) mean(is.na(x)))
+
+print(na_counts_newvar)
+```
+
+
+```{r}
+wsa_filename = "EPA PWS Boundaries/EPA_CWS_V1.shp"
+
+wsa_path <- paste0(config::get("datasets_path"), wsa_filename)
+wsa <- st_read(wsa_path)
+
+source("code/crosswalk/crosswalk_spatial.R")
+
+mapped_df <- crosswalk_spatial(df, wsa, location_columns = c("Facility_Latitude", "Facility_Longitude"))
+
+out_filename <- "processed_datasets/npdes_dmrs.shp"
+out_path <- paste0(config::get("datasets_path"), out_filename)
+
+columns_to_rename <- setdiff(colnames(mapped_df), "geometry")
+
+colnames(mapped_df)[colnames(mapped_df) %in% columns_to_rename] <- paste0("x", seq_along(columns_to_rename))
+
+st_write(mapped_df, out_path)
+```
+
+---
+A high percentage of values are `NA`. Let's investigate if it would be possible to impute them with MLR.
+
+```{r}
+numeric_df <- df[sapply(df, is.numeric)]
+
+# use argument tells R to ignore NAs
+cor_matrix <- cor(numeric_df, use="pairwise.complete.obs")
+
+# puts the cor_matrix in long form, making it easier to filter the cross-correlations
+melted_cor_matrix = melt(cor_matrix)
+
+# Full correlation matrix is unwieldy, so focus on the high correlations.
+threshold <- 0.5
+
+filtered_correlations <- melted_cor_matrix %>%
+  filter(abs(value) > threshold & Var1 != Var2) %>% 
+  filter(Var1 == "Temp_max" | 
+           Var1 == "Temp_Avg_Flow" |
+           Var1 == "Path_count_max" |
+           Var1 == "Path_Avg_Flow") %>%
+  arrange(Var1)
+
+print(filtered_correlations)
+```
+
+`Temp_max` is 86% `NA`. Unfortunately, it is highly correlated only with another variable (`Temp_avg`) with a high percentage of `NA` values, so we cannot use linear regression to try to impute it.
+---
+
+# Understanding high NAs in Temp_max
+
+Hypothesis: Large facilities (measured by flow volume) are likelier to collect temperature data than smaller facilities. 
+
+Test: bucket facilities into quintiles by flow volume size; calculate percentage of `NA` values in each quintile.
+
+```{r}
+# divide into quintiles
+df_ <- df %>% 
+  mutate(flow_quintile = ntile(Total_Annual_Flow_MMGal, 5)) %>%
+  select(c(FRS_ID, Facility_Name, City, State, flow_quintile, Temp_max))
+
+quintile_summary <- df_ %>% 
+  group_by(flow_quintile) %>%
+  summarize(
+    total_count = n(),
+    na_count = sum(is.na(Temp_max)),
+    na_percentage = (na_count / total_count) * 100
+  )
+
+print(quintile_summary)
+```
+The result indicates that the hypothesis is correct - higher-flow facilities are likelier to measure and report `Temp_max`. However, even in the group with the highest flow (quintile 5 = highest), the large majority of `Temp_max` observations are `NA`.
+

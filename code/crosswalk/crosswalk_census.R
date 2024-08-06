@@ -7,21 +7,20 @@ crosswalk_census <- function(data,
                              weight_by, 
                              method,
                              variable) {
-  #' 
   #' crosswalk across census tract, county, and puma
-  #' @description crosswalk for census
+  #' @description crosswalk, aggregation, aportioning for census-related scales
   #' @param data dataframe input
   #' @param source_scale character vector. Column that identifies the unit of analysis in the data.
-  #' @param key character vector. should be one from the list. 
+  #' @param key character vector. input options are:
   #'      "tract.census.geoid"
   #'      "county.census.geoid"
   #'      "puma.census.geoid"
-  #' @param target_scale character vector. should be one from the list. 
+  #' @param target_scale character vector. input options are:
   #'      "tract.census.geoid"
   #'      "county.census.geoid"
   #'      "puma.census.geoid"
   #' @param weight_by values to be weighted by. "population" or "area"
-  #' @param method aggregation or apportioning method. "weighted_mean", "weighted_sum", "sum", and "mean"
+  #' @param method aggregation or apportioning method. "weighted_mean", "weighted_sum", "sum", and "mean". 
   #' @param variable a list of variables that need to be transformed into a different scale
   #' @examples
   #' result <- crosswalk_census(data = cvi,
@@ -31,10 +30,12 @@ crosswalk_census <- function(data,
   #'             weight_by = "population",
   #'             method = "weighted_mean",
   #'             variable = c("CVI_overall", "CVI_base_all"))
-  #'             print(result)
+  #'          
   #'          
   #'    
-  #'    source("./code/crosswalk/apply_weight.R")
+  #'    
+  root_dir <- config::get()
+   source(paste0(root_dir, "/code/crosswalk/apply_weight.R"))
   
   # Read data files
   root_dir <- config::get()
@@ -52,30 +53,9 @@ crosswalk_census <- function(data,
   pm_tr_area <- read.csv(paste0(root_dir, "/code/crosswalk/weights_data/2020pm_tr_area.csv"), header = TRUE)[-1,] 
   tr_pm_population <- read.csv(paste0(root_dir, "/code/crosswalk/weights_data/2020tr_pm.csv"), header = TRUE)[-1,]
   tr_pm_area <- read.csv(paste0(root_dir, "/code/crosswalk/weights_data/2020tr_pm_area.csv"), header = TRUE)[-1,]
+
   
-  
-  
-  # Process data function
-  process_data <- function(data) {
-    library(dplyr)
-    
-    data$afact <- as.numeric(data$afact)
-    
-    if ("county" %in% names(data) && "tract" %in% names(data)) {
-      data$tract <- gsub("\\.", "", data$tract)
-      data <- data %>%
-        mutate(tract.census.geoid = paste0(county, tract)) %>%
-        rename(county.census.geoid = county) 
-    } 
-    
-    if ("puma22" %in% names(data)) {
-      data <- data %>%
-        rename_with(~ifelse(. %in% "puma22", "puma.census.geoid", .),
-                    .cols = "puma22")
-    } 
-    
-    return(data) }
-  
+  source(paste0(root_dir, "/code/crosswalk/process_mcdc_data.R"))
   
   # Apply processing
   ct_tr_area <- process_data(ct_tr_area) 

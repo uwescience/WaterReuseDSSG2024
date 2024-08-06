@@ -9,22 +9,120 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 
     <!-- Make sure you put this AFTER Leaflet's CSS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js"></script>
+
+     <style>
+        .scroll-box {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        #map {
+            width: 70vw; /* Adjusted to fit almost 70% of the viewport width */
+            height: 70vh; /* Adjusted to fit almost 70% of the viewport height */
+            max-width: 900px;
+            max-height: 600px;
+        }
+        .sidebar {
+            width: 30%;
+            display: flex;
+            flex-direction: column;
+            gap: 0; /* Remove gaps between categories */
+            padding: 10px;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+            height: 70vh; /* Same as map height to align with it */
+            overflow-y: auto;
+        }
+        .content {
+            display: flex;
+            align-items: flex-start;
+        }
+        .category-section {
+            margin-bottom: 0;
+            padding: 5px 0; /* Add padding inside each category section */
+            border-bottom: 1px solid #eee; /* Light border between categories */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .indicator-select {
+            width: 100%;
+        }
+        h2 {
+            margin-top: 0;
+            margin-right: 10px; /* Space between category title and checkbox */
+        }
+        .category-label {
+            display: flex;
+            align-items: center;
+        }
+        .category-label input {
+            margin-left: 5px;
+        }
+    </style>
 </head>
 <body>
     <h1>My Map</h1>
-    <!-- Checkbox inputs for selecting indicators -->
-    <label>Select indicators:</label><br/>
-    <input type="checkbox" id="indicator1" value="1"> Indicator 1<br/>
-    <input type="checkbox" id="indicator2" value="2"> Indicator 2<br/>
-    <input type="checkbox" id="indicator3" value="3"> Indicator 3<br/>
-    <input type="checkbox" id="indicator4" value="4"> Indicator 4<br/>
     
-    <!-- Button to update the map based on selected indicators -->
-    <button onclick="updateMap()">Submit</button>
+    <!-- Container for categories, indicators, and map -->
+    <div class="content">
+        <!-- Column for categories and indicators -->
+        <div class="sidebar">
+            <div class="category-section">
+                <div class="category-label">
+                    <h2>Category 1</h2>
+                    <input type="checkbox" id="category1" onclick="toggleCategory('indicators-category1')">
+                </div>
+                <select id="indicators-category1" class="indicator-select" multiple>
+                    <option value="1">Indicator 1</option>
+                    <option value="2">Indicator 2</option>
+                    <option value="3">Indicator 3</option>
+                    <option value="4">Indicator 4</option>
+                    <option value="5">Indicator 5</option>
+                    <option value="6">Indicator 6</option>
+                    <option value="7">Indicator 7</option>
+                    <option value="8">Indicator 8</option>
+                    <option value="9">Indicator 9</option>
+                </select>
+            </div>
+            <div class="category-section">
+                <div class="category-label">
+                    <h2>Category 2</h2>
+                    <input type="checkbox" id="category2" onclick="toggleCategory('indicators-category2')">
+                </div>
+                <select id="indicators-category2" class="indicator-select" multiple>
+                    <option value="10">Indicator 10</option>
+                    <option value="11">Indicator 11</option>
+                    <option value="12">Indicator 12</option>
+                </select>
+            </div>
+            <div class="category-section">
+                <div class="category-label">
+                    <h2>Category 3</h2>
+                    <input type="checkbox" id="category3" onclick="toggleCategory('indicators-category3')">
+                </div>
+                <select id="indicators-category3" class="indicator-select" multiple>
+                    <option value="13">Indicator 13</option>
+                    <option value="14">Indicator 14</option>
+                    <option value="15">Indicator 15</option>
+                </select>
+            </div>
+            <!-- Button to update the map based on selected indicators -->
+            <button onclick="updateMap()">Submit</button>
+        </div>
+        <!-- Map container -->
+        <div>
+            <div id="map" class="leaflet html-widget html-fill-item"></div>
+        </div>
+    </div>
     
+
     <div id="map" style="height: 1000px; width: 1500px;"></div>
 
     <script src="scripts.js"></script>
@@ -51,6 +149,50 @@
                 console.error('GeoJSON data is not available.');
             }
         }
+
+    <script src="scripts.js"></script>
+    <script>
+        // JavaScript to toggle category indicators
+        function toggleCategory(selectId) {
+            const selectElement = document.getElementById(selectId);
+            const categoryCheckbox = document.getElementById(selectId.replace('indicators-', ''));
+
+            for (let i = 0; i < selectElement.options.length; i++) {
+                selectElement.options[i].selected = categoryCheckbox.checked;
+            }
+        }
+
+        // JavaScript to update the map
+        function updateMap() {
+            // Gather selected indicators from all categories
+            let selectedIndicators = [];
+            const selects = document.querySelectorAll('.indicator-select');
+
+            selects.forEach(select => {
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].selected) {
+                        selectedIndicators.push(select.options[i].value);
+                    }
+                }
+            });
+
+            // Your logic to update the map based on selected indicators
+            console.log('Updating map with indicators: ' + selectedIndicators.join(', '));
+            
+            // Example of using Leaflet to update the map (this is just a placeholder, adjust as needed)
+            // Assuming you have a Leaflet map instance called 'map'
+            // selectedIndicators.forEach(indicator => {
+            //     // Add your logic to update the map with each indicator
+            //     // For example, adding markers, layers, etc.
+            // });
+        }
+
+        // Initialize Leaflet map (example, adjust as needed)
+        var map = L.map('map').setView([51.505, -0.09], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
     </script>
 </body>
 </html>

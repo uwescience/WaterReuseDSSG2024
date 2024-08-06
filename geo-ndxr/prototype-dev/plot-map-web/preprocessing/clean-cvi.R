@@ -5,10 +5,7 @@ library(sf)
 source("../../../code/create_index/get_pca_weights.R")
 source("../../../code/create_index/weighted_average.R")
 
-
-root <- config::get('dataset_path')
-data <- "Drivers/cvi_data/cvi-data.csv"
-path <- paste0(root,data)
+path <- "/Users/danielvogler/Documents/DSSG/water_reuse/datasets/Drivers/cvi_data/cvi-data.csv"
 cvi <- read.csv(path)
 
 # HELPER FUNCTION IMPUTES MEDIAN
@@ -41,9 +38,9 @@ new_column_names <- paste0("x", seq_along(columns_to_rename))
 
 names(sf)[names(sf) %in% columns_to_rename] <- new_column_names
 
-sf <- sf %>% select(c(geometry, x1, x2, x3)) %>% head(50)
+sf <- sf %>% select(c(geometry, x1, x2, x3)) %>% slice(51:100)
 
-gj_path <- "./geo-ndxr/prototype-dev/plot-map-web/data/test.geojson"
+gj_path <- "./geo-ndxr/prototype-dev/plot-map-web/data/test_2.geojson"
 
 st_write(sf, gj_path, driver = "GEOJSON")
 
