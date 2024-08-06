@@ -51,7 +51,7 @@ title: Meet the Team
   <div class="bio-content">
     <h2>Miriam Hacker</h2>
     <p><strong>Project Lead</strong></p>
-    <p>Miriam Hacker bio goes here. She is responsible for overseeing the project and ensuring all milestones are met on time. Her experience in project management spans over a decade, working with various international teams and stakeholders.</p>
+    <p>Miriam Hacker bio goes here.</p>
   </div>
 </div>
 
@@ -60,7 +60,7 @@ title: Meet the Team
   <div class="bio-content">
     <h2>Carolyn Hayek</h2>
     <p><strong>Project Advisor</strong></p>
-    <p>Carolyn Hayek bio goes here. She provides strategic guidance and insights, drawing from her extensive background in data science and policy development.</p>
+    <p>Carolyn Hayek bio goes here.</p>
   </div>
 </div>
 
@@ -69,13 +69,12 @@ title: Meet the Team
   <div class="bio-content">
     <h2>Curtis Atkisson</h2>
     <p><strong>Data Scientist</strong></p>
-    <p>Curtis Atkisson bio goes here. His expertise in data analysis and machine learning drives the technical aspects of the project, ensuring robust and accurate results.</p>
+    <p>Curtis Atkisson bio goes here. </p>
   </div>
 </div>
 
 <style>
 .team-member {
-  clear: both;
   overflow: hidden;
   margin-bottom: 40px;
 }
@@ -88,10 +87,6 @@ title: Meet the Team
   margin-right: 20px;
 }
 
-.bio-content {
-  overflow: hidden;
-}
-
 .bio-content h2 {
   margin-top: 0;
 }
@@ -99,4 +94,3 @@ title: Meet the Team
 .bio-content p {
   margin: 5px 0;
 }
-</style>
