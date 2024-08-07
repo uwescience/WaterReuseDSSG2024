@@ -47,7 +47,7 @@ title: Meet the Team
   <div class="bio-content">
     <h2>Miriam Hacker</h2>
     <p><strong>Project Lead</strong></p>
-    <p>Miriam Hacker bio goes here.</p>
+    <p>Dr. Miriam Hacker serves as a Research Program Manager at the Water Research Foundation, building bridges between research and practice. Her research portfolio through the Foundation focuses on projects related to Utility Management, Workforce Management, Water Reuse, and Decentralized Systems. Dr. Hacker earned her BS, MS and PhD degrees in Civil Engineering at the University of Washington with an emphasis in construction, energy, and sustainable infrastructure. Her professional experience includes local permitting, stormwater management, network development, and the housing-water nexus. More recent research experience includes institutional and governance considerations for implementation of alternative water systems (e.g. onsite water reuse, general water reuse) and community engagement best practices.</p>
   </div>
 </div>
 
@@ -56,7 +56,8 @@ title: Meet the Team
   <div class="bio-content">
     <h2>Carolyn Hayek</h2>
     <p><strong>Project Advisor</strong></p>
-    <p>Carolyn Hayek bio goes here.</p>
+    <p>Carolyn Hayek holds a PhD in Sustainable Development from Columbia Climate School, a B.S. in Chemistry from Boston College with a minor in environmental studies, as well as a Masters in Environmental Engineering and a Masters in Urban Planning from the Massachusetts Institute of Technology (MIT).
+    Carolyn spent 10 years at the US Environmental Protection Agency (EPA) New England regional office in Boston, MA. While there, she was selected for a highly competitive 2-year developmental program designed to expose employees to the full breadth and scope of the Agency. Areas in which Carolyn has worked include: effective management of drinking water and wastewater utilities, grants management and federal oversight of Drinking Water State Revolving Fund programs, water quality sampling, compliance assistance and enforcement for chemical storage and usage, hazardous waste site cleanup, green chemistry, wetlands permitting, low impact development, climate change, and the Significant New Alternatives Policy Program for ozone-depleting substances.</p>
   </div>
 </div>
 
@@ -65,7 +66,9 @@ title: Meet the Team
   <div class="bio-content">
     <h2>Curtis Atkisson</h2>
     <p><strong>Data Scientist</strong></p>
-    <p>Curtis Atkisson bio goes here. </p>
+    <p>Curtis Atkisson joined the eScience Institute in Feb 2024. He received his PhD in Evolutionary Anthropology from UC Davis with a designated emphasis in Computational Social Science. His dissertation was on how changes in people’s complex social networks impact their cooperative behavior. The analysis of those data required complex networks, designing new measures of information in those networks, and modeling those changes with custom-built Bayesian statistical models.
+    His postdoctoral work applied his methodological expertise to understanding Open Source Software communities and how they persist, as well as expanding his tools to include Text As Data/Text Mining, machine learning, and AI approaches to understanding text (e.g., GPT as a zero-shot translator). Curtis brings a broad and mixed set of both qualitative and quantitative methods that can be used to understand dynamic processes as well as their surrounding contexts.
+    His approach to statistics is to maximize the information that can be drawn from data by developing custom-built Bayesian models that can use MCMC to reason about quite diverse data-generating mechanisms. He has worked extensively with qualitative data analysis methods and machine analysis of qualitative data. He has an emphasis on network analysis, including complex networks. </p>
   </div>
 </div>
 
