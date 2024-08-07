@@ -43,7 +43,7 @@ crosswalk_spatial <- function(data, target, location_columns = NULL, extensive =
   require(exactextractr)
   
   if (inherits(data, "SpatRaster") | inherits(target, "SpatRaster")) {
-    return (crosswalk_raster(data, target, location_columns, extensive))
+    return (crosswalk_raster(data, target, location_columns, extensive, join_method))
   }
   else {
     return (crosswalk_geom(data, target, location_columns, extensive, join_method))
