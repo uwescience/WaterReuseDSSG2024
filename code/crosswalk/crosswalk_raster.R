@@ -66,10 +66,12 @@ crosswalk_raster <- function(data, target, location_columns = NULL, extensive = 
       valid_geometries <- st_make_valid(shapefile)
     }
     
+    #Convert shapefile to sf object 
+    valid_geometries <- st_as_sf(valid_geometries)
+    
     #Crop the raster to the proper size of the boundaries 
     cropped_raster <- terra::crop(raster, valid_geometries)
     
-    valid_geometries <- st_as_sf(valid_geometries)
     
     #Extract mean, max, and min from the raster in the polygons 
     if (join_method == "areal_weighted") {
@@ -78,7 +80,7 @@ crosswalk_raster <- function(data, target, location_columns = NULL, extensive = 
           land_sub_avg = exact_extract(cropped_raster, valid_geometries, fun = 'mean', weights = "area"),
           land_sub_max = exact_extract(cropped_raster, valid_geometries, fun = 'max', weights = "area"),
           land_sub_min = exact_extract(cropped_raster, valid_geometries, fun = 'min', weights = "area"),
-          land_sub_min = exact_extract(cropped_raster, valid_geometries, fun = 'sum', weights = "area")
+          land_sub_sum = exact_extract(cropped_raster, valid_geometries, fun = 'sum', weights = "area")
         )
       
     } else {
@@ -87,7 +89,7 @@ crosswalk_raster <- function(data, target, location_columns = NULL, extensive = 
           land_sub_avg = exact_extract(cropped_raster, valid_geometries, fun = 'mean'),
           land_sub_max = exact_extract(cropped_raster, valid_geometries, fun = 'max'),
           land_sub_min = exact_extract(cropped_raster, valid_geometries, fun = 'min'),
-          land_sub_min = exact_extract(cropped_raster, valid_geometries, fun = 'sum')
+          land_sub_sum = exact_extract(cropped_raster, valid_geometries, fun = 'sum')
           )
     }
     return(sf_raster_values)
