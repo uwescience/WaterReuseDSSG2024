@@ -1,5 +1,5 @@
 
-crosswalk_raster <- function(data, target, location_columns = NULL, extensive = FALSE) {
+crosswalk_raster <- function(data, target, location_columns = NULL, extensive = FALSE, join_method = NULL) {
   #' @description
   #' Perform spatial crosswalks on raster data and one of the following target types: raster or shapefile.    
   #' 
@@ -57,19 +57,42 @@ crosswalk_raster <- function(data, target, location_columns = NULL, extensive = 
   }
   
   # Function for Raster/Shapefile
-  raster_shapefile_join <- function(raster, shapefile, extensive) {
+  raster_shapefile_join <- function(raster, shapefile, extensive, join_method) {
+    
     # Turn raster into polygons
-    polygonized_raster <- as.polygons(raster)
-    polygonized_raster <- st_as_sf(polygonized_raster)
-    polygonized_raster <- st_transform(polygonized_raster, crs = st_crs(shapefile))
+    shapefile <- st_transform(shapefile, st_crs(raster))
+    valid_geometries <- st_is_valid(shapefile)
+    if (!all(valid_geometries)) {
+      valid_geometries <- st_make_valid(shapefile)
+    }
     
-    # Perform areal interpolation
-    interpolated_data <- st_interpolate_aw(polygonized_raster, shapefile, extensive = extensive)
+    #Convert shapefile to sf object 
+    valid_geometries <- st_as_sf(valid_geometries)
     
-    # Ensure matching rows and extract GEOID column
-    interpolated_data$GEOID <- shapefile$GEOID[match(st_geometry(interpolated_data), st_geometry(shapefile))]
+    #Crop the raster to the proper size of the boundaries 
+    cropped_raster <- terra::crop(raster, valid_geometries)
     
-    return(interpolated_data)
+    
+    #Extract mean, max, and min from the raster in the polygons 
+    if (join_method == "areal_weighted") {
+      sf_raster_values <-
+        valid_geometries %>% mutate(
+          land_sub_avg = exact_extract(cropped_raster, valid_geometries, fun = 'mean', weights = "area"),
+          land_sub_max = exact_extract(cropped_raster, valid_geometries, fun = 'max', weights = "area"),
+          land_sub_min = exact_extract(cropped_raster, valid_geometries, fun = 'min', weights = "area"),
+          land_sub_sum = exact_extract(cropped_raster, valid_geometries, fun = 'sum', weights = "area")
+        )
+      
+    } else {
+      sf_raster_values <-
+        valid_geometries %>% mutate(
+          land_sub_avg = exact_extract(cropped_raster, valid_geometries, fun = 'mean'),
+          land_sub_max = exact_extract(cropped_raster, valid_geometries, fun = 'max'),
+          land_sub_min = exact_extract(cropped_raster, valid_geometries, fun = 'min'),
+          land_sub_sum = exact_extract(cropped_raster, valid_geometries, fun = 'sum')
+          )
+    }
+    return(sf_raster_values)
   }
   
   # Determine the types of input data and call the appropriate function
@@ -78,7 +101,7 @@ crosswalk_raster <- function(data, target, location_columns = NULL, extensive = 
   } else if (inherits(target, "SpatRaster") && !is.null(location_columns) && length(location_columns) == 2) {
     return(raster_point_join(data, target, location_columns))
   } else if (inherits(data, "SpatRaster") && inherits(target, "sf")) {
-    return(raster_shapefile_join(data, target, extensive))
+    return(raster_shapefile_join(data, target, extensive, join_method))
   } else {
     stop("Unsupported data types. Check inputs.")
   }

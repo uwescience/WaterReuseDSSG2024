@@ -1,0 +1,55 @@
+library(dplyr)
+library(sf)
+library(ggplot2)
+library(readr)
+acs <- read_csv("~/Downloads/ACS_extracts.csv")
+library(tigris)
+
+
+census_tracts <- tracts(cb = TRUE, year = 2020, filter_by = c(-124.7844079, -66.9513812, 24.7433195, 49.3457868))
+
+service <- st_read("~/Desktop/WaterReuseDSSG2024/data/EPA PWS boundaries/EPA_CWS_V1.shp")
+
+acs <- acs %>%
+  rename(GEOID = TL_GEO_ID)
+
+acs_sf <- census_tracts %>%
+  left_join(acs, by = "GEOID")
+
+service <- st_transform(service, crs = st_crs(acs_sf))
+service <- service %>%
+  st_make_valid()
+
+joined_data <- st_join(acs_sf, service, join = st_intersects)
+
+acs_cleaned <- joined_data %>%
+  st_drop_geometry() %>%  
+  group_by(PWSID) %>%
+  summarize(gini=mean(gini, na.rm=TRUE))
+
+write_rds(acs_cleaned, "gini_pwd.rds")
+
+
+# Define the bounding box coordinates
+bbox_coords <- c(xmin = -124.7844079, xmax = -66.9513812,
+                 ymin = 24.7433195, ymax = 49.3457868)
+
+bbox <- st_as_sfc(st_bbox(bbox_coords, crs = st_crs(acs_cleaned)))
+acs_filtered <- st_crop(acs_cleaned, bbox)
+
+# Plot the result
+plot <- ggplot(data = acs_filtered) +
+  geom_sf(aes(fill = gini)) +
+  scale_fill_viridis_c(option = "D", na.value = "gray") +
+  labs(title = "Average Gini Coefficient by Census Tract",
+       fill = "Gini Coefficient",
+       caption = "") +
+  theme_minimal(base_family = "Arial") +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    plot.caption = element_text(hjust = 0.5, size = 10),
+    panel.background = element_rect(fill = "white", color = NA)
+  )
+
+ggsave(filename = "acs_tract_plot.png", plot = plot, path = "~/Desktop/WaterReuseDSSG2024/code/data_cleaning",
+       device = "png")
