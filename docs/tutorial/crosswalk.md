@@ -333,7 +333,8 @@ head(ndi_reduced)
 
 All of the functions above are useful for handling nested datasets. We
 further allow users to crosswalk un-nested datasets by using
-spatial_joins.
+spatial_joins.Perform spatial crosswalks on point, shapefile, and raster data 
+when a geo-id crosswalk is unavailable. 
 
 Please read the docstrings for the wrapper function crosswalk_spatial
 for information on arguments. The function crosswalk_spatial relies on
@@ -351,6 +352,32 @@ conversions.
 Depending on the input data types, the output will take the mean,
 areal_weighted mean, or maximum area as an aggregation method. See the
 documentation of crosswalk_spatial for more details on this.
+
+This function will automatically detect geometry columns associated with 
+shapefiles. 
+
+Please be mindful of NA values prior to performing spatial crosswalks/joins. 
+When taking areal-weighted averages and sums, all target geometries will be 
+maintained even if the resulting interpolation is NA. Prior to calculating the 
+interpolation, NA values in the source data will be removed so as to not cause 
+calculations to return NA. You will need to check your NAs and handle them in 
+the way you see appropriate before using the crosswalked data output by this 
+function.  
+ 
+When assigning points to shapes, all points will be returned with their 
+associated shapes (left join where points are maintained). When assigning point 
+values to a raster, you will end up with a polygonized raster with appended 
+values for points contained by the raster squares.
+
+Notes on using raster data in combination with other data: 
+- Point data is set on the raster scale but maintains its original values. NA 
+values for polygonized rasters not containing a point. Will double count 
+polygons containing multiple points. 
+- Raster/shapefile combinations will output a shapefile, not a raster. User must
+rasterize polygon data if they want the output to be a raster. 
+- Raster/raster combinations stack the two files to be a stacked raster object.
+The output is a stacked raster. Users must combine with another shapefile if 
+they want a shapefile output. 
 
 #### example
 
@@ -385,7 +412,7 @@ This changes point-level data to county-level.
 ``` r
 cwns <- st_read(paste0(root_dir,"/data/CWNS_merged.csv"))
 cwns <- cwns %>% 
-  select(LATITUDE, 
+  dplyr::select(LATITUDE, 
          LONGITUDE, 
          CURRENT_DESIGN_FLOW)
 
@@ -393,3 +420,10 @@ joined_sfs <- crosswalk_spatial(cwns, counties, location_columns = c("LATITUDE",
 
 head(joined_sfs)
 ```
+
+#### Point to raster 
+
+#### Stacking rasters
+
+#### Rasters to shapes 
+
