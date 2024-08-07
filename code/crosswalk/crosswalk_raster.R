@@ -77,21 +77,22 @@ crosswalk_raster <- function(data, target, location_columns = NULL, extensive = 
     if (join_method == "areal_weighted") {
       sf_raster_values <-
         valid_geometries %>% mutate(
-          land_sub_avg = exact_extract(cropped_raster, valid_geometries, fun = 'mean', weights = "area"),
-          land_sub_max = exact_extract(cropped_raster, valid_geometries, fun = 'max', weights = "area"),
-          land_sub_min = exact_extract(cropped_raster, valid_geometries, fun = 'min', weights = "area"),
-          land_sub_sum = exact_extract(cropped_raster, valid_geometries, fun = 'sum', weights = "area")
+          var_mean = exact_extract(cropped_raster, valid_geometries, fun = 'mean', weights = "area"),
+          var_max = exact_extract(cropped_raster, valid_geometries, fun = 'max', weights = "area"),
+          var_min = exact_extract(cropped_raster, valid_geometries, fun = 'min', weights = "area"),
+          var_sum = exact_extract(cropped_raster, valid_geometries, fun = 'sum', weights = "area")
         )
       
     } else {
       sf_raster_values <-
         valid_geometries %>% mutate(
-          land_sub_avg = exact_extract(cropped_raster, valid_geometries, fun = 'mean'),
-          land_sub_max = exact_extract(cropped_raster, valid_geometries, fun = 'max'),
-          land_sub_min = exact_extract(cropped_raster, valid_geometries, fun = 'min'),
-          land_sub_sum = exact_extract(cropped_raster, valid_geometries, fun = 'sum')
-          )
+          var_mean = exact_extract(cropped_raster, valid_geometries, fun = 'mean'),
+          var_max = exact_extract(cropped_raster, valid_geometries, fun = 'max'),
+          var_min = exact_extract(cropped_raster, valid_geometries, fun = 'min'),
+          var_sum = exact_extract(cropped_raster, valid_geometries, fun = 'sum')
+        )
     }
+    
     return(sf_raster_values)
   }
   
