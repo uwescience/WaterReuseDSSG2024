@@ -80,7 +80,7 @@ crosswalk_raster <- function(data, target, location_columns = NULL, extensive = 
           land_sub_avg = exact_extract(cropped_raster, valid_geometries, fun = 'mean', weights = "area"),
           land_sub_max = exact_extract(cropped_raster, valid_geometries, fun = 'max', weights = "area"),
           land_sub_min = exact_extract(cropped_raster, valid_geometries, fun = 'min', weights = "area"),
-          land_sub_min = exact_extract(cropped_raster, valid_geometries, fun = 'sum', weights = "area")
+          land_sub_sum = exact_extract(cropped_raster, valid_geometries, fun = 'sum', weights = "area")
         )
       
     } else {
@@ -89,7 +89,7 @@ crosswalk_raster <- function(data, target, location_columns = NULL, extensive = 
           land_sub_avg = exact_extract(cropped_raster, valid_geometries, fun = 'mean'),
           land_sub_max = exact_extract(cropped_raster, valid_geometries, fun = 'max'),
           land_sub_min = exact_extract(cropped_raster, valid_geometries, fun = 'min'),
-          land_sub_min = exact_extract(cropped_raster, valid_geometries, fun = 'sum')
+          land_sub_sum = exact_extract(cropped_raster, valid_geometries, fun = 'sum')
           )
     }
     return(sf_raster_values)
