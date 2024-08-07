@@ -53,7 +53,7 @@ crosswalk_id <- function(data,
       left_join(data2, by = setNames(key, source_scale))
     return(merged_data)
   } else {
-    root_dir <- config::get()
+    root_dir <- config::get("home_path")
     crosswalk_file <- readr::read_csv(paste0(root_dir,"/code/crosswalk/weights_data/census_reference_table.csv")) 
     crosswalk_file <- crosswalk_file[, -1]
     
