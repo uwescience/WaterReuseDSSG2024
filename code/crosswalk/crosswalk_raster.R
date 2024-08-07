@@ -66,10 +66,12 @@ crosswalk_raster <- function(data, target, location_columns = NULL, extensive = 
       valid_geometries <- st_make_valid(shapefile)
     }
     
+    #Convert shapefile to sf object 
+    valid_geometries <- st_as_sf(valid_geometries)
+    
     #Crop the raster to the proper size of the boundaries 
     cropped_raster <- terra::crop(raster, valid_geometries)
     
-    valid_geometries <- st_as_sf(valid_geometries)
     
     #Extract mean, max, and min from the raster in the polygons 
     if (join_method == "areal_weighted") {
