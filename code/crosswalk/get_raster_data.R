@@ -18,14 +18,11 @@ get_raster_data <- function(raster_data, shapefile, fun = sum){
     # Extract data for the current row
     extracted_value <- extract(raster_data, row, fun = fun, na.rm = TRUE, ID = FALSE)
     
-    # Ensure the extracted_value is not empty
-    if (!is.null(extracted_value) && length(extracted_value) > 0) {
-      # Create a data frame for the current row
-      df <- data.frame(GEOID = row$GEOID, extracted_value = extracted_value)
+    # Create a data frame for the current row
+    df <- data.frame(GEOID = row$GEOID, extracted_value = extracted_value)
       
       # Append the data frame to the list
       data_list[[i]] <- df
-    }
   }
   
   # Combine all data frames into one
