@@ -1,4 +1,4 @@
-setwd(config::get("home_path"))
+#setsetwd(config::get("home_path"))
 
 source("code/crosswalk/crosswalk_geom.R")
 source("code/crosswalk/crosswalk_raster.R")
@@ -42,7 +42,7 @@ crosswalk_spatial <- function(data, target, location_columns = NULL, extensive =
   require(dplyr)
   require(exactextractr)
   
-  if (inherits(data, "Raster") | inherits(target, "Raster")) {
+  if (inherits(data, "SpatRaster") | inherits(target, "SpatRaster")) {
     return (crosswalk_raster(data, target, location_columns, extensive))
   }
   else {
