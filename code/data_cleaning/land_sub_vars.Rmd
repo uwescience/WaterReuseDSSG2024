@@ -1,0 +1,90 @@
+---
+title: "land_sub_max_avg"
+output: html_document
+date: "2024-08-06"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+#Load libraries
+library(pacman)
+
+p_load(tigris, tidyverse, dplyr, sf, usmap, ggplot2, naniar, raster, terra, stars, nngeo, exactextractr, naniar)
+
+```
+
+```{r}
+#Load Data
+data_home_path <- "~/Downloads/cleaning_data/"
+
+subsidence <- rast(paste0(data_home_path,"US_land_subsidence/US_subsidence.tif"))
+wsa_boundaries <- read_sf(paste0(data_home_path, "EPA_PWS_boundaries/EPA_CWS_V1.shp"))
+wsa_boundaries <- st_as_sf(wsa_boundaries)
+
+subsidence$Final_subsidence_prediction
+
+```
+
+
+```{r}
+#To get the agg funcs, there is a process for using value extraction and aggregation 
+#THIS IS THE GUTS OF CROSSWALK_SPATIAL 
+
+# #Match shapefile crs to raster 
+# wsa_boundaries <- st_transform(wsa_boundaries, st_crs(subsidence))
+# 
+# #Validate geometry column of wsa boundaries 
+# valid_geometries <- st_is_valid(wsa_boundaries)
+# if (!all(valid_geometries)) {
+#   wsa_boundaries <- st_make_valid(wsa_boundaries)
+# }
+# 
+# #Convert wsa_boundaries to sf object
+# wsa_boundaries <- st_as_sf(wsa_boundaries)
+# 
+# #Crop the raster to the proper size of the boundaries 
+# subsidence_crop <- terra::crop(subsidence, wsa_boundaries)
+# 
+# 
+# 
+# #Extract mean, max, and min from the raster in the polygons 
+# wsa_raster_values <-
+#   wsa_boundaries %>% mutate(
+#     land_sub_avg = exact_extract(subsidence_crop, wsa_boundaries, fun = 'mean', weights = "area"),
+#     land_sub_max = exact_extract(subsidence_crop, wsa_boundaries, fun = 'max', weights = "area"),
+#     land_sub_min = exact_extract(subsidence_crop, wsa_boundaries, fun = 'min', weights = "area")
+#   )
+# 
+# head(wsa_raster_values)
+```
+
+```{r}
+#Ensure wsa boundaries are input as a shapefile to crosswalk_spatial function 
+wsa_boundaries <- st_as_sf(wsa_boundaries)
+wsa_raster_values <- crosswalk_spatial(subsidence, wsa_boundaries, join_method = "areal_weighted")
+
+```
+```{r}
+#Double check if water service areas are unique 
+nrow(wsa_raster_values) 
+length(unique(wsa_raster_values$PWSID)) 
+gg_miss_var(wsa_raster_values)
+gg_miss_var(wsa_raster_values)
+gg_miss_var(wsa_raster_values)
+
+```
+
+
+```{r}
+#Drop geometry column for csv 
+wsa_raster_values_no_geom <- st_drop_geometry(wsa_raster_values)
+
+#Export as csv with no geometry column
+write.csv(wsa_raster_values_no_geom,"~/Downloads/land_sub_vars.csv", row.names = FALSE)
+
+```
+
