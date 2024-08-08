@@ -1,7 +1,7 @@
-#setsetwd(config::get("home_path"))
+# setwd(config::get("home_path"))
 
-source("code/crosswalk/crosswalk_geom.R")
-source("code/crosswalk/crosswalk_raster.R")
+source(paste0(root_dir, "/code/crosswalk/crosswalk_geom.R"))
+source(paste0(root_dir,"/code/crosswalk/crosswalk_raster.R"))
 
 
 crosswalk_spatial <- function(data, target, location_columns = NULL, extensive = FALSE, join_method = NULL) {
