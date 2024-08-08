@@ -5,6 +5,10 @@ library(readr)
 acs <- read_csv("~/Downloads/ACS_extracts.csv")
 library(tigris)
 
+source("~/Desktop/WaterReuseDSSG2024/code/crosswalk/crosswalk_spatial.R")
+source("~/Desktop/WaterReuseDSSG2024/code/crosswalk/crosswalk_geom.R")
+source("~/Desktop/WaterReuseDSSG2024/code/crosswalk/crosswalk_raster.R")
+
 
 census_tracts <- tracts(cb = TRUE, year = 2020, filter_by = c(-124.7844079, -66.9513812, 24.7433195, 49.3457868))
 
@@ -36,6 +40,7 @@ acs_sf<-st_as_sf(acs_sf)
 bbox_coords <- c(xmin = -124.7844079, xmax = -66.9513812,
                  ymin = 24.7433195, ymax = 49.3457868)
 
+xwalked <- crosswalk_geom(acs_sf, service, join_method ="areal_weighted" )
 
 # Plot the result
 plot <- ggplot(data = acs_sf) +
