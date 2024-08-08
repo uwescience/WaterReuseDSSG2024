@@ -24,6 +24,8 @@
         <div class="sidebar">
             <div id="checkbox-menu"></div>
             <button id="submit-button">Submit</button>
+            <button id="download-button" disabled>Download CSV</button>
+
         </div>
         <!-- Map container -->
         <div>
@@ -138,7 +140,30 @@
             const resultJson = JSON.parse((await result.toJs()).values);
             plot_map(resultJson, "index");
 
-        };
+            // Enable the download button
+            document.getElementById('download-button').disabled = false;
+
+            // Generate CSV data
+            generateCSV(resultJson);
+        }
+
+        function generateCSV(data) {
+            const keys = Object.keys(data.features[0].properties);
+            const csvRows = [keys.join(',')]; // Header row
+
+            data.features.forEach(feature => {
+                const values = keys.map(key => feature.properties[key]);
+                csvRows.push(values.join(','));
+            });
+
+            const csvString = csvRows.join('\n');
+            const blob = new Blob([csvString], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+
+            const downloadButton = document.getElementById('download-button');
+            downloadButton.href = url;
+            downloadButton.download = 'recalculated_index.csv';
+        }
 
 
         document.getElementById('submit-button').addEventListener('click', recalculate);
