@@ -1,0 +1,103 @@
+---
+title: "Water Reuse Data Cleaning - EPA ORD Private Supply Dataset"
+output: html_notebook
+---
+
+```{r}
+library(sf)
+library(dplyr)
+library(conflicted)
+library(tigris)
+
+conflicts_prefer(dplyr::select)
+conflicts_prefer(dplyr::filter)
+```
+
+Loading the dataset:
+
+```{r}
+datasets_root <- config::get("datasets_path")
+dataset_path <- "/Drivers/self_supply/Well_Estimates_2020_Blks.txt"
+df <- readr::read_tsv(paste0(datasets_root, dataset_path))
+
+df <- df %>% 
+  select(c("GEOID_Blk", "GEOID_BlkGrp", "HU_2020", "Est_Wells_2020")) %>%
+  group_by(GEOID_BlkGrp) %>%
+  summarize(self_supply_units = sum(Est_Wells_2020), housing_units_2020 = sum(HU_2020)) %>%
+  na.omit()
+
+any(duplicated(df$GEOID_BlkGrp)) # expect false - confirms that df is now on census tract level
+```
+
+
+Next, need to map GEOIDs to census tracts.
+
+```{r}
+tracts <- tracts(cb = TRUE, year = 2022)
+any(duplicated(tracts$GEOID))
+```
+
+```{r}
+nchar(df[1, "GEOID_BlkGrp"])
+nchar(tracts[1, "GEOID"])
+
+
+# By running statements below we can see that we need to chop the last char off of new_df$GEOID_BlkGrp
+#new_df %>% arrange(GEOID_BlkGrp)
+#tracts %>% arrange(GEOID)
+
+new_df <- df %>% 
+  mutate(GEOID_BlkGrp = substr(GEOID_BlkGrp, 1, 11)) %>% 
+  group_by(GEOID_BlkGrp) %>%
+  summarize(self_supply_units = sum(self_supply_units), housing_units_2020 = sum(housing_units_2020))
+
+nchar(new_df[1, "GEOID_BlkGrp"])
+nchar(tracts[1, "GEOID"])
+
+sf <- left_join(tracts, new_df, by = c("GEOID" = "GEOID_BlkGrp"))
+
+```
+
+```{r}
+source("/Users/danielvogler/Documents/DSSG/WaterReuseDSSG2024/code/crosswalk/crosswalk_spatial.R")
+```
+```{r}
+# For every census tract, how many self-supply units and housing units does it have (if data exists)?
+sf <- sf %>% 
+  select(c(self_supply_units, housing_units_2020)) %>%
+  na.omit()
+```
+
+```{r}
+wsa_filename = "/EPA PWS Boundaries/EPA_CWS_V1.shp"
+
+wsa_path <- paste0(config::get("datasets_path"), wsa_filename)
+wsa <- st_as_sf(st_read(wsa_path))
+
+# for sum, do extensive = TRUE; for avg., do ext = FALSE
+sf_wsa <- crosswalk_spatial(sf, wsa, join_method = "areal_weighted", extensive = TRUE)
+
+sf_wsa$self_supply_pct <- sf_wsa$self_supply_units / sf_wsa$housing_units_2020
+
+
+out_filename <- "/processed_datasets/private_supply.shp"
+out_path <- paste0(config::get("datasets_path"), out_filename)
+columns_to_rename <- setdiff(colnames(sf_wsa), "geometry")
+colnames(sf_wsa)[colnames(sf_wsa) %in% columns_to_rename] <- paste0("x", seq_along(columns_to_rename))
+
+
+st_write(sf_wsa, out_path)
+
+# confirming this works
+read_sf(out_path)
+```
+
+Creating data dictionary:
+```{r}
+data_dictionary <- data.frame(abbreviation = paste0("x", seq_along(columns_to_rename)),
+                              original_name = columns_to_rename)
+
+dd_filename <- '/processed_datasets/private_supply_dictionary.csv'
+dd_path <- paste0(config::get("datasets_path"), dd_filename)
+write.csv(data_dictionary, dd_path)
+```

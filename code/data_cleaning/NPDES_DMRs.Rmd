@@ -7,11 +7,6 @@ output:
   pdf_document: default
 ---
 
-<!-- # Executive Summary -->
-<!-- * This document computes `path_load` and `temp_load` variables -->
-<!-- * `path_load` has null values `r na_counts_newvar$path_load`% -->
-
----
 ```{r}
 library(sf)
 library(dplyr)
