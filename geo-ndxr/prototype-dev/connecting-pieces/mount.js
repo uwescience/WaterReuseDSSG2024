@@ -25,32 +25,6 @@ try {
   let output = await result.toArray();
   let text = output.join('\n');
   document.getElementById('out').innerText += `Contents of the filesystem image file at /data/abc.txt:\n${text}\n\n`;
-
-  // Update JavaScript file with content details
-  await updateJSFileFromText(text);
-
 } finally {
   webR.destroy(result);
-}
-
-async function updateJSFileFromText(fileContent) {
-  try {
-    const numChars = fileContent.length;
-    const byteSize = new Blob([fileContent]).size;
-
-    const updatedContent = `
-        console.log("Number of characters: ${numChars}");
-        console.log("Byte size: ${byteSize}");
-        function processData() {
-            console.log("Processing data with ${numChars} characters and ${byteSize} bytes...");
-        }
-        processData();
-    `;
-
-    // Log the updated JS content (this could also be saved to a file if needed)
-    console.log("Updated JS content:", updatedContent);
-
-  } catch (error) {
-    console.error('Error updating the JS file:', error);
-  }
 }
