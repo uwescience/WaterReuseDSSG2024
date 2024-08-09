@@ -40,6 +40,8 @@ crosswalk_geom <- function(data, target, location_columns = NULL, extensive = FA
         # Perform the spatial join using areal aggregation extensive = TRUE (spatially extensive, e.g population) or extensive = FALSE (spatially intensive, e.g population density) 
         joined <- st_interpolate_aw(data, target, extensive = extensive, na.rm = TRUE, keep_na = TRUE)
   }
+  # Combine target columns and joined data
+  result <- cbind(st_drop_geometry(target), st_drop_geometry(joined))
   
-  return(joined)
+  return(result)
 }

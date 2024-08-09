@@ -44,7 +44,7 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const geoJsonData = await response.json();
-                plot_map(geoJsonData, indexKey);
+                plot_map(geoJsonData, indexKey, latitude, longitude, zoomLevel);
             } catch (error) {
                 console.error('Error loading the GeoJSON file:', error);
             }
@@ -152,11 +152,11 @@
                 cols_to_keep = fromJSON('${selectedOptionsString}')
 
                 cols_to_keep <- as.array(cols_to_keep)
-                sf <- filter_data(sf, cols_to_keep)
+                sf_filtered <- filter_data(sf, cols_to_keep)
 
-                weights <- get_pca_weights(data = sf, excluded_cols = c("geometry"))
+                weights <- get_pca_weights(data = sf_filtered, excluded_cols = c("geometry"))
 
-                index <- get_weighted_average(sf, weights, excluded_cols = c("geometry"))
+                index <- get_weighted_average(sf_filtered, weights, excluded_cols = c("geometry"))
 
                 sf <- cbind(sf, index)
 
@@ -169,7 +169,7 @@
 
             const result = await webr.evalR(scriptText);
             const resultJson = JSON.parse((await result.toJs()).values);
-            plot_map(resultJson, "index");
+            plot_map(resultJson, "index", latitude, longitude, zoomLevel);
 
             // Enable the download button
             document.getElementById('download-button').disabled = false;
