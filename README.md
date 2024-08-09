@@ -1,8 +1,8 @@
 # Water Reuse and _GeoNdxr_
-
+___
 ### Drivers-Based Water Reuse Potential project
 **University of Washington DSSG summer 2024**
-___
+
 
 ## Water Reuse Index
 Our project aims to develop a framework for quantifying a community’s potential for water reuse based on various motivators—or drivers—to identify whether water reuse could be a local solution that merits further investigation. Combining that data into an informative index and presenting the results in a clear and digestible format is critical for supporting local decision-making. Using publicly available data across the US, our project looks at the correlation between drivers (both presence and intensity) and characterizes the benefits communities might find by exploring water reuse. For more information on drivers of water reuse, check out our project website [**here**](https://uwescience.github.io/WaterReuseDSSG2024/). 
