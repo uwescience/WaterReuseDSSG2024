@@ -1,5 +1,6 @@
 # Water Reuse and _GeoNdxr_
-###Drivers-Based Water Reuse Potential project###
+
+### Drivers-Based Water Reuse Potential project
 **University of Washington DSSG summer 2024**
 ___
 
@@ -9,7 +10,10 @@ ___
 
 ## Create Your Own Index with _GeoNdxR_
 Building an index can be helpful for not just water reuse, but various topics. We propose a general solution to the process of crosswalk shapefiles at different scales, reducing dimension, generating an index, and mapping it. We further believe there should be intuitive visualization tool which is digestible to subject matter non-experts. With the help of `GeoNdxR`, you can create a .html file, which your final audience can interact with. Final audience will be able to select indicators (out of the entire set chosen by the web creator) that they deem are important, and get their own index. Check out our sample html created for water reuse 👉[`here`](https://uwescience.github.io/WaterReuseDSSG2024/connecting-pieces/index.html)! 
-___
+
+
+## Get Started
+Follow the instruction on the [`config_readme.txt`](https://github.com/uwescience/WaterReuseDSSG2024/blob/main/config-readme.txt) to set up your home path. All of our codes rely on relative path structure. 
 
 ## Repository Structure
 |**Features** | **Description**|
@@ -22,13 +26,16 @@ ___
 
 
 # [Contributors](https://escience.washington.edu/using-data-science/data-science-for-social-good/participants/)
+
 **Fellows:**
 - Jihyeon Bae 
 - Nora Povejsil
 - Mbye Sallah
-- Daniel Vogler   
+- Daniel Vogler 
+
 **Project Leads:**
 - Miriam Hacker 
 - Carolyn Hayek   
+
 **Data Scientist:**
 - Curtis Atkisson
