@@ -1,0 +1,115 @@
+---
+title: "eco_imp_water"
+author: "Mbye Sallah"
+date: "2024-08-07"
+output: html_document
+---
+
+#### Import libraries
+```{r}
+library(tidyverse)
+library(terra)
+library(sf)
+library(tigris)
+library(raster)
+```
+
+
+#### read the land condition dataset
+```{r}
+root_dir <- config::get()
+land_condition <- rast(paste0(root_dir, "/private/datasets/raw_data/Landscape Condition/Americas_N_LCM_Cat100.tif"))
+land_condition
+```
+
+#### Plot the raster data
+```{r}
+plot(land_condition)
+```
+
+#### Change the crs of the raster data: WGS 84 (lat/long)
+```{r}
+us_extent <- ext(-2400000, 2400000, 0, 3170000)
+land_condition_cropped <- terra::crop(land_condition, us_extent)
+land_condition_cropped
+```
+
+
+
+```{r}
+plot(land_condition_cropped)
+```
+
+
+<!-- ```{r} -->
+<!-- land_condition_cropped -->
+<!-- ``` -->
+
+
+#### Read the water service area shapefile
+```{r}
+wsa_boundaries <- read_sf(paste0(root_dir, "/private/datasets/raw_data/EPA PWS boundaries/EPA_CWS_V1.shp"))
+```
+
+
+##### Invert land condition values by subtracting 100
+```{r}
+inverted_land_condition <- 100 - land_condition
+inverted_land_condition
+# values(inverted_land_condition)[values(inverted_land_condition) < 0] <- NA
+```
+
+
+
+
+
+#### Use the crosswalk_spatial function to do the crosswalk
+```{r}
+source(paste0(root_dir, "/code/crosswalk/crosswalk_spatial.R"))
+land_condition_wsa <- crosswalk_spatial(data = land_condition, 
+                                          target = wsa_boundaries,
+                                          join_method = "areal_weighted")
+```
+
+<!-- #### Write the aggregated data to csv -->
+<!-- ```{r warning=FALSE} -->
+<!-- write_csv(land_condition_wsa, paste0(root_dir, "/private/datasets/cleaned_data/land_condition_wsa_interpolated.csv")) -->
+<!-- st_write(land_condition_wsa, paste0(root_dir, "/private/datasets/cleaned_data/land_condition_wsa_interpolated.shp")) -->
+
+<!-- ``` -->
+
+
+#### read the bio_imp data
+```{r}
+bio_imp <- rast(paste0(root_dir, "/private/datasets/raw_data/Biodiversity Importance/mobi_rsr_crf.tif"))
+```
+
+#### Get the bio importance data on water service area
+```{r}
+bio_imp_wsa <- crosswalk_spatial(data = bio_imp, 
+                                target = wsa_boundaries,
+                                join_method = "areal_weighted")
+```
+
+#### Join land condition and bio imp
+```{r}
+eco_imp_land <- inverted_land_condition_wsa %>%
+  st_join(bio_imp_wsa, by = "PWSID") %>%
+  mutate(eco_imp_land_mean = var_mean.x * var_mean.y,
+         eco_imp_land_max = var_max.x * var_max.y) %>%
+  dplyr::select(PWSID.x, eco_imp_land_mean, eco_imp_land_max) %>% 
+  rename(PWSID = PWSID.x) %>% 
+  st_drop_geometry()
+```
+
+
+
+```{r}
+write_csv(eco_imp_land, paste0(root_dir, "/private/datasets/cleaned_data/wsa_eco_imp_land.csv"))
+```
+
+#### Map the data
+```{r}
+
+```
+

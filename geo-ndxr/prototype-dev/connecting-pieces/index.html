@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js"></script>
+
 </head>
 
 <body>
@@ -18,9 +20,12 @@
     <div class="content">
         <div class="sidebar">
             <div id="checkbox-menu"></div>
-            <button id="submit-button">Submit</button>
+            <button id="submit-button" disabled>Submit</button>
+            <button id="download-button" disabled>Download</button>
+
         </div>
         <div>
+
             <div id="map" class="leaflet html-widget html-fill-item"></div>
         </div>
     </div>
@@ -40,22 +45,47 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const geoJsonData = await response.json();
-                plot_map(geoJsonData, indexKey);
+                plot_map(geoJsonData, indexKey, latitude, longitude, zoomLevel);
             } catch (error) {
                 console.error('Error loading the GeoJSON file:', error);
             }
         }
+        // Call the function with the path to your GeoJSON file and the index key to use
 
+        /////NEEDS TO BE CHANGED TO PLOT THE RIGHT THING
         loadAndPlotMap(map_data_path, initial_index);
     </script>
     <script src="https://webr.r-wasm.org/latest/webr.mjs" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
+
+    <!-- <script src="mount.js" type="module"></script> -->
     <script type="module">
         import { WebR } from 'https://webr.r-wasm.org/latest/webr.mjs';
         const webr = new WebR();
         await webr.init();
         await webr.installPackages(["dplyr", "tidyr", "jsonlite", "sf", "geojsonsf"]);
 
+        // Download a filesystem image
+        await webr.FS.mkdir('/data')
+        const data = await fetch('./output.data');
+        const metadata = await fetch('./output.js.metadata');
+
+        // Mount the filesystem image data
+        const options = {
+            packages: [{
+                blob: await data.blob(),
+                metadata: await metadata.json(),
+            }],
+        }
+        await webr.FS.mount("WORKERFS", options, '/data');
+
+        // Read the contents of the map
+        const result = await webr.evalR('readLines("/data/abc.geojson")');
+        
+        const output = await result.toArray();
+        const text = output.join('\n');
+
+        // source dependencies for the R script below
         const pcaWeightsPath = "./scripts/get_pca_weights.R";
         const weightedAvgPath = "./scripts/weighted_average.R";
         const selectVarsPath = "./scripts/select_vars.R";
@@ -89,6 +119,8 @@
 
         console.log("Data fetched");
 
+        document.getElementById('submit-button').disabled = false
+
         async function recalculate() {
             const selectedOptions = [];
             const checkboxes = document.querySelectorAll('#checkbox-menu input[type="checkbox"]');
@@ -108,16 +140,21 @@
                 library(geojsonsf)
                 library(tidyr)
 
-                sf <- geojson_sf('${geoJsonDataString}')
+                ####We can get the data in, but it doesn't read well as a geojson. Maybe a csv or some such plain text file will work
+
+                test <- '${text}'
+                print(test)
+
+                sf <- geojson_sf(test)
 
                 cols_to_keep = fromJSON('${selectedOptionsString}')
 
                 cols_to_keep <- as.array(cols_to_keep)
-                sf <- filter_data(sf, cols_to_keep)
+                sf_filtered <- filter_data(sf, cols_to_keep)
 
-                weights <- get_pca_weights(data = sf, excluded_cols = c("geometry"))
+                weights <- get_pca_weights(data = sf_filtered, excluded_cols = c("geometry"))
 
-                index <- get_weighted_average(sf, weights, excluded_cols = c("geometry"))
+                index <- get_weighted_average(sf_filtered, weights, excluded_cols = c("geometry"))
 
                 sf <- cbind(sf, index)
 
@@ -130,10 +167,34 @@
 
             const result = await webr.evalR(scriptText);
             const resultJson = JSON.parse((await result.toJs()).values);
-            plot_map(resultJson, "index");
-        };
 
+            plot_map(resultJson, "index", latitude, longitude, zoomLevel);
+
+            // Enable the download button
+            document.getElementById('download-button').disabled = false;
+
+            document.getElementById('download-button').addEventListener('click', function() {
+            
+            const jsonString = JSON.stringify(resultJson);
+
+            // Create a blob with JSON data
+            const blob = new Blob([jsonString], { type: 'application/json' });
+
+            // Create a link element
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'recalc_output.geojson'; // Specify the file name
+
+            // Trigger the download
+            link.click();
+
+            // Clean up the URL object
+            URL.revokeObjectURL(link.href);
+        });
+        }
         document.getElementById('submit-button').addEventListener('click', recalculate);
+
+    </script>
     </script>
 </body>
 
