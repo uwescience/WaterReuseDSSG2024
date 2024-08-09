@@ -1,0 +1,140 @@
+---
+title: "Eco Importance Water"
+author: "Mbye Sallah"
+date: "2024-08-05"
+output: html_document
+---
+
+#### Import libraries
+```{r}
+library(tidyverse)
+library(terra)
+library(sf)
+library(tigris)
+library(raster)
+```
+
+
+
+#### Read RSEI_stream (Risk-Screening Environmental Indicators)
+```{r}
+root_dir <- config::get()
+ejscreen_24_cnmi <- read_csv(paste0(root_dir, "/private/datasets/raw_data/EJSCREEN_2024_Tract_with_AS_CNMI_GU_VI.csv"))
+```
+
+#### Rename PWDIS to RSEI_stream
+```{r}
+ejscreen_24_cnmi <- ejscreen_24_cnmi %>%
+  rename(RSEI_stream = PWDIS)
+```
+
+#### Save the daataset with the renamed column
+```{r}
+write_csv(ejscreen_24_cnmi, "~/DSSG/WaterReuseDSSG2024/private/datasets/cleaned_data/EJSCREEN_2024_Tract_with_AS_CNMI_GU_VI.csv")
+```
+
+### Get census tract shapefile
+```{r}
+tract_sf <- tracts(cb = TRUE, year = 2023)
+crs(tract_sf)
+```
+
+
+
+#### Left join the ejscreen_24_cmni and attains
+```{r}
+ejscreen_24_cnmi_tract <- ejscreen_24_cnmi %>%
+  dplyr::select(ID, RSEI_stream) %>%
+  left_join(tract_sf, join_by(ID == GEOID))
+```
+
+#### Read the biodiversity importance dataset
+```{r}
+bio_imp <- rast("~/DSSG/WaterReuseDSSG2024/private/datasets/raw_data/Biodiversity Importance/mobi_rsr_crf.tif")
+bio_imp
+```
+#### plot the bio_imp
+```{r}
+plot(bio_imp)
+```
+
+#### Check the unit of the bio_imp
+```{r}
+units(bio_imp)
+```
+
+
+
+
+<!-- #### Extract the census tract level data of bio_imp -->
+<!-- ```{r} -->
+<!-- source(paste0(root_dir, "/code/crosswalk/get_raster_data.R")) -->
+<!-- extrated_bio_imp <- get_raster_data(bio_imp, tract_sf, fun = mean) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- write_csv(extrated_bio_imp, paste0(root_dir, "/private/datasets/cleaned_data/tract_aggregated_bio_imp.csv")) -->
+<!-- ``` -->
+
+
+
+<!-- #### Open raster data using Raster -->
+<!-- ```{r} -->
+<!-- bio_imp_raster <- raster("~/DSSG/WaterReuseDSSG2024/private/datasets/raw_data/Biodiversity Importance/mobi_rsr_crf.tif") -->
+<!-- ``` -->
+
+
+#### Do the crosswalk using crosswalk_raster function
+```{r}
+source(paste0(root_dir, "/code/crosswalk/crosswalk_spatial.R"))
+bio_imp_interpolated <- crosswalk_spatial(data = bio_imp, 
+                 target = tract_sf,
+                 join_method = "areal_weighted")
+```
+
+
+<!-- #### Save the interpolated data to csv and shapefile -->
+<!-- ```{r} -->
+<!-- write_csv(bio_imp_interpolated, paste0(root_dir, "/private/datasets/cleaned_data/bio_imp_tract_interpolated.csv")) -->
+<!-- st_write(bio_imp_interpolated, paste0(root_dir, "/private/datasets/cleaned_data/bio_imp_tract_interpolated.shp")) -->
+<!-- ``` -->
+
+
+
+#### Multiply the census tract bio_imp aggregated data with RSEI_stream
+```{r}
+bio_imp_data <- bio_imp_interpolated %>% 
+  left_join(ejscreen_24_cnmi_tract, join_by(GEOID == ID)) %>% 
+  mutate(eco_imp_water_mean = var_mean * RSEI_stream,
+         eco_imp_water_max = var_max * RSEI_stream) %>%
+  dplyr::select(eco_imp_water_mean, eco_imp_water_max, geometry.x) %>% 
+  rename(geometry = geometry.x)
+```
+
+#### Read the water service area shapefile
+```{r}
+wsa_boundaries <- read_sf(paste0(root_dir, "/private/datasets/raw_data/EPA PWS boundaries/EPA_CWS_V1.shp"))
+```
+
+
+#### Do the crosswalk using crosswalk_spatial
+```{r}
+source(paste0(root_dir, "/code/crosswalk/crosswalk_spatial.R"))
+wsa_eco_bio_water <- crosswalk_spatial(data = bio_imp_data,
+                                       target = wsa_boundaries,
+                                       join_method = "areal_weighted")
+```
+
+
+```{r}
+wsa_eco_bio_water <-  wsa_eco_bio_water %>% 
+  dplyr::select(PWSID, eco_imp_water_mean, eco_imp_water_max)
+```
+
+
+
+#### Save the data in csv format
+```{r}
+write_csv(wsa_eco_bio_water, paste0(root_dir, "/private/datasets/cleaned_data/wsa_eco_bio_water.csv"))
+```
+
