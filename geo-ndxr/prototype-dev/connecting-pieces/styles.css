@@ -1,40 +1,18 @@
 
-#map { height: 600px; width: 100%;}
-
-body {
-    background-color: white;
-}
-
-.info {
-    padding: 6px 8px;
-    font: 14px/16px Arial, Helvetica, sans-serif;
-    background: white;
-    background: rgba(255,255,255,0.8);
-    box-shadow: 0 0 15px rgba(0,0,0,0.2);
-    border-radius: 5px;
-}
-
-.info h4 {
-    margin: 0 0 5px;
-    color: #777;
-}
-.scroll-box {
-    max-height: 200px;
-    overflow-y: auto;
-    border: 1px solid #ccc;
-    padding: 10px;
-}
+/* Ensure the map stays in the right position */
 #map {
-    width: 70vw; /* Adjusted to fit almost 70% of the viewport width */
-    height: 70vh; /* Adjusted to fit almost 70% of the viewport height */
+    width: 70vw; /* Adjust to fit 70% of the viewport width */
+    height: 70vh; /* Adjust to fit 70% of the viewport height */
     max-width: 900px;
     max-height: 600px;
+    box-sizing: border-box;
 }
+
+/* Sidebar styling */
 .sidebar {
     width: 30%;
     display: flex;
     flex-direction: column;
-    gap: 0; /* Remove gaps between categories */
     padding: 10px;
     border: 1px solid #ccc;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -42,33 +20,42 @@ body {
     height: 70vh; /* Same as map height to align with it */
     overflow-y: auto;
 }
+
+/* Container for sidebar and map */
 .content {
     display: flex;
     align-items: flex-start;
 }
+
+/* Category section styling */
 .category-section {
-    margin-bottom: 0;
-    padding: 5px 0; /* Add padding inside each category section */
+    margin-bottom: 10px; /* Space between categories */
+    padding: 5px 0;
     border-bottom: 1px solid #eee; /* Light border between categories */
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
 }
-.indicator-select {
-    width: 100%;
-}
-h2 {
-    margin-top: 0;
-    margin-right: 10px; /* Space between category title and checkbox */
-}
+
+/* Category label styling */
 .category-label {
     display: flex;
     align-items: center;
+    width: 100%;
+    margin-bottom: 5px; /* Space below category label */
 }
+
+/* Category label checkbox styling */
 .category-label input {
     margin-left: 5px;
 }
 
+/* Indicator styling */
+.indicator-item {
+    margin-left: 20px; /* Space to indent indicators under categories */
+}
+
+/* Indicator checkbox styling */
+.indicator-item input {
+    margin-left: 5px;
+}
 
 .info.legend {
     background: white;
