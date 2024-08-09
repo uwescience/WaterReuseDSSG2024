@@ -28,7 +28,7 @@
 
         </div>
         <!-- Map container -->
-        <div>
+        <div> -->
             <div id="map" class="leaflet html-widget html-fill-item"></div>
         </div>
     </div>
@@ -55,13 +55,46 @@
     </script>
     <script src="https://webr.r-wasm.org/latest/webr.mjs" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
+
+    <div>
+        <h1>WebR Mounting Example</h1>
+        <p id="loading">Loading webR, please wait...</p>
+        <pre><code id="out"></code></pre>
+    </div>
+    <!-- <script src="mount.js" type="module"></script> -->
     <script type="module">
         createCheckboxes();
         import { WebR } from 'https://webr.r-wasm.org/latest/webr.mjs';
         const webr = new WebR();
         await webr.init();
         await webr.installPackages(["dplyr", "tidyr", "jsonlite", "sf", "geojsonsf"]);
+
+        // Remove the loading message once webR is ready
+        document.getElementById('loading').remove();
+
+        // Download a filesystem image
+        await webr.FS.mkdir('/data')
+        const data = await fetch('./output.data');
+        const metadata = await fetch('./output.js.metadata');
+
+        // Mount the filesystem image data
+        const options = {
+            packages: [{
+                blob: await data.blob(),
+                metadata: await metadata.json(),
+            }],
+        }
+        await webr.FS.mount("WORKERFS", options, '/data');
+
+        // Read the contents of a file from the filesystem image
+        const result = await webr.evalR('readLines("/data/abc.geojson")');
         
+        const output = await result.toArray();
+        const text = output.join('\n');
+        //document.getElementById('out').innerText += `Contents of the filesystem image file at /data/abc.txt:\n${text}\n\n`;
+        //const text2 = JSON.stringify(text);
+        
+
         // source dependencies for the R script below
         const pcaWeightsPath = "./scripts/get_pca_weights.R";
         const weightedAvgPath = "./scripts/weighted_average.R";
@@ -116,7 +149,12 @@
                 library(geojsonsf)
                 library(tidyr)
 
-                sf <- geojson_sf('${geoJsonDataString}')
+                ####We can get the data in, but it doesn't read well as a geojson. Maybe a csv or some such plain text file will work
+
+                test <- '${text}'
+                print(test)
+
+                sf <- geojson_sf(test)
 
                 cols_to_keep = fromJSON('${selectedOptionsString}')
 
