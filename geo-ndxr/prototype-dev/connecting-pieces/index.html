@@ -23,12 +23,12 @@
         <!-- Column for categories and indicators -->
         <div class="sidebar">
             <div id="checkbox-menu"></div>
-            <button id="submit-button">Submit</button>
-            <button id="download-button" disabled>Download CSV</button>
+            <button id="submit-button" disabled>Submit</button>
+            <button id="download-button" disabled>Download</button>
 
         </div>
         <!-- Map container -->
-        <div>
+        <div> -->
             <div id="map" class="leaflet html-widget html-fill-item"></div>
         </div>
     </div>
@@ -51,17 +51,41 @@
         }
 
         // Call the function with the path to your GeoJSON file and the index key to use
+
+        /////NEEDS TO BE CHANGED TO PLOT THE RIGHT THING
         loadAndPlotMap(map_data_path, initial_index);
     </script>
     <script src="https://webr.r-wasm.org/latest/webr.mjs" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
+
+    <!-- <script src="mount.js" type="module"></script> -->
     <script type="module">
         createCheckboxes();
         import { WebR } from 'https://webr.r-wasm.org/latest/webr.mjs';
         const webr = new WebR();
         await webr.init();
         await webr.installPackages(["dplyr", "tidyr", "jsonlite", "sf", "geojsonsf"]);
+
+        // Download a filesystem image
+        await webr.FS.mkdir('/data')
+        const data = await fetch('./output.data');
+        const metadata = await fetch('./output.js.metadata');
+
+        // Mount the filesystem image data
+        const options = {
+            packages: [{
+                blob: await data.blob(),
+                metadata: await metadata.json(),
+            }],
+        }
+        await webr.FS.mount("WORKERFS", options, '/data');
+
+        // Read the contents of the map
+        const result = await webr.evalR('readLines("/data/abc.geojson")');
         
+        const output = await result.toArray();
+        const text = output.join('\n');
+
         // source dependencies for the R script below
         const pcaWeightsPath = "./scripts/get_pca_weights.R";
         const weightedAvgPath = "./scripts/weighted_average.R";
@@ -97,6 +121,8 @@
 
         console.log("Data fetched");
 
+        document.getElementById('submit-button').disabled = false
+
         async function recalculate() {
 
             const selectedOptions = [];
@@ -116,7 +142,12 @@
                 library(geojsonsf)
                 library(tidyr)
 
-                sf <- geojson_sf('${geoJsonDataString}')
+                ####We can get the data in, but it doesn't read well as a geojson. Maybe a csv or some such plain text file will work
+
+                test <- '${text}'
+                print(test)
+
+                sf <- geojson_sf(test)
 
                 cols_to_keep = fromJSON('${selectedOptionsString}')
 
@@ -143,30 +174,29 @@
             // Enable the download button
             document.getElementById('download-button').disabled = false;
 
-            // Generate CSV data
-            generateCSV(resultJson);
+            document.getElementById('download-button').addEventListener('click', function() {
+            
+            const jsonString = JSON.stringify(resultJson);
+
+            // Create a blob with JSON data
+            const blob = new Blob([jsonString], { type: 'application/json' });
+
+            // Create a link element
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'recalc_output.geojson'; // Specify the file name
+
+            // Trigger the download
+            link.click();
+
+            // Clean up the URL object
+            URL.revokeObjectURL(link.href);
+        });
         }
-
-        function generateCSV(data) {
-            const keys = Object.keys(data.features[0].properties);
-            const csvRows = [keys.join(',')]; // Header row
-
-            data.features.forEach(feature => {
-                const values = keys.map(key => feature.properties[key]);
-                csvRows.push(values.join(','));
-            });
-
-            const csvString = csvRows.join('\n');
-            const blob = new Blob([csvString], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-
-            const downloadButton = document.getElementById('download-button');
-            downloadButton.href = url;
-            downloadButton.download = 'recalculated_index.csv';
-        }
-
 
         document.getElementById('submit-button').addEventListener('click', recalculate);
+
+    </script>
     </script>
 </body>
 
