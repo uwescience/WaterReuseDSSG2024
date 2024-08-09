@@ -85,9 +85,6 @@
         
         const output = await result.toArray();
         const text = output.join('\n');
-        //document.getElementById('out').innerText += `Contents of the filesystem image file at /data/abc.txt:\n${text}\n\n`;
-        //const text2 = JSON.stringify(text);a
-        
 
         // source dependencies for the R script below
         const pcaWeightsPath = "./scripts/get_pca_weights.R";
@@ -177,12 +174,10 @@
             // Enable the download button
             document.getElementById('download-button').disabled = false;
 
-            // Generate CSV data
-            // generateCSV(resultJson);
-
             document.getElementById('download-button').addEventListener('click', function() {
             
             const jsonString = JSON.stringify(resultJson);
+
             // Create a blob with JSON data
             const blob = new Blob([jsonString], { type: 'application/json' });
 
@@ -198,25 +193,6 @@
             URL.revokeObjectURL(link.href);
         });
         }
-
-        // function generateCSV(data) {
-        //     const keys = Object.keys(data.features[0].properties);
-        //     const csvRows = [keys.join(',')]; // Header row
-
-        //     data.features.forEach(feature => {
-        //         const values = keys.map(key => feature.properties[key]);
-        //         csvRows.push(values.join(','));
-        //     });
-
-        //     const csvString = csvRows.join('\n');
-        //     const blob = new Blob([csvString], { type: 'text/csv' });
-        //     const url = URL.createObjectURL(blob);
-
-        //     const downloadButton = document.getElementById('download-button');
-        //     downloadButton.href = url;
-        //     downloadButton.download = 'recalculated_index.csv';
-        // }
-
 
         document.getElementById('submit-button').addEventListener('click', recalculate);
 
