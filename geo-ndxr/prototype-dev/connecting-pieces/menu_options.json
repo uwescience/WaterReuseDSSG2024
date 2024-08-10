@@ -1,4 +1,4 @@
 {
-    "index_value": "index_value",
-    "index_value2": "index_value2"
+    "category": {"index_value": "index_value"},
+    "cat2": {"index_value2": "index_value2"}
   }
