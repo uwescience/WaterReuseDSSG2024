@@ -31,8 +31,7 @@
     </div>
     <div id="description">{Description placeholder}</div>
 
-    <script src="scripts_original.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js"></script>
+    <script src="scripts.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             createCheckboxes();
@@ -52,7 +51,7 @@
         }
         // Call the function with the path to your GeoJSON file and the index key to use
 
-        /////NEEDS TO BE CHANGED TO PLOT THE RIGHT THING
+        ///NEEDS TO BE CHANGED TO PLOT THE RIGHT THING
         loadAndPlotMap(map_data_path, initial_index);
     </script>
     <script src="https://webr.r-wasm.org/latest/webr.mjs" type="module"></script>
