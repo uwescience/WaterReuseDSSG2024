@@ -22,28 +22,41 @@ land_condition <- rast(paste0(root_dir, "/private/datasets/raw_data/Landscape Co
 land_condition
 ```
 
+#### Get the summary info of the land contition data
+```{r}
+summary(land_condition)
+```
+
+
+
 #### Plot the raster data
 ```{r}
 plot(land_condition)
 ```
 
-#### Change the crs of the raster data: WGS 84 (lat/long)
+
+#### change the values greater than 100 to NA
 ```{r}
-us_extent <- ext(-2400000, 2400000, 0, 3170000)
-land_condition_cropped <- terra::crop(land_condition, us_extent)
-land_condition_cropped
+land_condition[land_condition > 100] <- NA
+land_condition
+```
+
+#### Check the summary after modifying the values
+```{r}
+summary(land_condition)
+```
+
+#### Plot of the modified data
+```{r}
+plot(land_condition)
 ```
 
 
-
+#### Invert land condition values by subtracting 100
 ```{r}
-plot(land_condition_cropped)
+inverted_land_condition <- 100 - land_condition
+inverted_land_condition
 ```
-
-
-<!-- ```{r} -->
-<!-- land_condition_cropped -->
-<!-- ``` -->
 
 
 #### Read the water service area shapefile
@@ -52,31 +65,15 @@ wsa_boundaries <- read_sf(paste0(root_dir, "/private/datasets/raw_data/EPA PWS b
 ```
 
 
-##### Invert land condition values by subtracting 100
-```{r}
-inverted_land_condition <- 100 - land_condition
-inverted_land_condition
-# values(inverted_land_condition)[values(inverted_land_condition) < 0] <- NA
-```
-
-
-
-
 
 #### Use the crosswalk_spatial function to do the crosswalk
 ```{r}
 source(paste0(root_dir, "/code/crosswalk/crosswalk_spatial.R"))
-land_condition_wsa <- crosswalk_spatial(data = land_condition, 
+land_condition_wsa <- crosswalk_spatial(data = inverted_land_condition, 
                                           target = wsa_boundaries,
                                           join_method = "areal_weighted")
 ```
 
-<!-- #### Write the aggregated data to csv -->
-<!-- ```{r warning=FALSE} -->
-<!-- write_csv(land_condition_wsa, paste0(root_dir, "/private/datasets/cleaned_data/land_condition_wsa_interpolated.csv")) -->
-<!-- st_write(land_condition_wsa, paste0(root_dir, "/private/datasets/cleaned_data/land_condition_wsa_interpolated.shp")) -->
-
-<!-- ``` -->
 
 
 #### read the bio_imp data
@@ -93,7 +90,7 @@ bio_imp_wsa <- crosswalk_spatial(data = bio_imp,
 
 #### Join land condition and bio imp
 ```{r}
-eco_imp_land <- inverted_land_condition_wsa %>%
+eco_imp_land <- land_condition_wsa %>%
   st_join(bio_imp_wsa, by = "PWSID") %>%
   mutate(eco_imp_land_mean = var_mean.x * var_mean.y,
          eco_imp_land_max = var_max.x * var_max.y) %>%
@@ -103,13 +100,9 @@ eco_imp_land <- inverted_land_condition_wsa %>%
 ```
 
 
-
+#### Save the dataset
 ```{r}
 write_csv(eco_imp_land, paste0(root_dir, "/private/datasets/cleaned_data/wsa_eco_imp_land.csv"))
 ```
 
-#### Map the data
-```{r}
-
-```
 
