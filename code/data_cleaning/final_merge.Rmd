@@ -108,8 +108,8 @@ distance_matrix <- stringdistmatrix(not_contained_in_truth_all, not_contained_in
 # Perform hierarchical clustering based on the distance matrix
 hc <- hclust(as.dist(distance_matrix))
 
-# Plot dendrogram to visualize commonalities
-plot(hc, labels = not_contained_in_truth_all, main = "Dendrogram of Unincluded IDs")
+## Plot dendrogram to visualize commonalities
+# plot(hc, labels = not_contained_in_truth_all, main = "Dendrogram of Unincluded IDs")
 
 # Cut tree to find clusters
 cutree_clusters <- cutree(hc, k = 9)  # Adjust k to the desired number of clusters
@@ -120,11 +120,11 @@ clustered_data <- data.frame(ID = not_contained_in_truth_all, Cluster = cutree_c
 # Summary by clusters
 cluster_summary <- table(clustered_data$Cluster)
 
-# Display clustered data and summary
-list(
-  clustered_data = clustered_data,
-  cluster_summary = cluster_summary
-)
+## Display clustered data and summary
+# list(
+#   clustered_data = clustered_data,
+#   cluster_summary = cluster_summary
+# )
 
 ```
 Not able to identify the reason (a common pattern) the unique IDs are not included in the PWSIDs shapefile, so I'm going to keep them all for now and potentially drop them later. 
@@ -142,23 +142,23 @@ land_sub_subset <- land_sub %>%
 #Perform the join
 echo_land_sub <- merge(x = echo_subset, y = land_sub_subset, by = "PWSID", all = TRUE)
 
-#Check the join 
-head(echo_land_sub)
+# #Check the join 
+# head(echo_land_sub)
 ```
 ```{r}
-#Look at bio (eco_imp_water_) dataset
-head(bio)
-nrow(bio)
+# #Look at bio (eco_imp_water_) dataset
+# head(bio)
+# nrow(bio)
 
 #Perform the join 
 echo_land_sub_bio <- merge(x = echo_land_sub, y = bio, by = "PWSID", all = TRUE)
-head(echo_land_sub_bio)
-nrow(echo_land_sub)
-nrow(echo_land_sub_bio)
+# head(echo_land_sub_bio)
+# nrow(echo_land_sub)
+# nrow(echo_land_sub_bio)
 
 ```
 ```{r}
-#Look at acs data
+## Look at acs data
 head(acs1)
 head(acs2)
 
@@ -196,16 +196,16 @@ nrow(acs1_2)
 #Join acs1_2 and echo_land_bio
 
 version3 <- merge(x = echo_land_sub_bio, y = acs1_2, by = "PWSID", all = TRUE)
-head(version3)
+# head(version3)
 colnames(version3)
-nrow(version3)
+# nrow(version3)
 
-gg_miss_var(version3)
+# gg_miss_var(version3)
 
 ```
 ```{r}
-#Look at imp_land 
-head(imp_land)
+# #Look at imp_land 
+# head(imp_land)
 
 #Aggregate imp_land: take mean of eco_imp_land_mean and max of eco_imp_land_max
 imp_land_grp <- imp_land %>% 
@@ -214,16 +214,16 @@ imp_land_grp <- imp_land %>%
     eco_imp_land_mean = mean(eco_imp_land_mean), 
     eco_imp_land_max = max(eco_imp_land_max)
   )
-head(imp_land_grp)
-nrow(imp_land)
-nrow(imp_land_grp)
+# head(imp_land_grp)
+# nrow(imp_land)
+# nrow(imp_land_grp)
 
 
 #Join wsa_eco_bio_imp_land with version 3
 version4 <- merge(x = version3, y = imp_land_grp, by = "PWSID", all = TRUE)
-head(version4)
-colnames(version4)
-nrow(version4)
+# head(version4)
+# colnames(version4)
+# nrow(version4)
 
 ```
 
@@ -235,15 +235,15 @@ nrow(version4)
 
 ##Merge in private_supply columns
 version5 <- merge(x = version4, y = private_supply, by = "PWSID", all = TRUE)
-head(version5)
-nrow(version5)
-gg_miss_var(version5)
-colnames(version5)
+# head(version5)
+# nrow(version5)
+# gg_miss_var(version5)
+# colnames(version5)
 ```
 ```{r}
-#Merge multiple variables with version5
-head(several_combined_variables) 
-nrow(several_combined_variables)
+# #Merge multiple variables with version5
+# head(several_combined_variables) 
+# nrow(several_combined_variables)
 
 version6 <- merge(x = version5, y = several_combined_variables, all = TRUE)
 nrow(version6)
@@ -295,21 +295,30 @@ wsa_boundaries_subset <- wsa_boundaries %>%
 final_sf <- wsa_boundaries_subset %>%
   left_join(final_df, by = "PWSID")
 
+final_sf <- final_sf %>%
+  dplyr::select(-no_DW_access)
+
+#head(final_sf)
+
 final_sf <- st_as_sf(final_sf) 
 
+library(rmapshaper)
+final_sf <- ms_simplify(final_sf, keep = 0.01, keep_shapes = FALSE)
+
 #Write geojson to a file in the Downloads folder 
-downloads_path <- file.path(path.expand("~"), "Downloads", "water_reuse_df.geojson")
+downloads_path <- file.path(path.expand("~"), "Downloads", "water_reuse_df.geojson") 
 
 # Write the sf object to a GeoJSON file in the Downloads folder
-st_write(final_sf, downloads_path, driver = "GeoJSON")
+st_write(final_sf, downloads_path, driver = "GeoJSON", append = FALSE)
 
 ```
 
 ```{r}
 ##List format of column names and drivers to be fed into the json
 
-final_col_names <- colnames(final_sf)
-#final_col_names
+final_col_names <- length(colnames(final_sf))
+
+final_col_names
 
 menu_options_input <- list(
   Equitable_Access = list(
