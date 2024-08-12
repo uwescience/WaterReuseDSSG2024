@@ -146,7 +146,8 @@
 
                 sf <- geojson_sf(test)
 
-                cols_to_keep = fromJSON('${selectedOptionsString}')
+                cols_to_keep <- fromJSON('${selectedOptionsString}')
+                cols_to_keep <- cols_to_keep[-which(cols_to_keep=="")]
 
                 cols_to_keep <- as.array(cols_to_keep)
                 sf_filtered <- filter_data(sf, cols_to_keep)
