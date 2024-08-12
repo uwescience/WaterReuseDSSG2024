@@ -1,0 +1,342 @@
+---
+title: "final_merging"
+output: html_document
+date: "2024-08-08"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#Load libraries
+library(pacman)
+
+p_load(tigris, tidyverse, dplyr, sf, usmap, ggplot2, naniar, raster, terra, stars, nngeo, exactextractr, naniar, geojsonsf)
+
+```
+
+```{r}
+#Load Data
+wsa_boundaries <- read_sf(paste0("~/Downloads/cleaning_data/", "EPA_PWS_boundaries/EPA_CWS_V1.shp"))
+
+data_home_path <- "~/Downloads/Ready for Index/"
+
+#Load NPDES data
+#npdes_dmr <- read_sf(paste0(data_home_path,"npdes_dmr/npdes_dmrs.shp"))
+
+#Load private supply data 
+private_supply <- read.csv(paste0(data_home_path, "private_supply/private_supply.csv"))
+
+#Load echo data
+echo <- read.csv(paste0(data_home_path, "echo_cleaned.csv"))
+
+#Load land_sub_vars data
+land_sub <- read.csv(paste0(data_home_path, "land_sub_vars.csv"))
+
+#Load wsa_eco_bio_water
+bio <- read.csv(paste0(data_home_path, "wsa_eco_bio_water.csv"))
+
+#Load wsa_eco_bio_imp_land
+imp_land <- read.csv(paste0(data_home_path, "wsa_eco_imp_land.csv"))
+
+#Load acs data 
+acs1 <- readRDS(paste0(data_home_path, "acs_data1.rds"))
+acs2 <- readRDS(paste0(data_home_path, "acs_data2.rds"))
+
+several_combined_variables <- read.csv(paste0(data_home_path, "Index_Variables2024_08_09.csv"))
+```
+
+```{r}
+#Join echo and land_sub
+head(land_sub)
+head(echo)
+colnames(land_sub)
+colnames(echo)
+
+```
+
+```{r}
+# Check PWSIDs
+ids1 <- echo$PWSId
+ids2 <- land_sub$PWSID
+
+# Common IDs
+common_ids <- intersect(ids1, ids2)
+
+# Unique to ID_column1
+unique_to_col1 <- setdiff(ids1, ids2)
+
+# Unique to ID_column2
+unique_to_col2 <- setdiff(ids2, ids1)
+
+# list(common = common_ids, unique_col1 = unique_to_col1, unique_col2 = unique_to_col2)
+
+all_PWSID <- length(wsa_boundaries$PWSID)
+
+common <- length(common_ids)
+unique <- length(unique_to_col1) + length(unique_to_col2)
+
+all_PWSID - (common + unique)
+
+#compare against all PWSIDS
+
+# Combine IDs from both columns
+all_ids <- unique(c(ids1,ids2))
+
+# IDs from both columns that are in all pwsids
+contained_in_truth_all <- intersect(all_ids, wsa_boundaries$PWSID)
+
+# IDs from both columns that are NOT in all pwsids
+not_contained_in_truth_all <- setdiff(all_ids, wsa_boundaries$PWSID)
+
+# Summary
+# list(
+#   contained_in_truth_all = contained_in_truth_all,
+#   not_contained_in_truth_all = not_contained_in_truth_all
+# )
+
+
+```
+
+```{r}
+library(stringdist)
+
+# Compute pairwise string distances between all unincluded IDs
+distance_matrix <- stringdistmatrix(not_contained_in_truth_all, not_contained_in_truth_all )
+
+# Perform hierarchical clustering based on the distance matrix
+hc <- hclust(as.dist(distance_matrix))
+
+# Plot dendrogram to visualize commonalities
+plot(hc, labels = not_contained_in_truth_all, main = "Dendrogram of Unincluded IDs")
+
+# Cut tree to find clusters
+cutree_clusters <- cutree(hc, k = 9)  # Adjust k to the desired number of clusters
+
+# Add cluster info back to IDs
+clustered_data <- data.frame(ID = not_contained_in_truth_all, Cluster = cutree_clusters)
+
+# Summary by clusters
+cluster_summary <- table(clustered_data$Cluster)
+
+# Display clustered data and summary
+list(
+  clustered_data = clustered_data,
+  cluster_summary = cluster_summary
+)
+
+```
+Not able to identify the reason (a common pattern) the unique IDs are not included in the PWSIDs shapefile, so I'm going to keep them all for now and potentially drop them later. 
+
+```{r}
+#Select Relevant variables, echo
+echo_subset <- echo %>% 
+  dplyr::select(PWSId, violation_points) %>%
+  dplyr::rename(PWSID = PWSId)
+
+#Select Relevant variables, land_sub
+land_sub_subset <- land_sub %>% 
+  dplyr::select(land_sub_max, land_sub_avg, PWSID)
+
+#Perform the join
+echo_land_sub <- merge(x = echo_subset, y = land_sub_subset, by = "PWSID", all = TRUE)
+
+#Check the join 
+head(echo_land_sub)
+```
+```{r}
+#Look at bio (eco_imp_water_) dataset
+head(bio)
+nrow(bio)
+
+#Perform the join 
+echo_land_sub_bio <- merge(x = echo_land_sub, y = bio, by = "PWSID", all = TRUE)
+head(echo_land_sub_bio)
+nrow(echo_land_sub)
+nrow(echo_land_sub_bio)
+
+```
+```{r}
+#Look at acs data
+head(acs1)
+head(acs2)
+
+#drop geom column from acs2
+acs2_no_geom <- st_drop_geometry(acs2)
+head(acs2_no_geom)
+
+#Aggregate acs1: sum var/take avg of percent
+acs1_grp <- acs1 %>% 
+  dplyr::group_by(PWSID) %>%
+  dplyr::summarize(
+    no_DW_access = sum(no_DW_access),
+    no_DW_access_pct = mean(no_DW_access_pct)
+  )
+
+#Aggregate acs2_no_geom: take avg of percents 
+acs2_no_geom_grp <- acs2_no_geom %>% 
+  dplyr::group_by(PWSID) %>%
+  dplyr::summarize(
+    gini = mean(gini)
+  )
+
+#the first two numbers are sometimes numbers and sometimes letters - this is a potential source of mismatching. But I don't think the state code numbers actually map to the first two letters. 
+
+#perform the merge on acs1 and acs2_no_geom
+
+acs1_2 <- merge(x = acs1_grp, y = acs2_no_geom_grp, by = "PWSID", all = TRUE)
+head(acs1_2)
+nrow(acs2_no_geom_grp)
+nrow(acs1_grp)
+nrow(acs1_2)
+
+```
+```{r}
+#Join acs1_2 and echo_land_bio
+
+version3 <- merge(x = echo_land_sub_bio, y = acs1_2, by = "PWSID", all = TRUE)
+head(version3)
+colnames(version3)
+nrow(version3)
+
+gg_miss_var(version3)
+
+```
+```{r}
+#Look at imp_land 
+head(imp_land)
+
+#Aggregate imp_land: take mean of eco_imp_land_mean and max of eco_imp_land_max
+imp_land_grp <- imp_land %>% 
+  dplyr::group_by(PWSID) %>%
+  dplyr::summarize(
+    eco_imp_land_mean = mean(eco_imp_land_mean), 
+    eco_imp_land_max = max(eco_imp_land_max)
+  )
+head(imp_land_grp)
+nrow(imp_land)
+nrow(imp_land_grp)
+
+
+#Join wsa_eco_bio_imp_land with version 3
+version4 <- merge(x = version3, y = imp_land_grp, by = "PWSID", all = TRUE)
+head(version4)
+colnames(version4)
+nrow(version4)
+
+```
+
+```{r}
+##Look at private supply columns. Check num rows of private_supply. 
+
+#head(private_supply)
+#nrow(private_supply)
+
+##Merge in private_supply columns
+version5 <- merge(x = version4, y = private_supply, by = "PWSID", all = TRUE)
+head(version5)
+nrow(version5)
+gg_miss_var(version5)
+colnames(version5)
+```
+```{r}
+#Merge multiple variables with version5
+head(several_combined_variables) 
+nrow(several_combined_variables)
+
+version6 <- merge(x = version5, y = several_combined_variables, all = TRUE)
+nrow(version6)
+
+```
+
+```{r}
+#To convert all non-percentile columns into percentiles: 
+
+#Create a final dataframe (copy) with columns as percentiles and confirm numeric data 
+final_df <- version6
+
+#Impute NAs to 0s 
+final_df[is.na(final_df)] <- 0
+
+#Check data is numeric and convert to numeric otherwise
+for (col in (colnames(final_df))) {
+  if (col != "PWSID") {
+    if (!is.numeric(final_df[[col]])) {
+      final_df[[col]] <- as.numeric(final_df[[col]])
+    }
+  }
+}
+
+#Anything not in percentile form, convert to percentile 
+for (col in (colnames(final_df))) {
+  if (col != "PWSID") {
+    if (!all(final_df[[col]] >= 0 & final_df[[col]] <= 1)) {
+      ecdf_function <- ecdf(final_df[[col]])
+      final_df[[col]] <- ecdf_function(final_df[[col]])
+    }
+  }
+}
+
+```
+
+```{r}
+head(final_df)
+nrow(final_df)
+
+```
+```{r}
+#Only keep PWSID from wsa_boundaries 
+wsa_boundaries_subset <- wsa_boundaries %>% 
+  dplyr::select(PWSID)
+
+
+#Merge with wsa boundaries 
+final_sf <- wsa_boundaries_subset %>%
+  left_join(final_df, by = "PWSID")
+
+final_sf <- st_as_sf(final_sf) 
+
+#Write geojson to a file in the Downloads folder 
+downloads_path <- file.path(path.expand("~"), "Downloads", "water_reuse_df.geojson")
+
+# Write the sf object to a GeoJSON file in the Downloads folder
+st_write(final_sf, downloads_path, driver = "GeoJSON")
+
+```
+
+```{r}
+##List format of column names and drivers to be fed into the json
+
+final_col_names <- colnames(final_sf)
+#final_col_names
+
+menu_options_input <- list(
+  Equitable_Access = list(
+    rec_impaired_pct = "Impaired Recreational Waters",
+    violation_points = "Drinking Water Violations",
+    no_DW_access_pct = "Plumbing Poverty",
+    self_supply_pct = "Population On Private Wells",
+    gini = "Income Inequality"
+  ),
+  Effluent_Disposal_Limitations = list(
+    eco_imp_land_mean = "Land Habitat Importance (Average)",
+    eco_imp_land_max = "Land Habitat Importance (Max)",
+    eco_imp_water_mean = "Water Habitat Importance (Average)",
+    eco_imp_water_max = "Water Habitat Importance (Max)",
+    eco_impaired_pct = "Impaired Ecological Waters"
+  ),
+  Extreme_Events = list(
+    NRI_score = "Natural Hazard Risk",
+    land_sub_mean = "Land Subsidence (Average)",
+    land_sub_max = "Land Subsidence (Max)"
+  ),
+  Runoff_Management = list(
+    nutrient_impaired_pct = "Nutrient Impaired Waters",
+    runoff_max = "Max Monthly Runoff",
+    runoff_total = "Total Annual Runoff"
+  )
+)
+
+```
+
