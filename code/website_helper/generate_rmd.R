@@ -1,4 +1,9 @@
 generate_rmd <- function(data, author, contact) {
+  #' generates .Rmd file with column names
+  #' @param data data_frame name
+  #' @param author string. 
+  #' @param contact string. contact info. 
+  #' @example generate_rmd(echo_cleaned, "Jihyeon", "emailaddress_at_uw.edu" )
   # Ensure the data is available in the environment
   data_name <- deparse(substitute(data))
   
@@ -23,13 +28,11 @@ generate_rmd <- function(data, author, contact) {
   )
   
   # Write the content to an .Rmd file
-  writeLines(rmd_content, "metadata.Rmd")
+  rmd_file_path <- "/path/to/your/webserver/directory/metadata.Rmd"
+  writeLines(rmd_content, rmd_file_path)
   
-  # Render the Rmd file to an HTML document
-  rmarkdown::render("metadata.Rmd")
+  # Render the Rmd file to an HTML document (optional)
+  rmarkdown::render(rmd_file_path)
   
   message("Rmd file generated and rendered successfully.")
 }
-
-# Example usage:
-# myfunction(data = your_dataframe, author = "Your Name", contact = "your.email@example.com")
