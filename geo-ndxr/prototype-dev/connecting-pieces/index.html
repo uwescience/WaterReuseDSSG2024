@@ -25,7 +25,8 @@
             <div>
                 <h1 id="loading">Loading, please wait...</h1>
                 <pre><code id="out"></code></pre>
-              </div>
+            </div>
+            <button id="recalc" disabled>Recalculating...</button>
 
         </div>
         <div>
@@ -130,6 +131,7 @@
         document.getElementById('submit-button').disabled = false
 
         async function recalculate() {
+            document.getElementById('recalc').disabled = false;
             const selectedOptions = [];
             const checkboxes = document.querySelectorAll('#checkbox-menu input[type="checkbox"]');
             checkboxes.forEach(checkbox => {
@@ -200,6 +202,7 @@
             // Clean up the URL object
             URL.revokeObjectURL(link.href);
         });
+        document.getElementById('recalc').disabled = true;
         }
         document.getElementById('submit-button').addEventListener('click', recalculate);
 
