@@ -1,2 +1,3 @@
 default:
-  home_path: "/Users/username/home_path"
+  home_path: "/Users/danielvogler/Documents/DSSG/WaterReuseDSSG2024/"
+  datasets_path: "/Users/danielvogler/Documents/DSSG/water_reuse/datasets"
