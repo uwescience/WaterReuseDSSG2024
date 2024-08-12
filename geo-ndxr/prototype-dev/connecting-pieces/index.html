@@ -22,6 +22,10 @@
             <div id="checkbox-menu"></div>
             <button id="submit-button" disabled>Submit</button>
             <button id="download-button" disabled>Download</button>
+            <div>
+                <h1 id="loading">Loading, please wait...</h1>
+                <pre><code id="out"></code></pre>
+              </div>
 
         </div>
         <div>
@@ -52,7 +56,7 @@
         // Call the function with the path to your GeoJSON file and the index key to use
 
         ///NEEDS TO BE CHANGED TO PLOT THE RIGHT THING
-        loadAndPlotMap(map_data_path, initial_index);
+        //loadAndPlotMap(map_data_path, initial_index);
     </script>
     <script src="https://webr.r-wasm.org/latest/webr.mjs" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
@@ -62,7 +66,7 @@
         import { WebR } from 'https://webr.r-wasm.org/latest/webr.mjs';
         const webr = new WebR();
         await webr.init();
-        await webr.installPackages(["dplyr", "tidyr", "jsonlite", "sf", "geojsonsf"]);
+        
 
         // Download a filesystem image
         await webr.FS.mkdir('/data')
@@ -80,6 +84,11 @@
 
         // Read the contents of the map
         const result = await webr.evalR('readLines("/data/abc.geojson")');
+        loadAndPlotMap('./output.data', "index_value");
+
+        await webr.installPackages(["dplyr", "tidyr", "jsonlite", "sf", "geojsonsf"]);
+
+        document.getElementById('loading').remove();
         
         const output = await result.toArray();
         const text = output.join('\n');
