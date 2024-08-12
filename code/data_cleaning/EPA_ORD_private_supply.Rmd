@@ -26,7 +26,7 @@ df <- df %>%
   summarize(self_supply_units = sum(Est_Wells_2020), housing_units_2020 = sum(HU_2020)) %>%
   na.omit()
 
-any(duplicated(df$GEOID_BlkGrp)) # expect false - confirms that df is now on census tract level
+any(duplicated(df$GEOID_BlkGrp)) # expect false - confirms that df is now on census block group level
 ```
 
 
@@ -77,27 +77,22 @@ wsa <- st_as_sf(st_read(wsa_path))
 # for sum, do extensive = TRUE; for avg., do ext = FALSE
 sf_wsa <- crosswalk_spatial(sf, wsa, join_method = "areal_weighted", extensive = TRUE)
 
-sf_wsa$self_supply_pct <- sf_wsa$self_supply_units / sf_wsa$housing_units_2020
+merged_sf_wsa <- st_join(sf_wsa, wsa, left = TRUE)
 
+any(duplicated(merged_sf_wsa$PWSID))
 
-out_filename <- "/processed_datasets/private_supply.shp"
-out_path <- paste0(config::get("datasets_path"), out_filename)
-columns_to_rename <- setdiff(colnames(sf_wsa), "geometry")
-colnames(sf_wsa)[colnames(sf_wsa) %in% columns_to_rename] <- paste0("x", seq_along(columns_to_rename))
+merged_sf_wsa <- merged_sf_wsa %>% 
+  group_by(PWSID) %>% 
+  summarize(self_supply_units = sum(self_supply_units), housing_units_2020 = sum(housing_units_2020))
 
+merged_sf_wsa$self_supply_pct <- merged_sf_wsa$self_supply_units / merged_sf_wsa$housing_units_2020
 
-st_write(sf_wsa, out_path)
+out_df <- as.data.frame(merged_sf_wsa) %>% 
+  select(PWSID, self_supply_units, housing_units_2020, self_supply_pct)
 
-# confirming this works
-read_sf(out_path)
-```
+outpath <- "/Users/danielvogler/Documents/DSSG/water_reuse/datasets/processed_datasets/private_supply.csv"
 
-Creating data dictionary:
-```{r}
-data_dictionary <- data.frame(abbreviation = paste0("x", seq_along(columns_to_rename)),
-                              original_name = columns_to_rename)
+write.csv(out_df, file = outpath, row.names = FALSE)
 
-dd_filename <- '/processed_datasets/private_supply_dictionary.csv'
-dd_path <- paste0(config::get("datasets_path"), dd_filename)
-write.csv(data_dictionary, dd_path)
+read.csv(outpath)
 ```

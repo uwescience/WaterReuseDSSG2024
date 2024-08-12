@@ -20,7 +20,7 @@ crosswalk_geom <- function(data, target, location_columns = NULL, extensive = FA
     points <- st_as_sf(data, coords = location_columns, crs = st_crs(target))
     
     # Perform the spatial join to find the containing shape for each point
-    joined <- st_join(points, target, join = st_contains, left = TRUE)
+    joined <- st_join(points, target, join = st_within, left = FALSE)
     
     } else if (join_method == "max_area") {
       # Ensure data is a spatial object and has the same CRS as the target
