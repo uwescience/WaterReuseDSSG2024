@@ -12,7 +12,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js"></script>
-
 </head>
 
 <body>
@@ -27,10 +26,8 @@
                 <pre><code id="out"></code></pre>
             </div>
             <button id="recalc" disabled>Recalculating...</button>
-
         </div>
         <div>
-
             <div id="map" class="leaflet html-widget html-fill-item"></div>
         </div>
     </div>
@@ -55,22 +52,18 @@
             }
         }
         // Call the function with the path to your GeoJSON file and the index key to use
-
-        ///NEEDS TO BE CHANGED TO PLOT THE RIGHT THING
         //loadAndPlotMap(map_data_path, initial_index);
     </script>
     <script src="https://webr.r-wasm.org/latest/webr.mjs" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
 
-    <!-- <script src="mount.js" type="module"></script> -->
     <script type="module">
         import { WebR } from 'https://webr.r-wasm.org/latest/webr.mjs';
         const webr = new WebR();
         await webr.init();
-        
 
         // Download a filesystem image
-        await webr.FS.mkdir('/data')
+        await webr.FS.mkdir('/data');
         const data = await fetch('./output.data');
         const metadata = await fetch('./output.js.metadata');
 
@@ -90,14 +83,15 @@
         await webr.installPackages(["dplyr", "tidyr", "jsonlite", "sf", "geojsonsf"]);
 
         document.getElementById('loading').remove();
-        
+
         const output = await result.toArray();
         const text = output.join('\n');
 
-        // source dependencies for the R script below
+        // Source dependencies for the R script
         const pcaWeightsPath = "./scripts/get_pca_weights.R";
         const weightedAvgPath = "./scripts/weighted_average.R";
         const selectVarsPath = "./scripts/select_vars.R";
+        const generateRmdPath = "./scripts/generate_rmd.R";
 
         const fetchText = async (filePath) => {
             const response = await fetch(filePath);
@@ -118,6 +112,10 @@
         let selectVarsText = await selectVars.text();
         await webr.evalR(selectVarsText);
 
+        let generateRmd = await fetch(generateRmdPath);
+        let generateRmdText = await generateRmd.text();
+        await webr.evalR(generateRmdText);
+
         console.log("R functions sourced");
 
         console.log("Fetching map data...");
@@ -128,7 +126,7 @@
 
         console.log("Data fetched");
 
-        document.getElementById('submit-button').disabled = false
+        document.getElementById('submit-button').disabled = false;
 
         async function recalculate() {
             document.getElementById('recalc').disabled = false;
@@ -141,7 +139,7 @@
             });
 
             const selectedOptionsString = JSON.stringify(selectedOptions);
-            console.log(selectedOptionsString)
+            console.log(selectedOptionsString);
 
             let scriptText = `
                 library(dplyr)
@@ -150,11 +148,7 @@
                 library(geojsonsf)
                 library(tidyr)
 
-                ####We can get the data in, but it doesn't read well as a geojson. Maybe a csv or some such plain text file will work
-
                 test <- '${text}'
-                print(test)
-
                 sf <- geojson_sf(test)
 
                 cols_to_keep <- fromJSON('${selectedOptionsString}')
@@ -173,40 +167,46 @@
 
                 output <- toJSON(geo_index)
 
-                return(geo_index)
-                `;
+                outputMeta <- generate_rmd(sf_filtered)
+
+                return(list(geo_index = geo_index, outputMeta = outputMeta))
+            `;
 
             const result = await webr.evalR(scriptText);
-            const resultJson = JSON.parse((await result.toJs()).values);
+            const resultJson = (await result.toJs()).values;
+            const geoJsonData = resultJson.geo_index;
+            const metadataContent = resultJson.outputMeta;
 
-            plot_map(resultJson, "index", latitude, longitude, zoomLevel);
+
+            plot_map(JSON.parse(geoJsonData), "index", latitude, longitude, zoomLevel);
 
             // Enable the download button
             document.getElementById('download-button').disabled = false;
 
-            document.getElementById('download-button').addEventListener('click', function() {
-            
-            const jsonString = JSON.stringify(resultJson);
+            document.getElementById('download-button').addEventListener('click', function () {
+                //  first download (geojson data)
+              const geoJsonBlob = new Blob([geoJsonData], { type: 'application/json' });
+                const geoJsonLink = document.createElement('a');
+                geoJsonLink.href = URL.createObjectURL(geoJsonBlob);
+                geoJsonLink.download = 'recalc_output.geojson';
+                geoJsonLink.click();
+                URL.revokeObjectURL(geoJsonLink.href);
 
-            // Create a blob with JSON data
-            const blob = new Blob([jsonString], { type: 'application/json' });
+                // second download ( metadata)
+                const metadataBlob = new Blob([metadataContent], { type: 'text/plain' });
+                const metadataLink = document.createElement('a');
+                metadataLink.href = URL.createObjectURL(metadataBlob);
+                metadataLink.download = 'metadata.Rmd';
+                metadataLink.click();
+                URL.revokeObjectURL(metadataLink.href);
+            });
 
-            // Create a link element
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'recalc_output.geojson'; // Specify the file name
 
-            // Trigger the download
-            link.click();
-
-            // Clean up the URL object
-            URL.revokeObjectURL(link.href);
-        });
-        document.getElementById('recalc').disabled = true;
+            document.getElementById('recalc').disabled = true;
         }
+
         document.getElementById('submit-button').addEventListener('click', recalculate);
 
-    </script>
     </script>
 </body>
 
