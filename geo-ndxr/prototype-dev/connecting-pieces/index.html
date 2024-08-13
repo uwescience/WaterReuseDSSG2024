@@ -12,6 +12,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js"></script>
+
 </head>
 
 <body>
@@ -26,8 +27,10 @@
                 <pre><code id="out"></code></pre>
             </div>
             <button id="recalc" disabled>Recalculating...</button>
+
         </div>
         <div>
+
             <div id="map" class="leaflet html-widget html-fill-item"></div>
         </div>
     </div>
@@ -52,18 +55,22 @@
             }
         }
         // Call the function with the path to your GeoJSON file and the index key to use
+
+        ///NEEDS TO BE CHANGED TO PLOT THE RIGHT THING
         //loadAndPlotMap(map_data_path, initial_index);
     </script>
     <script src="https://webr.r-wasm.org/latest/webr.mjs" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
 
+    <!-- <script src="mount.js" type="module"></script> -->
     <script type="module">
         import { WebR } from 'https://webr.r-wasm.org/latest/webr.mjs';
         const webr = new WebR();
         await webr.init();
 
+
         // Download a filesystem image
-        await webr.FS.mkdir('/data');
+        await webr.FS.mkdir('/data')
         const data = await fetch('./output.data');
         const metadata = await fetch('./output.js.metadata');
 
@@ -78,7 +85,7 @@
 
         // Read the contents of the map
         const result = await webr.evalR('readLines("/data/abc.geojson")');
-        loadAndPlotMap('./output.data', "index_value");
+        loadAndPlotMap('./output.data', "gini");
 
         await webr.installPackages(["dplyr", "tidyr", "jsonlite", "sf", "geojsonsf"]);
 
@@ -87,11 +94,10 @@
         const output = await result.toArray();
         const text = output.join('\n');
 
-        // Source dependencies for the R script
-        const pcaWeightsPath = "./scripts/get_pca_weights.R";
+        // source dependencies for the R script below
+        const pcaWeightsPath = "./scripts/driver_weighted_pca.R";
         const weightedAvgPath = "./scripts/weighted_average.R";
         const selectVarsPath = "./scripts/select_vars.R";
-        const generateRmdPath = "./scripts/generate_rmd.R";
 
         const fetchText = async (filePath) => {
             const response = await fetch(filePath);
@@ -112,10 +118,6 @@
         let selectVarsText = await selectVars.text();
         await webr.evalR(selectVarsText);
 
-        let generateRmd = await fetch(generateRmdPath);
-        let generateRmdText = await generateRmd.text();
-        await webr.evalR(generateRmdText);
-
         console.log("R functions sourced");
 
         console.log("Fetching map data...");
@@ -126,7 +128,7 @@
 
         console.log("Data fetched");
 
-        document.getElementById('submit-button').disabled = false;
+        document.getElementById('submit-button').disabled = false
 
         async function recalculate() {
             document.getElementById('recalc').disabled = false;
@@ -139,7 +141,13 @@
             });
 
             const selectedOptionsString = JSON.stringify(selectedOptions);
-            console.log(selectedOptionsString);
+            console.log(selectedOptionsString)
+
+            const response = await fetch(menu_options_path);
+            const menuOptions = await response.json();
+            const menuOptionsString = await JSON.stringify(menuOptions)
+            console.log(menuOptions)
+            console.log(menuOptionsString)
 
             let scriptText = `
                 library(dplyr)
@@ -148,65 +156,83 @@
                 library(geojsonsf)
                 library(tidyr)
 
-                test <- '${text}'
-                sf <- geojson_sf(test)
+                input_json <- fromJSON('${menuOptionsString}')
+                index_structure <- data.frame(
+                Driver = character(),
+                Indicator = character(),
+                stringsAsFactors = FALSE
+                )
 
-                cols_to_keep <- fromJSON('${selectedOptionsString}')
-                cols_to_keep <- cols_to_keep[-which(cols_to_keep=="")]
+                for (category in names(input_json)) {
 
-                cols_to_keep <- as.array(cols_to_keep)
-                sf_filtered <- filter_data(sf, cols_to_keep)
+                    for (key in names(input_json[[category]])) {
+                        index_structure <- rbind(index_structure, data.frame(
+                        Driver = category,
+                        Indicator = key,
+                        stringsAsFactors = FALSE
+                        ))
+                        }
+                }
 
-                weights <- get_pca_weights(data = sf_filtered, excluded_cols = c("geometry"))
+                ####We can get the data in, but it doesn't read well as a geojson. Maybe a csv or some such plain text file will work
 
-                index <- get_weighted_average(sf_filtered, weights, excluded_cols = c("geometry"))
+                dataset_input <- '${text}'
 
-                sf <- cbind(sf, index)
+                data_sf <- geojson_sf(dataset_input)
 
-                geo_index <- sf_geojson(sf)
+                sf_data <- st_drop_geometry(data_sf)
+
+                # Select only the numeric columns to do PCA on
+                numeric_df <- sf_data[, sapply(sf_data, is.numeric)]
+
+                
+                user_selection <- fromJSON('${selectedOptionsString}')
+                
+
+                index <- multidriver_pca(numeric_df,
+                                            user_selection,
+                                            index_structure)
+
+                data_sf$index <- index
+
+                geo_index <- sf_geojson(data_sf)
 
                 output <- toJSON(geo_index)
 
-                outputMeta <- generate_rmd(sf_filtered)
-
-                return(list(geo_index = geo_index, outputMeta = outputMeta))
-            `;
+                return(geo_index)
+                `;
 
             const result = await webr.evalR(scriptText);
-            const resultJson = (await result.toJs()).values;
-            const geoJsonData = resultJson.geo_index;
-            const metadataContent = resultJson.outputMeta;
+            const resultJson = JSON.parse((await result.toJs()).values);
 
-
-            plot_map(JSON.parse(geoJsonData), "index", latitude, longitude, zoomLevel);
+            plot_map(resultJson, "index", latitude, longitude, zoomLevel);
 
             // Enable the download button
             document.getElementById('download-button').disabled = false;
 
             document.getElementById('download-button').addEventListener('click', function () {
-                //  first download (geojson data)
-              const geoJsonBlob = new Blob([geoJsonData], { type: 'application/json' });
-                const geoJsonLink = document.createElement('a');
-                geoJsonLink.href = URL.createObjectURL(geoJsonBlob);
-                geoJsonLink.download = 'recalc_output.geojson';
-                geoJsonLink.click();
-                URL.revokeObjectURL(geoJsonLink.href);
 
-                // second download ( metadata)
-                const metadataBlob = new Blob([metadataContent], { type: 'text/plain' });
-                const metadataLink = document.createElement('a');
-                metadataLink.href = URL.createObjectURL(metadataBlob);
-                metadataLink.download = 'metadata.Rmd';
-                metadataLink.click();
-                URL.revokeObjectURL(metadataLink.href);
+                const jsonString = JSON.stringify(resultJson);
+
+                // Create a blob with JSON data
+                const blob = new Blob([jsonString], { type: 'application/json' });
+
+                // Create a link element
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'recalc_output.geojson'; // Specify the file name
+
+                // Trigger the download
+                link.click();
+
+                // Clean up the URL object
+                URL.revokeObjectURL(link.href);
             });
-
-
             document.getElementById('recalc').disabled = true;
         }
-
         document.getElementById('submit-button').addEventListener('click', recalculate);
 
+    </script>
     </script>
 </body>
 
