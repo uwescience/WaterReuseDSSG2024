@@ -187,7 +187,7 @@ function plot_map(data, indexKey, latitude, longitude, zoomLevel) {
 
 
 async function createCheckboxes() {
-    const jsonFilePath = 'menu_options.json'; // Adjust the path if needed
+    const jsonFilePath = menu_options_path; // Adjust the path if needed
     const checkboxMenuId = 'checkbox-menu'; // Correct ID
 
     try {
