@@ -1,0 +1,81 @@
+---
+title: "Testing Driver Weighted PCA"
+author: "Daniel Vogler"
+date: "2024-08-13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Loading packages:
+
+```{r cars}
+# lives in the code folder; need to clean up this source statement
+source("driver-weighted-pca.R")
+```
+
+## Test data
+Simulating some well-behaved test data:
+
+```{r}
+n <- 100
+
+# Economic Development
+NewIndustrialDemand <- rnorm(n, 1, 2)
+CreateGreenJobs <- rnorm(n, 100, )
+
+# Ecosystem Protection
+ReduceEffluent <- rnorm(n, 300, 100)
+MeetNutrientTMDLs <- rnorm(n, 50, 10)
+
+# Nutrient Mgmt
+ReduceRunoff <- rnorm(n, 200000, 100000)
+ReduceCSO <- rnorm(n, 0.4, 0.1)
+
+IndexStructure <- data.frame(
+  Driver = c("EconomicDevelopment", "EconomicDevelopment", "EcoProtection", "EcoProtection", "NutrientMgmt", "NutrientMgmt"),
+  Indicator = c("NewIndustrialDemand", "CreateGreenJobs", "ReduceEffluent", "MeetNutrientTMDLs", "ReduceRunoff", "ReduceCSO")
+  
+)
+
+generate_id <- function(length = 10) {
+  chars <- c(letters, LETTERS, 0:9)  # Alphanumeric characters
+  paste0(sample(chars, length, replace = TRUE), collapse = "")
+}
+
+simulated_data <- data.frame(NewIndustrialDemand, 
+                             CreateGreenJobs, 
+                             ReduceEffluent,
+                             MeetNutrientTMDLs,
+                             ReduceRunoff,
+                             ReduceCSO)
+
+
+simulated_data$id <- replicate(n, generate_id(10))
+
+scenario1_js <- '["NewIndustrialDemand", "CreateGreenJobs", "", "ReduceEffluent"]'
+scenario2_js <- '["ReduceEffluent", "ReduceCSO"]'
+scenario3_js <- '["NewIndustrialDemand", "CreateGreenJobs", "ReduceEffluent", "MeetNutrientTMDLs", "ReduceRunoff", "ReduceCSO"]'
+
+
+hold <- multidriver_pca(simulated_data, scenario1_js, IndexStructure, index_min = 10, index_max = 20)
+hold2 <- multidriver_pca(simulated_data, scenario2_js, IndexStructure)
+hold3 <- multidriver_pca(simulated_data, scenario3_js, IndexStructure)
+
+```
+
+Plot output:
+
+```{r}
+hist(hold)
+```
+
+```{r}
+hist(hold2)
+```
+
+```{r}
+hist(hold3)
+```
