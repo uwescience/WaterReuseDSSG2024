@@ -85,7 +85,7 @@
 
         // Read the contents of the map
         const result = await webr.evalR('readLines("/data/abc.geojson")');
-        loadAndPlotMap('./output.data', "index_value");
+        loadAndPlotMap('./output.data', "gini");
 
         await webr.installPackages(["dplyr", "tidyr", "jsonlite", "sf", "geojsonsf"]);
 
@@ -95,7 +95,7 @@
         const text = output.join('\n');
 
         // source dependencies for the R script below
-        const pcaWeightsPath = "./scripts/get_pca_weights.R";
+        const pcaWeightsPath = "./scripts/driver_weighted_pca.R";
         const weightedAvgPath = "./scripts/weighted_average.R";
         const selectVarsPath = "./scripts/select_vars.R";
 
@@ -174,31 +174,32 @@
                         }
                 }
 
-                print(index_structure)
-
                 ####We can get the data in, but it doesn't read well as a geojson. Maybe a csv or some such plain text file will work
 
-                test <- fromJSON('${text}')
+                dataset_input <- '${text}'
 
-                sf <- geojson_sf(test)
+                data_sf <- geojson_sf(dataset_input)
 
-                #cols_to_keep <- fromJSON('${selectedOptionsString}')
-                #cols_to_keep <- cols_to_keep[-which(cols_to_keep=="")]
+                sf_data <- st_drop_geometry(data_sf)
 
-                #cols_to_keep <- as.array(cols_to_keep)
-                #sf_filtered <- filter_data(sf, cols_to_keep)
+                # Select only the numeric columns to do PCA on
+                numeric_df <- sf_data[, sapply(sf_data, is.numeric)]
 
-                #weights <- get_pca_weights(data = sf_filtered, excluded_cols = c("geometry"))
+                
+                user_selection <- fromJSON('${selectedOptionsString}')
+                
 
-                #index <- get_weighted_average(sf_filtered, weights, excluded_cols = c("geometry"))
+                index <- multidriver_pca(numeric_df,
+                                            user_selection,
+                                            index_structure)
 
-                #sf <- cbind(sf, index)
+                data_sf$index <- index
 
-                #geo_index <- sf_geojson(sf)
+                geo_index <- sf_geojson(data_sf)
 
-                #output <- toJSON(geo_index)
+                output <- toJSON(geo_index)
 
-                #return(geo_index)
+                return(geo_index)
                 `;
 
             const result = await webr.evalR(scriptText);
