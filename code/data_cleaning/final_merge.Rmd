@@ -301,17 +301,46 @@ final_sf <- final_sf %>%
 #head(final_sf)
 
 final_sf <- st_as_sf(final_sf) 
+final_sf <- st_make_valid(final_sf) %>% 
+  st_cast("MULTIPOLYGON")
+
+# check <- st_is_empty(final_sf)
+# sum(check)
+# check <- st_is_simple(final_sf)
+#sum(check) - nrow(final_sf)
 
 library(rmapshaper)
-final_sf <- ms_simplify(final_sf, keep = 0.01, keep_shapes = FALSE)
+library(geojsonio)
+# final_sf <- ms_simplify(final_sf, keep = 0.01, keep_shapes = FALSE)
 
-#Write geojson to a file in the Downloads folder 
-downloads_path <- file.path(path.expand("~"), "Downloads", "water_reuse_df.geojson") 
+# final_sf_simple <- st_simplify(final_sf, dTolerance = 500)
+# final_sf_simple_test <- st_simplify(final_sf[1:1000,], dTolerance = 10)
+# final_sf_simple_test <- st_make_valid(final_sf_simple_test)
 
-# Write the sf object to a GeoJSON file in the Downloads folder
-st_write(final_sf, downloads_path, driver = "GeoJSON", append = FALSE)
+#st_crs(final_sf)
+final_sf <- st_transform(final_sf, crs = 4326)
+
+final_json <- geojson_json(final_sf, geometry = "polygon")
+final_json_simplified <- ms_simplify(final_json)
+
+geojson_write(final_json_simplified, file = "~/Downloads/water_reuse_geojsonio1.geojson")
+
+# #Write geojson to a file in the Downloads folder 
+# downloads_path <- file.path(path.expand("~"), "Downloads", "wsa.geojson") 
+
+# # Write the sf object to a GeoJSON file in the Downloads folder
+# st_write(final_sf_simple, downloads_path, driver = "GeoJSON", append = FALSE)
+# st_write(final_sf, downloads_path, driver = "GeoJSON", append = FALSE)
+
+# st_write(wsa_boundaries_subset, downloads_path, driver = "GeoJSON", append = FALSE)
 
 ```
+
+```{r}
+
+plot(final_sf_simple$geometry[1])
+```
+
 
 ```{r}
 ##List format of column names and drivers to be fed into the json
