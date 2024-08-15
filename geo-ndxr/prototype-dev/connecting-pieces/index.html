@@ -35,11 +35,13 @@
         </div>
     </div>
     <div id="description">{Description placeholder}</div>
+    <div id="sources">{Sources placeholder}</div>
 
     <script src="scripts.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             createCheckboxes();
+            setWebsiteTitleAndDescription();
         });
 
         async function loadAndPlotMap(jsonPath, indexKey) {
@@ -183,6 +185,8 @@
 
                 
                 user_selection <- fromJSON('${selectedOptionsString}')
+
+                user_selection <- user_selection[user_selection != ""]
                 
 
                 index <- multidriver_pca(numeric_df,
