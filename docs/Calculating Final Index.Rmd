@@ -1,0 +1,49 @@
+---
+title: "Calculating the Water Reuse Index"
+output: html_notebook
+---
+
+```{r}
+# load index data
+library(rjson)
+library(sf)
+filepath <- "/Users/danielvogler/Documents/DSSG/WaterReuseDSSG2024/geo-ndxr/prototype-dev/connecting-pieces/output.data"
+data_sf <- geojsonsf::geojson_sf(filepath)
+
+sf_data <- st_drop_geometry(data_sf)
+
+# Select only the numeric columns to do PCA on
+numeric_df <- sf_data[, sapply(sf_data, is.numeric)]
+```
+
+```{r}
+# load index structure
+library(jsonlite)
+structure_filepath <- "/Users/danielvogler/Documents/DSSG/WaterReuseDSSG2024/geo-ndxr/prototype-dev/connecting-pieces/menu_options.json"
+input_json <- jsonlite::fromJSON(structure_filepath)
+
+test_structure <- data.frame(
+  Driver = character(),
+  Indicator = character(),
+  stringsAsFactors = FALSE
+)
+
+for (category in names(input_json)) {
+  for (key in names(input_json[[category]])) {
+    test_structure <- rbind(test_structure, data.frame(
+      Driver = category,
+      Indicator = key,
+      stringsAsFactors = FALSE
+    ))
+  }
+}
+```
+
+```{r}
+source("~/Documents/DSSG/WaterReuseDSSG2024/code/create_index/driver_weighted_pca.R")
+
+index <- multidriver_pca(data = numeric_df,
+                user_selection = names(numeric_df),
+                index_structure = test_structure)
+```
+

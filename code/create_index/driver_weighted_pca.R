@@ -1,26 +1,16 @@
 # these are dependencies to run locally - modify with prefix from your config file. When running
 # in WebR, these import statement is redundant
 # library(rjson)
-# source("DSSG/WaterReuseDSSG2024/code/create_index/get_pca_weights.R")
+# # source("DSSG/WaterReuseDSSG2024/code/create_index/get_pca_weights.R")
+# 
 
-parse_user_selection <- function(user_selection_string) {
-  
-  user_selection <- fromJSON(user_selection_string)
-  
-  # remove empty selections - happens when a driver checkbox is checked 
-  user_selection <- user_selection[user_selection != ""]
-  
-  return(user_selection)
-  
-}
 
 # figure out how many drivers are activated by the user selection
-infer_active_drivers <- function(user_selection, index_structure) {
+infer_active_drivers <- function(user_selection, base_structure) {
   
   # return set of drivers that have an indicator in the user selection
-  
   active_drivers <- unique(
-    index_structure[index_structure$Indicator %in% user_selection, ]$Driver
+    base_structure[base_structure$Indicator %in% user_selection, ]$Driver
   )
   
   return(active_drivers)
@@ -62,10 +52,10 @@ lin_scale <- function(x, min_val=0, max_val=1) {
   transformed_x <- (min_val + (max_val-min_val)*unit_norm)
   
   return(transformed_x)
-
+  
 }
 
-multidriver_pca <- function(data, user_selection_string, 
+multidriver_pca <- function(data, user_selection, 
                             index_structure, 
                             driver_weights="equal",
                             id_column = "id",
@@ -73,27 +63,22 @@ multidriver_pca <- function(data, user_selection_string,
                             index_max = 100) {
   
   # first, figure out which drivers we are doing pca over
-  
-  user_selection <- parse_user_selection(user_selection_string = user_selection_string)
-  
   active_drivers <- infer_active_drivers(user_selection, 
-                                         index_structure = index_structure)
-  
-  active_indicators <- data[user_selection]
-  
-  active_indicator_names <- names(active_indicators)
-  
+                                         base_structure = index_structure)
+
+
   driver_scores <- data.frame(matrix(ncol=0, nrow=nrow(data)))
   
   output_list <- list()
-  
+
   for (i in 1:length(active_drivers)) {
-    driver_slice <- index_structure %>%
-      filter(Driver == active_drivers[i] & Indicator %in% active_indicator_names)
     
+    driver_slice <- index_structure[(index_structure[1] == active_drivers[i] & index_structure[,2] %in% user_selection),]
+
     indicators_for_driver_score <- driver_slice$Indicator
     
     if (length(indicators_for_driver_score) > 1) {
+      print(paste("Running PCA on driver", active_drivers[i], "to reduce dimensionality to 1 number..."))
       data_for_pca <- data %>% select(all_of(indicators_for_driver_score))
       
       pca_result <- prcomp(data_for_pca, center = TRUE, scale. = TRUE)
@@ -104,6 +89,7 @@ multidriver_pca <- function(data, user_selection_string,
     }
     
     else {
+      print("Encountered driver with single indicator, no PCA needed.")
       data_for_score <- data[,indicators_for_driver_score]
       driver_scores[[active_drivers[i]]] <- data_for_score
     }
@@ -112,7 +98,6 @@ multidriver_pca <- function(data, user_selection_string,
   normalized_driver_scores <- get_percentiles(driver_scores)
   
   # if driver weights are set to equal, return the average of each driver score
-  
   if (driver_weights == "equal") {
     num_active_drivers <- ncol(normalized_driver_scores)
     weight_vector <- rep(1/num_active_drivers, num_active_drivers)
