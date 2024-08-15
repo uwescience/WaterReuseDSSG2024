@@ -1,0 +1,81 @@
+---
+title: "process_data"
+output: html_document
+date: "2024-08-15"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Index and Website Creation Pipeline 
+
+Creator pipeline for calculating a default index and setting up an interactive website displaying an index map. This is a working template for index creation. DO NOT PUSH to the GitHub repository. NOTE: set gitignore? for this file 
+
+## Required Packages and source GeoNdxR crosswalk functions 
+Ensure that the config.yml file in your downloaded GitHub repo contains your correct home path or set your working directory to the highest level of the GitHub repo. 
+
+```{r}
+#Require / Load libraries
+
+require(tigris, tidyverse, dplyr, sf, usmap, ggplot2, naniar, raster, terra, stars, nngeo, exactextractr, naniar, geojsonsf, rmapshaper, geojsonio)
+
+#Source GeoNdxR crosswalk functions. Find documentation for these functions linked in the GitHub README. 
+source("/code/crosswalk/crosswalk_spatial.R")
+source("/code/crosswalk/crosswalk_census.R")
+source("/code/crosswalk/crosswalk_id.R")
+source("/code/crosswalk/apply_weights.R")
+source("/code/website/helper/edit_website.R")
+source("/code/create_index/driver_weighted_pca.R")
+
+```
+
+
+## Load, explore, and transform data 
+Users should provide geospatial dataset(s) to be included in the index. Be mindful of filetypes and requirements. Code chunk below commented with further instruction. 
+
+```{r}
+
+data_path <- "~/Downloads/data"
+
+#If you are loading a shapefile (as opposed to csv, geojson, etc.), include folder with all relevant files in the file path
+
+file_name <- "shape_file_folder/example.shp"
+
+#Example of loading a shapefile. Adjust read/load R function based on file type. 
+dataset1 <- #read_sf(paste0(data_path, file_name))
+
+## Repeat for all data included in the index. If you only have one file, ignore the following commented out code.
+# 
+# file_name2 <- "example.csv"
+dataset2 <- #read.csv(paste0(data_path, file_name))
+
+```
+
+Add chunks to explore data. Create plots, use the head(data) function, inspect NAs with naniar function gg_miss_var(data). 
+
+## Crosswalk data to a target scale
+
+```{r}
+#Use crosswalk functions to match datasets to a target scale. 
+#Please use the crosswalk tutorial file located in the docs folder of the GitHub repo for more guidance. 
+#Convert all datasets to be sf or st objects that share the same CRS. From the sf package, use st_read and st_transform respectively to achieve this. 
+
+##Example crosswalk using crosswalk_spatial function 
+crosswalk_data <- #crosswalk_spatial(dataset1, dataset2, extensive = TRUE, join_method = "areal_weighted")
+
+```
+
+## Convert data to percentiles
+```{r}
+##Data must be numeric (except ID column) and converted to percentiles to be included in the index. 
+##Data must contain only one geospatial ID column (ex: "County Name", or "PWSID"). Data must contain a geometry column. All other columns must be numeric. 
+
+percentile_data <- #calculate_percentiles(crosswalk_data, "id_column")
+
+```
+

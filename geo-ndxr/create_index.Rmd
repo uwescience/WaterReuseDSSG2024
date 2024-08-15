@@ -27,7 +27,8 @@ source("/code/crosswalk/crosswalk_spatial.R")
 source("/code/crosswalk/crosswalk_census.R")
 source("/code/crosswalk/crosswalk_id.R")
 source("/code/crosswalk/apply_weights.R")
-source("codee/website/helper/edit_website.R")
+source("/code/website/helper/edit_website.R")
+source("/code/create_index/driver_weighted_pca.R")
 
 ```
 
@@ -36,66 +37,54 @@ source("codee/website/helper/edit_website.R")
 Users should provide geospatial dataset(s) to be included in the index. Be mindful of filetypes and requirements. Code chunk below commented with further instruction. 
 
 ```{r}
+#Load data. If you used process_data.Rmd to process and crosswalk your data, you can load in percentile_data directly. 
 
 data_path <- "~/Downloads/data"
 
 #If you are loading a shapefile (as opposed to csv, geojson, etc.), include folder with all relevant files in the file path
-
 file_name <- "shape_file_folder/example.shp"
-
-#Example of loading a shapefile. Adjust read/load R function based on file type. 
-dataset1 <- #read_sf(paste0(data_path, file_name))
-
-## Repeat for all data included in the index. If you only have one file, ignore the following commented out code.
-# 
-# file_name2 <- "example.csv"
-dataset2 <- #read.csv(paste0(data_path, file_name))
 
 ```
 
 Add chunks to explore data. Create plots, use the head(data) function, inspect NAs with naniar function gg_miss_var(data). 
 
-## Crosswalk data to a target scale
-
-```{r}
-#Use crosswalk functions to match datasets to a target scale. 
-#Please use the crosswalk tutorial file located in the docs folder of the GitHub repo for more guidance. 
-#Convert all datasets to be sf or st objects that share the same CRS. From the sf package, use st_read and st_transform respectively to achieve this. 
-
-##Example crosswalk using crosswalk_spatial function 
-crosswalk_data <- #crosswalk_spatial(dataset1, dataset2, extensive = TRUE, join_method = "areal_weighted")
-
-```
-
-## Convert data to percentiles
-```{r}
-##Data must be numeric (except ID column) and converted to percentiles to be included in the index. 
-##Data must contain only one geospatial ID column (ex: "County Name", or "PWSID"). Data must contain a geometry column. All other columns must be numeric. 
-
-percentile_data <- #calculate_percentiles(crosswalk_data, "id_column")
-
-```
 
 ## Calculate default/initial index
 ```{r}
 #Fill in your categories and indicators and how they are structured. These will become your sidebar menu options (categories and indicators to calculate the index). An example structure is below. Keep in mind that categories are creator-chosen and specified, they do not exist in the data itself. 
 
+percentile_data <- #read in your data
+  
 data_structure_for_index <- # list(Category1 = list(column_name1 = "Display Column Name 1"),                                     Category2 = list(column_name2 = "Display Column Name 2",                                                       column_name3 = "Display Column Name 3"))
 
-data_with_index <- #Daniel's PCA/index calculation function 
+numeric_df <- #percentile_data[, sapply(percentile_data, is.numeric)]
+  
+initial_index <- #multidriver_pca(data = numeric_df,
+#                 user_selection = names(numeric_df),
+#                 index_structure = data_structure_for_index)
+
+data_with_index <- #cbind(percentile_data, initial_index)
 
 ```
 
+
+## Set working directory 
+```{r}
+#Set your working directory to the location that the cloned GitHub repo lives on your computer. Example below. 
+
+setwd("~Downloads/WaterReuseDSSG2024")
+
+```
 
 ## Export data
 Fill in the commented sections of this code chunk in order to export a valid .geojson version of your final data. This file will be located in the website_materials folder of the downloaded GitHub repository on your computer. You will not need to interact directly with this file. 
 
 DO NOT CHANGE THE NAME OF THE GEOJSON FILE being exported or the website creation functions will not work. 
 
-**If you already have a geojson file that you would like to input directly, please rename it to map_data.geojson and place it in the website_materials folder. 
+**If you already have a geojson file that you would like to input directly, please rename it to output.data and place it in the website_materials folder. 
 
 ```{r}
-##Export data as a .geojson file in the website template folder of the repo 
+##Export data as a .geojson file in the website template folder of the repo. DO NOT EDIT. 
 save_path <- "/geo-ndxr/website_materials"
 
 #Store the final version of your data in a final sf object. An example is below. 
@@ -108,7 +97,11 @@ final_sf <- st_transform(final_sf, crs = 4326)
 final_json <- geojson_json(final_sf, geometry = "polygon")
 final_json_simplified <- ms_simplify(final_json)
 
-geojson_write(final_json_simplified, file = "~/Downloads/water_reuse_geojsonio1.geojson")
+#Save the geojson. DO NOT EDIT filepath. 
+geojson_write(final_json_simplified, file = paste0(save_path, "/output.data"))
+
+#Update the metadata associated with output.data geojson file. 
+update_js_metadata(paste0(save_path, "/output.data"))
 
 ```
 
@@ -118,11 +111,17 @@ website_title <- # "Fill in your title"
   
 description <- # "Fill in your description. Data is sourced from __organization/website__. Data was published __date__. This data describes ____ conditions across the United States." 
 
-menu_options <- # data_structure_for_index
+menu_options <- # Example: list(Category1 = list(column_name1 = "Display Column Name 1"),                                   
+                                #Category2 = list(column_name2 = "Display Column Name 2",
+                                #                 column_name3 = "Display Column Name 3"))
+  
+                #**Note: this should match input for data_structure_for_index in process_data.rmd if used. 
 
-edit_website(website_title = website_title, description = description)
+  
+#Provide the column name of the initial/default index in the dataframe. Please edit the line below with your index column name. 
+initial_index <- "initial_index_column_name"
 
-#Do we have to mount the file system? What other steps need to be taken before everything is ready to go to be hosted? 
+edit_website(website_title = website_title, description = description, menu_options = menu_options, initial_index = initial_index)
 
 ```
 

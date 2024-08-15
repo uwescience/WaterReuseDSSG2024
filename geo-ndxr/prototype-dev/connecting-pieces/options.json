@@ -1,4 +1,5 @@
 {
     "website_title": "My Dynamic Website - edit in options.json",
-    "description": "Website description goes here. Edit in options.json"
+    "description": "Website description goes here. Edit in options.json", 
+    "initial_index": "gini"
 }
