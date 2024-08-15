@@ -12,6 +12,7 @@ var layerControl;
 var longitude = -96; // use to set the view of the map
 var latitude = 37.8; // also use to set the map view
 var zoomLevel = 4; // Argument in setting the zoom level of the map
+var nameProperty = "PWSID"
 
 function plot_map(data, indexKey, latitude, longitude, zoomLevel) {
     if (!map) {
@@ -89,31 +90,31 @@ function plot_map(data, indexKey, latitude, longitude, zoomLevel) {
         });
     }
 
-    function createInfoControl() {
+    function createInfoControl(nameProperty) {
         var info = L.control();
-    
         info.onAdd = function (map) {
             this._div = L.DomUtil.create('div', 'info');
             this.update();
             return this._div;
         };
-    
         info.update = function (props) {
-            // Determine which index key to use based on the active layer
             var activeIndexKey;
             if (map.hasLayer(originalLayer) && !map.hasLayer(currentLayer)) {
                 activeIndexKey = initial_index;
             } else {
                 activeIndexKey = indexKey;
             }
-    
-            this._div.innerHTML = '<h4>Index Value</h4>' + (props ?
-                '<b>' + props.NAME + '</b><br />' + (props[activeIndexKey] !== undefined ? props[activeIndexKey].toFixed(2) : 'N/A')
-                : 'Hover over a layer');
+            var name = props ? props[nameProperty] : 'N/A';
+            var value = props ? props[activeIndexKey] : null;
+            var formattedValue = (value !== undefined && !isNaN(parseFloat(value))) ? parseFloat(value).toFixed(2) : 'N/A';
+            this._div.innerHTML = '<h4>Index Value</h4>' +
+                '<b>' + name + '</b><br />' +
+                (props ?
+                    'Index: ' + formattedValue
+                    : 'Hover over a layer');
         };
-    
         return info;
-    }    
+    }  
 
     function createLegendControl() {
         var legend = L.control({ position: 'bottomright' });
@@ -165,7 +166,7 @@ function plot_map(data, indexKey, latitude, longitude, zoomLevel) {
         map.removeControl(infoControl);
     }
 
-    infoControl = createInfoControl();
+    infoControl = createInfoControl(nameProperty);
     infoControl.addTo(map);
 
     if (legendControl) {
@@ -286,6 +287,10 @@ async function setWebsiteTitleAndDescription() {
         if (data.description) {
             document.getElementById('description').textContent = data.description;
         }
+        if (data.sources) {
+            document.getElementById('sources').textContent = data.sources;
+        }
+        
     } catch (error) {
         console.error('Error fetching the options.json file:', error);
     }

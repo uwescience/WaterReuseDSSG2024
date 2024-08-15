@@ -1,26 +1,26 @@
 {
   "Equitable Access": {
-    "rec_imp_pct": "Impaired Recreational Waters",
-    "violation_points": "Drinking Water Violations",
-    "no_DW_access_pct": "Plumbing Poverty",
-    "self_supply_pct": "Population On Private Wells",
-    "gini": "Income Inequality"
+    "rec_imp_pct": "Impaired Recreational Waters", 
+    "violation_points": "Drinking Water Violations", 
+    "no_DW_access_pct": "Plumbing Poverty", 
+    "self_supply_pct": "Population On Private Wells", 
+    "gini": "Income Inequality" 
   },
   "Effluent Disposable Limitations": {
-    "eco_imp_land_mean": "Land Habitat Importance (Average)",
-    "eco_imp_land_max": "Land Habitat Importance (Max)",
-    "eco_imp_water_mean": "Water Habitat Importance (Average)",
-    "eco_imp_water_max": "Water Habitat Importance (Max)",
-    "eco_imp_pct": "Impaired Ecological Waters"
+    "eco_imp_land_mean": "Land Habitat Importance (Average)", 
+    "eco_imp_land_max": "Land Habitat Importance (Max)", 
+    "eco_imp_water_mean": "Water Habitat Importance (Average)", 
+    "eco_imp_water_max": "Water Habitat Importance (Max)", 
+    "eco_imp_pct": "Impaired Ecological Waters" 
   },
   "Extreme Events": {
-    "NRI_score": "Natural Hazard Risk",
-    "land_sub_avg": "Land Subsidence (Average)",
-    "land_sub_max": "Land Subsidence (Max)"
+    "NRI_score": "Natural Hazard Risk", 
+    "land_sub_avg": "Land Subsidence (Average)", 
+    "land_sub_max": "Land Subsidence (Max)" 
   },
   "Runoff Management": {
-    "nutrient_imp_pct": "Nutrient Impaired Waters",
-    "runoff_max": "Max Monthly Runoff",
-    "runoff_total": "Total Annual Runoff"
+    "nutrient_imp_pct": "Nutrient Impaired Waters", 
+    "runoff_max": "Max Monthly Runoff", 
+    "runoff_total": "Total Annual Runoff" 
   }
 }
