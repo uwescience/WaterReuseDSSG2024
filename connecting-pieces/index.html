@@ -9,7 +9,6 @@
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <!-- Make sure you put this AFTER Leaflet's CSS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js"></script>
@@ -18,23 +17,33 @@
 
 <body>
     <h1 id="page-title">My Map</h1>
-    <!-- Container for categories, indicators, and map -->
     <div class="content">
-        <!-- Column for categories and indicators -->
         <div class="sidebar">
             <div id="checkbox-menu"></div>
-            <button id="submit-button">Submit</button>
+            <button id="submit-button" disabled>Submit</button>
+            <button id="download-button" disabled>Download</button>
+            <div>
+                <h1 id="loading">Loading, please wait...</h1>
+                <pre><code id="out"></code></pre>
+            </div>
+            <button id="recalc" disabled>Recalculating...</button>
+
         </div>
-        <!-- Map container -->
         <div>
+
             <div id="map" class="leaflet html-widget html-fill-item"></div>
         </div>
     </div>
     <div id="description">{Description placeholder}</div>
+    <div id="sources">{Sources placeholder}</div>
+
     <script src="scripts.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js"></script>
-    <script>setWebsiteTitleAndDescription()</script>
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            createCheckboxes();
+            setWebsiteTitleAndDescription();
+        });
+
         async function loadAndPlotMap(jsonPath, indexKey) {
             try {
                 const response = await fetch(jsonPath);
@@ -42,34 +51,60 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const geoJsonData = await response.json();
-                plot_map(geoJsonData, indexKey);
+                plot_map(geoJsonData, indexKey, latitude, longitude, zoomLevel);
             } catch (error) {
                 console.error('Error loading the GeoJSON file:', error);
             }
         }
-
         // Call the function with the path to your GeoJSON file and the index key to use
-        loadAndPlotMap(map_data_path, initial_index);
+
+        ///NEEDS TO BE CHANGED TO PLOT THE RIGHT THING
+        //loadAndPlotMap(map_data_path, initial_index);
     </script>
     <script src="https://webr.r-wasm.org/latest/webr.mjs" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
+
+    <!-- <script src="mount.js" type="module"></script> -->
     <script type="module">
-        createCheckboxes();
         import { WebR } from 'https://webr.r-wasm.org/latest/webr.mjs';
         const webr = new WebR();
         await webr.init();
+
+
+        // Download a filesystem image
+        await webr.FS.mkdir('/data')
+        const data = await fetch('./output.data');
+        const metadata = await fetch('./output.js.metadata');
+
+        // Mount the filesystem image data
+        const options = {
+            packages: [{
+                blob: await data.blob(),
+                metadata: await metadata.json(),
+            }],
+        }
+        await webr.FS.mount("WORKERFS", options, '/data');
+
+        // Read the contents of the map
+        const result = await webr.evalR('readLines("/data/abc.geojson")');
+        loadAndPlotMap('./output.data', "gini");
+
         await webr.installPackages(["dplyr", "tidyr", "jsonlite", "sf", "geojsonsf"]);
-        
+
+        document.getElementById('loading').remove();
+
+        const output = await result.toArray();
+        const text = output.join('\n');
+
         // source dependencies for the R script below
-        const pcaWeightsPath = "./scripts/get_pca_weights.R";
+        const pcaWeightsPath = "./scripts/driver_weighted_pca.R";
         const weightedAvgPath = "./scripts/weighted_average.R";
-        const selectVarsPath = "./scripts/select_vars.R"
+        const selectVarsPath = "./scripts/select_vars.R";
 
         const fetchText = async (filePath) => {
             const response = await fetch(filePath);
             return await response.text();
         };
-
 
         console.log("Sourcing R functions...");
 
@@ -87,16 +122,18 @@
 
         console.log("R functions sourced");
 
-        console.log("Fetching map data...")
+        console.log("Fetching map data...");
         const geoJsonResponse = await fetch(map_data_path);
         const geoJsonData = await geoJsonResponse.json();
 
-        const geoJsonDataString = JSON.stringify(geoJsonData)
+        const geoJsonDataString = JSON.stringify(geoJsonData);
 
         console.log("Data fetched");
 
-        async function recalculate() {
+        document.getElementById('submit-button').disabled = false
 
+        async function recalculate() {
+            document.getElementById('recalc').disabled = false;
             const selectedOptions = [];
             const checkboxes = document.querySelectorAll('#checkbox-menu input[type="checkbox"]');
             checkboxes.forEach(checkbox => {
@@ -106,6 +143,13 @@
             });
 
             const selectedOptionsString = JSON.stringify(selectedOptions);
+            console.log(selectedOptionsString)
+
+            const response = await fetch(menu_options_path);
+            const menuOptions = await response.json();
+            const menuOptionsString = await JSON.stringify(menuOptions)
+            console.log(menuOptions)
+            console.log(menuOptionsString)
 
             let scriptText = `
                 library(dplyr)
@@ -114,34 +158,85 @@
                 library(geojsonsf)
                 library(tidyr)
 
-                sf <- geojson_sf('${geoJsonDataString}')
+                input_json <- fromJSON('${menuOptionsString}')
+                index_structure <- data.frame(
+                Driver = character(),
+                Indicator = character(),
+                stringsAsFactors = FALSE
+                )
 
-                cols_to_keep = fromJSON('${selectedOptionsString}')
+                for (category in names(input_json)) {
 
-                cols_to_keep <- as.array(cols_to_keep)
-                sf <- filter_data(sf, cols_to_keep)
+                    for (key in names(input_json[[category]])) {
+                        index_structure <- rbind(index_structure, data.frame(
+                        Driver = category,
+                        Indicator = key,
+                        stringsAsFactors = FALSE
+                        ))
+                        }
+                }
 
-                weights <- get_pca_weights(data = sf, excluded_cols = c("geometry"))
+                ####We can get the data in, but it doesn't read well as a geojson. Maybe a csv or some such plain text file will work
 
-                index <- get_weighted_average(sf, weights, excluded_cols = c("geometry"))
+                dataset_input <- '${text}'
 
-                sf <- cbind(sf, index)
+                data_sf <- geojson_sf(dataset_input)
 
-                geo_index <- sf_geojson(sf)
+                sf_data <- st_drop_geometry(data_sf)
+
+                # Select only the numeric columns to do PCA on
+                numeric_df <- sf_data[, sapply(sf_data, is.numeric)]
+
+                
+                user_selection <- fromJSON('${selectedOptionsString}')
+
+                user_selection <- user_selection[user_selection != ""]
+                
+
+                index <- multidriver_pca(numeric_df,
+                                            user_selection,
+                                            index_structure)
+
+                data_sf$index <- index
+
+                geo_index <- sf_geojson(data_sf)
 
                 output <- toJSON(geo_index)
 
                 return(geo_index)
-                `
+                `;
 
             const result = await webr.evalR(scriptText);
             const resultJson = JSON.parse((await result.toJs()).values);
-            plot_map(resultJson, "index");
 
-        };
+            plot_map(resultJson, "index", latitude, longitude, zoomLevel);
 
+            // Enable the download button
+            document.getElementById('download-button').disabled = false;
 
+            document.getElementById('download-button').addEventListener('click', function () {
+
+                const jsonString = JSON.stringify(resultJson);
+
+                // Create a blob with JSON data
+                const blob = new Blob([jsonString], { type: 'application/json' });
+
+                // Create a link element
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'recalc_output.geojson'; // Specify the file name
+
+                // Trigger the download
+                link.click();
+
+                // Clean up the URL object
+                URL.revokeObjectURL(link.href);
+            });
+            document.getElementById('recalc').disabled = true;
+        }
         document.getElementById('submit-button').addEventListener('click', recalculate);
+
+    </script>
     </script>
 </body>
 

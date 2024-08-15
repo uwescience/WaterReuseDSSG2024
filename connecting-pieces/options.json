@@ -1,4 +1,5 @@
 {
-    "website_title": "Water Reuse Potential [Simulated Data for Demo]",
-    "description": "This is a DEMO of the Water Reuse Potential Index constructed with SIMULATED data. This is intended for demo purposes and functionality testing. Not an accurate representation of Water Reuse potential."
+    "website_title": "DSSG 2024 | Provisional Water Reuse Index",
+    "description": "Provisional index incorporates data available as of August 13, 2024. Subject to change.",
+    "sources": "Sources: Community Watershed Needs Survey, US Environmental Protection Agency, US Census Bureau"
 }
