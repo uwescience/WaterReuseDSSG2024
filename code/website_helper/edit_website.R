@@ -1,4 +1,4 @@
-edit_website <- function(website_title, description, menu_options, initial_index) {
+edit_website <- function(website_title, description, menu_options, initial_index, geo_unit) {
   
   # Edits website design options
   #' @description
@@ -30,6 +30,7 @@ edit_website <- function(website_title, description, menu_options, initial_index
   options$website_title <- website_title
   options$description <- description
   options$initial_index <- initial_index
+  options$geo_unit <- geo_unit
   menu_options <- menu_options
   
   # Specify the file to overwrite (options.json)

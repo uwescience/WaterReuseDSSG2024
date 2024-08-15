@@ -5,6 +5,7 @@ var map;
 var originalLayer = null; // Store the original layer
 var currentLayer = null;
 var initial_index = null;
+var geo_unit = null; 
 var infoControl;
 var legendControl;
 var layerControl;
@@ -288,6 +289,9 @@ async function setWebsiteTitleAndDescription() {
         }
         if (data.initial_index) {
           initial_index = data.initial_index;
+        }
+        if (data.geo_unit) {
+          geo_unit = data.geo_unit;
         }
     } catch (error) {
         console.error('Error fetching the options.json file:', error);
