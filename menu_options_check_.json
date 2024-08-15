@@ -1,0 +1,50 @@
+{
+  "Equitable Access": {
+    "rec_imp_pct": "Impaired Recreational Waters", // "rec_imp_pct"
+    "violation_points": "Drinking Water Violations", // "violation_points"
+    "no_DW_access_pct": "Plumbing Poverty", // "no_DW_access_pct"
+    "self_supply_pct": "Population On Private Wells", // "self_supply_pct"
+    "gini": "Income Inequality" // "gini"
+  },
+  "Effluent Disposable Limitations": {
+    "eco_imp_land_mean": "Land Habitat Importance (Average)", // "eco_imp_land_mean"
+    "eco_imp_land_max": "Land Habitat Importance (Max)", // "eco_imp_land_max"
+    "eco_imp_water_mean": "Water Habitat Importance (Average)", // "eco_imp_water_mean"
+    "eco_imp_water_max": "Water Habitat Importance (Max)", // "eco_imp_water_max"
+    "eco_imp_pct": "Impaired Ecological Waters" // "eco_imp_pct"
+  },
+  "Extreme Events": {
+    "NRI_score": "Natural Hazard Risk", // "NRI_score"
+    "land_sub_avg": "Land Subsidence (Average)", // "land_sub_avg"
+    "land_sub_max": "Land Subsidence (Max)" // "land_sub_max"
+  },
+  "Runoff Management": {
+    "nutrient_imp_pct": "Nutrient Impaired Waters", // "nutrient_imp_pct"
+    "runoff_max": "Max Monthly Runoff", // "runoff_max"
+    "runoff_total": "Total Annual Runoff" // "runoff_total"
+  }
+}
+//
+{
+  "PWSID": "055293201",
+  : 0.6433,
+  : 0.9885,
+  : 0.9885,
+  : 0.4277,
+  : 0.418,
+  : 0.0039,
+  : 0.4202,
+  : 0.5203,
+  : 0.5202,
+  "self_supply_units": 0.7388,
+  "housing_units_2020": 0.6427,
+  : 0,
+  : 0.3972,
+  "cult_imp_pct": 0,
+  : 0,
+  : 0.8165,
+  : 0.8075,
+  : 0,
+  : 0,
+  "rmapshaperid": 11
+}
