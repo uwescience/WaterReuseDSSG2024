@@ -58,8 +58,7 @@
         }
         // Call the function with the path to your GeoJSON file and the index key to use
 
-        ///NEEDS TO BE CHANGED TO PLOT THE RIGHT THING
-        //loadAndPlotMap(map_data_path, initial_index);
+
     </script>
     <script src="https://webr.r-wasm.org/latest/webr.mjs" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
@@ -123,10 +122,7 @@
         console.log("R functions sourced");
 
         console.log("Fetching map data...");
-        const geoJsonResponse = await fetch(map_data_path);
-        const geoJsonData = await geoJsonResponse.json();
-
-        const geoJsonDataString = JSON.stringify(geoJsonData);
+      
 
         console.log("Data fetched");
 

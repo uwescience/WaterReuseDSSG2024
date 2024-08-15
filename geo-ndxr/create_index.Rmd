@@ -1,0 +1,143 @@
+---
+title: "create_index"
+output:
+  pdf_document: default
+  html_document: default
+date: "2024-08-15"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Index and Website Creation Pipeline 
+
+Creator pipeline for calculating a default index and setting up an interactive website displaying an index map. This is a working template for index creation. DO NOT PUSH to the GitHub repository. NOTE: set gitignore? for this file 
+
+## Required Packages and source GeoNdxR crosswalk functions 
+Ensure that the config.yml file in your downloaded GitHub repo contains your correct home path or set your working directory to the highest level of the GitHub repo. 
+
+```{r}
+#Require / Load libraries
+
+require(tigris, tidyverse, dplyr, sf, usmap, ggplot2, naniar, raster, terra, stars, nngeo, exactextractr, naniar, geojsonsf, rmapshaper, geojsonio)
+
+#Source GeoNdxR crosswalk functions. Find documentation for these functions linked in the GitHub README. 
+source("/code/crosswalk/crosswalk_spatial.R")
+source("/code/crosswalk/crosswalk_census.R")
+source("/code/crosswalk/crosswalk_id.R")
+source("/code/crosswalk/apply_weights.R")
+source("codee/website/helper/edit_website.R")
+
+```
+
+
+## Load, explore, and transform data 
+Users should provide geospatial dataset(s) to be included in the index. Be mindful of filetypes and requirements. Code chunk below commented with further instruction. 
+
+```{r}
+
+data_path <- "~/Downloads/data"
+
+#If you are loading a shapefile (as opposed to csv, geojson, etc.), include folder with all relevant files in the file path
+
+file_name <- "shape_file_folder/example.shp"
+
+#Example of loading a shapefile. Adjust read/load R function based on file type. 
+dataset1 <- #read_sf(paste0(data_path, file_name))
+
+## Repeat for all data included in the index. If you only have one file, ignore the following commented out code.
+# 
+# file_name2 <- "example.csv"
+dataset2 <- #read.csv(paste0(data_path, file_name))
+
+```
+
+Add chunks to explore data. Create plots, use the head(data) function, inspect NAs with naniar function gg_miss_var(data). 
+
+## Crosswalk data to a target scale
+
+```{r}
+#Use crosswalk functions to match datasets to a target scale. 
+#Please use the crosswalk tutorial file located in the docs folder of the GitHub repo for more guidance. 
+#Convert all datasets to be sf or st objects that share the same CRS. From the sf package, use st_read and st_transform respectively to achieve this. 
+
+##Example crosswalk using crosswalk_spatial function 
+crosswalk_data <- #crosswalk_spatial(dataset1, dataset2, extensive = TRUE, join_method = "areal_weighted")
+
+```
+
+## Convert data to percentiles
+```{r}
+##Data must be numeric (except ID column) and converted to percentiles to be included in the index. 
+##Data must contain only one geospatial ID column (ex: "County Name", or "PWSID"). Data must contain a geometry column. All other columns must be numeric. 
+
+percentile_data <- #calculate_percentiles(crosswalk_data, "id_column")
+
+```
+
+## Calculate default/initial index
+```{r}
+#Fill in your categories and indicators and how they are structured. These will become your sidebar menu options (categories and indicators to calculate the index). An example structure is below. Keep in mind that categories are creator-chosen and specified, they do not exist in the data itself. 
+
+data_structure_for_index <- # list(Category1 = list(column_name1 = "Display Column Name 1"),                                     Category2 = list(column_name2 = "Display Column Name 2",                                                       column_name3 = "Display Column Name 3"))
+
+data_with_index <- #Daniel's PCA/index calculation function 
+
+```
+
+
+## Export data
+Fill in the commented sections of this code chunk in order to export a valid .geojson version of your final data. This file will be located in the website_materials folder of the downloaded GitHub repository on your computer. You will not need to interact directly with this file. 
+
+DO NOT CHANGE THE NAME OF THE GEOJSON FILE being exported or the website creation functions will not work. 
+
+**If you already have a geojson file that you would like to input directly, please rename it to map_data.geojson and place it in the website_materials folder. 
+
+```{r}
+##Export data as a .geojson file in the website template folder of the repo 
+save_path <- "/geo-ndxr/website_materials"
+
+#Store the final version of your data in a final sf object. An example is below. 
+final_sf <- #data_with_index
+
+## Confirm and correct the CRS (Coordinate Reference System) of your final dataframe.
+final_sf <- st_transform(final_sf, crs = 4326)
+
+#Simplify your geometries to save file space (ensures fast web performance for mapping the index). 
+final_json <- geojson_json(final_sf, geometry = "polygon")
+final_json_simplified <- ms_simplify(final_json)
+
+geojson_write(final_json_simplified, file = "~/Downloads/water_reuse_geojsonio1.geojson")
+
+```
+
+## Edit website title, description, and menu options 
+```{r}
+website_title <- # "Fill in your title"
+  
+description <- # "Fill in your description. Data is sourced from __organization/website__. Data was published __date__. This data describes ____ conditions across the United States." 
+
+menu_options <- # data_structure_for_index
+
+edit_website(website_title = website_title, description = description)
+
+#Do we have to mount the file system? What other steps need to be taken before everything is ready to go to be hosted? 
+
+```
+
+## Follow instructions to host the web
+You will now have a customized HTML file in the website_materials folder along with your geo-spatial data (including a calculated default index). 
+
+You can test to see if the website looks as expected by following the following steps: 
+1. Navigate to the website_materials folder in your terminal. 
+2. Type this command: python -m http.server
+3. Open your browser and type localhost:8000/index.html
+4. Interact with the website and check all functionality works as expected. 
+5. If you encounter any issues that our documentation in the GitHub repo doesn't solve, feel free to create an issue on our repository describing your problem, your process, and any relevant screenshots. We are still in development and working out bugs and your feedback is highly valued. 
+
+If you are satisfied with the finished webpage, you will need to take the necessary steps to host your html page on a free or hosted web service. We recommend following the tutorial linked on our GitHub README to host your website on GitHub pages. 
+
+Happy indexing! 
+
+-GeoNdxR team
