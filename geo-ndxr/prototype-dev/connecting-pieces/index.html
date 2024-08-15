@@ -56,7 +56,7 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const geoJsonData = await response.json();
-                plot_map(geoJsonData, indexKey, latitude, longitude, zoomLevel, nameProperty);
+                plot_map(geoJsonData, indexKey, latitude, longitude, zoomLevel, geo_unit);
             } catch (error) {
                 console.error('Error loading the GeoJSON file:', error);
             }
@@ -91,7 +91,7 @@
 
         // Read the contents of the map
         const result = await webr.evalR('readLines("/data/abc.geojson")');
-        loadAndPlotMap('./output.data', "gini");
+        loadAndPlotMap('./output.data', initial_index);
 
         await webr.installPackages(["dplyr", "tidyr", "jsonlite", "sf", "geojsonsf"]);
 
@@ -210,7 +210,7 @@
             const result = await webr.evalR(scriptText);
             const resultJson = JSON.parse((await result.toJs()).values);
 
-            plot_map(resultJson, "index", latitude, longitude, zoomLevel, nameProperty);
+            plot_map(resultJson, "index", latitude, longitude, zoomLevel, geo_unit);
 
             // Enable the download button
             document.getElementById('download-button').disabled = false;

@@ -1,17 +1,18 @@
 
 // Global variables
 var menu_options_path = "menu_options.json";
-var map_data_path = "state_sf.geojson";
-var initial_index = "X5"; // Example initial index
 var map;
 var originalLayer = null; // Store the original layer
 var currentLayer = null;
+var initial_index = null;
+var geo_unit = null; 
 var infoControl;
 var legendControl;
 var layerControl;
 var longitude = -96; // use to set the view of the map
 var latitude = 37.8; // also use to set the map view
 var zoomLevel = 4; // Argument in setting the zoom level of the map
+
 
 function plot_map(data, indexKey, latitude, longitude, zoomLevel) {
     if (!map) {
@@ -285,6 +286,12 @@ async function setWebsiteTitleAndDescription() {
         }
         if (data.description) {
             document.getElementById('description').textContent = data.description;
+        }
+        if (data.initial_index) {
+          initial_index = data.initial_index;
+        }
+        if (data.geo_unit) {
+          geo_unit = data.geo_unit;
         }
     } catch (error) {
         console.error('Error fetching the options.json file:', error);
