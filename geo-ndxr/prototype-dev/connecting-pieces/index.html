@@ -21,7 +21,12 @@
         <div class="sidebar">
             <div id="checkbox-menu"></div>
             <button id="submit-button" disabled>Submit</button>
-            <button id="download-button" disabled>Download</button>
+            <button id="download-button" disabled>Download Data</button>
+            <!-- Download Metadata Link -->
+            <a id="metadata" href="/metadata_output.html">Metadata</a>
+
+            <button id="download-metadata-button" href="/metadata_output.html">Download Metadata</button>
+
             <div>
                 <h1 id="loading">Loading, please wait...</h1>
                 <pre><code id="out"></code></pre>
@@ -49,7 +54,7 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const geoJsonData = await response.json();
-                plot_map(geoJsonData, indexKey, latitude, longitude, zoomLevel);
+                plot_map(geoJsonData, indexKey, latitude, longitude, zoomLevel, nameProperty);
             } catch (error) {
                 console.error('Error loading the GeoJSON file:', error);
             }
@@ -58,7 +63,10 @@
 
         ///NEEDS TO BE CHANGED TO PLOT THE RIGHT THING
         //loadAndPlotMap(map_data_path, initial_index);
+
+
     </script>
+    
     <script src="https://webr.r-wasm.org/latest/webr.mjs" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
 
@@ -205,7 +213,7 @@
             const result = await webr.evalR(scriptText);
             const resultJson = JSON.parse((await result.toJs()).values);
 
-            plot_map(resultJson, "index", latitude, longitude, zoomLevel);
+            plot_map(resultJson, "index", latitude, longitude, zoomLevel, nameProperty);
 
             // Enable the download button
             document.getElementById('download-button').disabled = false;
