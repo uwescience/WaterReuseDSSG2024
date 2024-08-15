@@ -11,5 +11,5 @@ update_js_metadata <- function(geojson_data = NULL) {
   )
   
   # Write the updated content to the metadata file
-  writeLines(updated_content, "output.js.metadata")
+  writeLines(updated_content, "geo-ndxr/website_materials/output.js.metadata")
 }
