@@ -1,7 +1,6 @@
 ---
 title: "create_index"
-output:
-  output: github_document
+output: github_document
 date: "2024-08-15"
 ---
 
