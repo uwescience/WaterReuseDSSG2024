@@ -1,6 +1,8 @@
 ---
 title: "create_index"
-output: github_document
+output:
+  pdf_document: default
+  html_document: default
 date: "2024-08-15"
 ---
 
