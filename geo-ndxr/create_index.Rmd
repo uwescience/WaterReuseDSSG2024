@@ -1,7 +1,6 @@
 ---
 title: "create_index"
-output:
-  output: github_document
+output: github_document
 date: "2024-08-15"
 ---
 
@@ -13,6 +12,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Creator pipeline for calculating a default index and setting up an interactive website displaying an index map. This is a working template for index creation. DO NOT PUSH to the GitHub repository. NOTE: set gitignore? for this file 
 
+Please edit `config.yml` file and change your home_path.
+
 ## Required Packages and source GeoNdxR crosswalk functions 
 Ensure that the config.yml file in your downloaded GitHub repo contains your correct home path or set your working directory to the highest level of the GitHub repo. 
 
@@ -21,8 +22,12 @@ Ensure that the config.yml file in your downloaded GitHub repo contains your cor
 
 require(tigris, tidyverse, dplyr, sf, usmap, ggplot2, naniar, raster, terra, stars, nngeo, exactextractr, naniar, geojsonsf, rmapshaper, geojsonio)
 
+root_dir <- config::get()
+
 #Source GeoNdxR crosswalk functions. Find documentation for these functions linked in the GitHub README. 
 source("/code/crosswalk/crosswalk_spatial.R")
+#if this doesn't work, try below
+# source(paste0(root_dir,"/code/crosswalk/crosswalk_spatial.R"))
 source("/code/crosswalk/crosswalk_census.R")
 source("/code/crosswalk/crosswalk_id.R")
 source("/code/crosswalk/apply_weights.R")
@@ -41,6 +46,7 @@ Users should provide geospatial dataset(s) to be included in the index. Be mindf
 data_path <- "~/Downloads/data"
 
 #If you are loading a shapefile (as opposed to csv, geojson, etc.), include folder with all relevant files in the file path
+#to load geojson, use the function geojsonsf::geojson_sf() 
 file_name <- "shape_file_folder/example.shp"
 
 ```
