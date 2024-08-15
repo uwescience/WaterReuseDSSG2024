@@ -40,11 +40,13 @@
         </div>
     </div>
     <div id="description">{Description placeholder}</div>
+    <div id="sources">{Sources placeholder}</div>
 
     <script src="scripts.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             createCheckboxes();
+            setWebsiteTitleAndDescription();
         });
 
         async function loadAndPlotMap(jsonPath, indexKey) {
@@ -60,10 +62,6 @@
             }
         }
         // Call the function with the path to your GeoJSON file and the index key to use
-
-        ///NEEDS TO BE CHANGED TO PLOT THE RIGHT THING
-        //loadAndPlotMap(map_data_path, initial_index);
-
 
     </script>
     
@@ -129,10 +127,7 @@
         console.log("R functions sourced");
 
         console.log("Fetching map data...");
-        const geoJsonResponse = await fetch(map_data_path);
-        const geoJsonData = await geoJsonResponse.json();
-
-        const geoJsonDataString = JSON.stringify(geoJsonData);
+      
 
         console.log("Data fetched");
 
@@ -195,6 +190,8 @@
 
                 
                 user_selection <- fromJSON('${selectedOptionsString}')
+
+                user_selection <- user_selection[user_selection != ""]
                 
 
                 index <- multidriver_pca(numeric_df,
