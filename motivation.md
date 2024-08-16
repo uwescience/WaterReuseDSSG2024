@@ -21,7 +21,7 @@ Q) **Anyone** can create **any** type of index. What do we make of it?🤔
 With a series of discussion and feedback from stakeholder engagement interviews, we learned that communities and various interest groups have already been using various tools to portray themselves in ways that favor them. Our tool can indeed empower under-resourced communities to make a more compelling cases to decision makers by utilizing data-driven index and its intuitive visualization. We further decided *not* to offer the option of adjusting weights assigned to indicators as a default feature. This can mitigate the concern of tuning the index value by arbitrarily changing the weight assigned to constituting indicators. 
 
 Q) How do we empower technically less experienced users to the greatest extent? 
-- We have spoken with lots of substance-matter experts in the water reuse field who do not use data-analyses much in daily tasks. We thought it is important to make sure that our products can reach the public beyond the data scientists. To address the concern, our website allows end-users to interact with the index by selecting what goes in to calculate the index, and allowing them to download the re-calculated index. 
+- We have spoken with lots of subject matter experts in the water reuse field, who do not use data analyses much in daily tasks. We thought it is important to make sure that our products can reach the public beyond the data scientists. To address the concern, our website allows end-users to interact with the index by selecting what goes in to calculating the index, and allowing them to download the re-calculated index. 
 
 Q) Why PCA over othe dimensionality-reduction methodologies? 
 - After a robust literature review, we have explored different options of calculating index. While there were many compelling methods like archetypal analysis, [ToxiPi](https://github.com/uwescience/WaterReuseDSSG2024/blob/99457ddc865665cc959418b318d7c2a2ddc3819f/code/create_index/toxpi-wrapper.R#L7), we decided to provide weighted-average PCA as a default. This is because PCA provided the most transparent pipeline and allowed subject-matter expert (web-creator) to assign weights.
@@ -50,7 +50,7 @@ Check out our use cases below ⬇️
       <td><b>Water reuse researcher (Carolyn)</b></td>
       <td>Carolyn researches water reuse; wants to create an index quantifying potential for reuse across US counties</td>
       <td>Provide cleaned datasets; use output to map index, make a visualization of that input (map) available to nontechnical users via a website</td>
-      <td>Ability to load datasets; checks notifying whether datasets are in a format that GeoNDXR can work with; clear functions & workflow to output HTML pages; clear user guide specifying her options with the output | High, focused in R; wants streamlined features to enable focus elsewhere (she doesn’t want to do web dev)</td>
+      <td>Ability to load datasets; checks notifying whether datasets are in a format that GeoNDXR can work with; clear functions & workflow to output HTML pages; clear user guide specifying her options with the output. | High, focused in R; wants streamlined features to enable focus elsewhere (she doesn’t want to do web dev)</td>
     </tr>
     <tr>
       <td><b>Data journalist (Sarah)</b></td>
@@ -68,7 +68,7 @@ Check out our use cases below ⬇️
       <td><b>Climate policy researcher (Joe)</b></td>
       <td>Joe is a climate policy researcher at a university. He wants to aggregate different climate risks, produce an index, and make a visualization available to nontechnical users on his GitHub to showcase his work</td>
       <td>Provide cleaned datasets; use output to map index, make a visualization of that input (map) available to nontechnical users via a website</td>
-      <td>Ability to load datasets; checks notifying whether datasets are in a format that GeoNDXR can work with; clear functions & workflow to output HTML pages; clear user guide specifying her options with the output; ability to customize output; transparently explain how indices are calculated | High; focused in R; wants a streamlined workflow for index generation but would like flexibility in display options, optimized for GitHub</td>
+      <td>Ability to load datasets; checks notifying whether datasets are in a format that GeoNdxR can work with; clear functions & workflow to output HTML pages; clear user guide specifying her options with the output; ability to customize output; transparently explain how indices are calculated | High; focused in R; wants a streamlined workflow for index generation but would like flexibility in display options, optimized for GitHub</td>
     </tr>
     <tr>
       <td><b>Data science job market candidate (Daniel)</b></td>
@@ -108,8 +108,8 @@ Check out our use cases below ⬇️
     </tr>
     <tr>
       <td><b>Gambia National Water and Electricity Company (NAWEC) Employee</b></td>
-      <td></td>
-      <td>The company is planning to build an index that will help them identify the regions in need of wastewater treatment facilities. As the analyst at the company, he needs a tool that he can use to create the index and display it on an interactive web application.</td>
+      <td>The utility company is planning to build an index that will help them identify the regions in need of wastewater treatment facilities.</td>
+      <td> As the analyst at the company, he needs a tool that he can use to create the index and display it on an interactive web application.</td>
       <td>He has years of experience working with data and R.</td>
     </tr>
     <tr>
