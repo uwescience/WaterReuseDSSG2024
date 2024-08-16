@@ -12,7 +12,16 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Index and Website Creation Pipeline 
 
-Creator pipeline for calculating a default index and setting up an interactive website displaying an index map. This is a working template for index creation. DO NOT PUSH to the GitHub repository. NOTE: set gitignore? for this file 
+Creator pipeline for calculating a default index and setting up an interactive website displaying an index map. This is a working template for index creation. DO NOT PUSH to the GitHub repository. 
+
+Once you [git clone](https://git-scm.com/docs/git-clone) or download the Github [Repository](https://github.com/uwescience/WaterReuseDSSG2024), identify where it is located at. Make sure you edit the `config.yml` file and replace the template with your directory path. You can open and edit the `config.yml` file by using text editors of your choice. Make sure to save the file and be mindful of white spaces. 
+
+```{r eval = FALSE, warning = FALSE}
+config::get()
+root_dir <- config::get()
+```
+
+If you run the above code, the resulting path should end with "WaterReuseDSSG2024". 
 
 ## Required Packages and source GeoNdxR crosswalk functions 
 Ensure that the config.yml file in your downloaded GitHub repo contains your correct home path or set your working directory to the highest level of the GitHub repo. 
