@@ -1,9 +1,8 @@
 ---
-title: "Index Calculation"
+title: "Index Calculation Process"
 layout: page
 ---
 
-## Index Calculation Process
 **Conversion to Percentiles:**
 
 Standardization:
