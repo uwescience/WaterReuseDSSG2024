@@ -14,7 +14,7 @@ Why Percentiles?:
 **Assignment of Weights to Categories / Drivers:**
 
 Weighting by the Web Creator:
--In this step, the web creator assigns specific weights to each category. These weights are based on the perceived importance or significance of each driver in the context of the overall index. For instance, if the index is intended to measure water reuse potentials, the web creator might assign higher weights to drivers like water scarcity and discharge volume limitations compared to others.
+- In this step, the web creator assigns specific weights to each category. These weights are based on the perceived importance or significance of each driver in the context of the overall index. For instance, if the index is intended to measure water reuse potentials, the web creator might assign higher weights to drivers like water scarcity and discharge volume limitations compared to others.
 Customization:
 - The ability to assign weights gives the web creator flexibility in tailoring the index to specific objectives or perspectives. By adjusting the weights, the creator can emphasize certain aspects of the data that are more relevant to the goals of the analysis.
 
