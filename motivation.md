@@ -3,6 +3,9 @@ title: "Motivation"
 layout: page
 ---
 
+  <img src="{{ site.url }}{{ site.baseurl }}/assets/img/drivers.png" alt="Drivers of Water Reuse">
+
+
 ## Project Goals
 
 There are two main goals of this project: 
