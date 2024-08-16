@@ -12,6 +12,7 @@ Serverless Map Display:
 - Thanks to webr, the map is rendered and displayed in the browser without requiring a backend server. This is achieved by compiling the R code into web assembly, allowing the map and its functionalities to run smoothly in the user's browser. As a result, users can interact with the map instantly without the latency or complexity of server-side processing.
 
 **User Interaction and Customization:**
+
 Index Map Display:
 - The primary feature of the website is the display of an index map, which visualizes the calculated index values across different geographic regions. Users can explore these indices directly on the map, gaining insights into the spatial distribution of the underlying data.
 
