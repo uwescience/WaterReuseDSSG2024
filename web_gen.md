@@ -5,6 +5,7 @@ layout: page
 
 ## Website Generation
 **Overview of the Web Map Creation:**
+
 Web Assembly with webr:
 - We used webr, a web assembly framework for R, to build the website that hosts the map. Web assembly allows us to run R code directly in the browser, which eliminates the need for a server to host the map. This setup is particularly efficient because it enables the map to be displayed and interacted with entirely on the client side.
 
