@@ -3,7 +3,6 @@ title: "Website Generation"
 layout: page
 ---
 
-## Website Generation
 **Overview of the Web Map Creation:**
 
 Web Assembly with webr:
@@ -19,3 +18,11 @@ Index Map Display:
 
 Exploring Specific Drivers and Indicators: 
 - We also provide users with the ability to explore specific drivers or indicators that contribute to the overall index. Through an interactive interface, users can select and prioritize certain drivers or indicators over others, allowing for a customized view of the data. This flexibility enables users to focus on the aspects of the data that are most relevant to their needs or interests.
+
+**Additional Features:**
+
+Data Download:
+- Users have the option to download the data used to create the map. This feature allows users to work with the data offline or in their own analytical tools, offering flexibility for further analysis or reporting.
+
+Metadata Viewing:
+- We also provide access to the metadata associated with the dataset. Users can view detailed information about the data, including its sources, collection methods, and any relevant notes. This transparency helps users understand the context and limitations of the data, ensuring informed interpretation and use.
