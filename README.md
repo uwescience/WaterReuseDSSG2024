@@ -15,6 +15,8 @@ Building an index can be helpful for not just water reuse, but various topics. W
 ## Get Started
 Follow the instruction on the [`config_readme.txt`](https://github.com/uwescience/WaterReuseDSSG2024/blob/main/config-readme.txt) to set up your home path. All of our codes rely on relative path structure. 
 
+If you want to create your own index, please go to [`Tutorial for GeoNdxR Index Creator`](https://github.com/uwescience/WaterReuseDSSG2024/blob/main/geo-ndxr/create_index_tutorial.md).
+
 ## Repository Structure
 |**Features** | **Description**|
 |-----------|------------|

@@ -15,6 +15,8 @@ web creators process their data sets, we provide functions and
 supporting data sets to allow crosswalks across nested and un-nested
 spatial units.
 
+If your needs are not met by this function, we have compiled a list of GIS resources [here](https://github.com/uwescience/WaterReuseDSSG2024/blob/main/docs/tutorial/GIS_Resources.md).
+
 ### Installation
 
 Once you [git clone](https://git-scm.com/docs/git-clone) or download the
@@ -422,8 +424,11 @@ head(joined_sfs)
 ```
 
 #### Point to raster 
+Point data integrated into raster. See doc strings in crosswalk_spatial for inputs.
 
 #### Stacking rasters
+Creates a dual-layer raster stack. User aggregates as needed. See doc strings in crosswalk_spatial for inputs. 
 
 #### Rasters to shapes 
+Extracts from raster and adds aggregates sum, mean, and max columns to shapefile. See doc strings in crosswalk_spatial for inputs. 
 
