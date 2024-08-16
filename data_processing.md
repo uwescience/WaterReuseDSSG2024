@@ -19,7 +19,7 @@ Because we used data on various geographic scales, for example census data on co
 
 We decided to create functions that allow for "crosswalking" data between different geospatial units, sometimes based on a common ID column (for nested geometries) and sometimes based on more complicated area calculations. We allowed for point (longitude, latitude), raster, polygon, and tabular (with an ID column) data in these functions. The functions are detailed in [this tutorial](https://github.com/uwescience/WaterReuseDSSG2024/blob/main/docs/tutorial/crosswalk.md) and the associated R scripts (complete with doc strings) are located in [this folder](https://github.com/uwescience/WaterReuseDSSG2024/tree/main/code/crosswalk). If you are looking for examples of how we used these functions in our data cleaning and crosswalking process, you can take a look at our [cleaning files](https://github.com/uwescience/WaterReuseDSSG2024/tree/main/code/data_cleaning) here. 
 
-Additional resources and tips for GIS processing have been [compiled here](). 
+Additional resources and tips for GIS processing have been [compiled here](https://github.com/uwescience/WaterReuseDSSG2024/blob/main/docs/tutorial/GIS_Resources.md). 
 
 [Notes and examples](https://github.com/uwescience/WaterReuseDSSG2024/blob/main/code/data_cleaning/final_merge.Rmd): For the Provisional Water Reuse Index, we imputed null values to 0. We converted all values to percentiles prior to performing a Principal Component Analysis. We dropped any water service areas with no associated geometry that could be mapped. 
 
