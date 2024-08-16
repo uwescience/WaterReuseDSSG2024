@@ -13,8 +13,7 @@ var longitude = -96; // use to set the view of the map
 var latitude = 37.8; // also use to set the map view
 var zoomLevel = 4; // Argument in setting the zoom level of the map
 
-
-function plot_map(data, indexKey, latitude, longitude, zoomLevel) {
+function plot_map(data, indexKey, latitude, longitude, zoomLevel, geo_unit) {
     if (!map) {
         map = L.map('map').setView([latitude, longitude], zoomLevel);
 
@@ -27,7 +26,6 @@ function plot_map(data, indexKey, latitude, longitude, zoomLevel) {
             map.setView([latitude, longitude], zoomLevel);
         }, 'Return to specified view').addTo(map);
     }
-
     var colorScale;
 
     function calculateColorScale(data, indexKey) {
@@ -90,15 +88,16 @@ function plot_map(data, indexKey, latitude, longitude, zoomLevel) {
         });
     }
 
-    function createInfoControl() {
+
+    function createInfoControl(geo_unit) {
         var info = L.control();
-    
+
         info.onAdd = function (map) {
             this._div = L.DomUtil.create('div', 'info');
             this.update();
             return this._div;
         };
-    
+
         info.update = function (props) {
             // Determine which index key to use based on the active layer
             var activeIndexKey;
@@ -107,16 +106,23 @@ function plot_map(data, indexKey, latitude, longitude, zoomLevel) {
             } else {
                 activeIndexKey = indexKey;
             }
-    
-            this._div.innerHTML = '<h4>Index Value</h4>' + (props ?
-                '<b>' + props.NAME + '</b><br />' + (props[activeIndexKey] !== undefined ? props[activeIndexKey].toFixed(2) : 'N/A')
-                : 'Hover over a layer');
-        };
-    
-        return info;
-    }    
 
-    function createLegendControl() {
+            // Extract and format the name and value
+            var name = props ? props[geo_unit] : 'N/A';
+            var value = props ? props[activeIndexKey] : null;
+            var formattedValue = (value !== undefined && !isNaN(parseFloat(value))) ? parseFloat(value).toFixed(2) : 'N/A';
+
+            this._div.innerHTML = '<h4>Index Value</h4>' +
+                '<b>' + name + '</b><br />' +
+                (props ?
+                    'Index: ' + formattedValue
+                    : 'Hover over a layer');
+        };
+
+        return info;
+    }
+
+        function createLegendControl() {
         var legend = L.control({ position: 'bottomright' });
 
         legend.onAdd = function (map) {
@@ -142,7 +148,7 @@ function plot_map(data, indexKey, latitude, longitude, zoomLevel) {
     }
 
     if (calculateColorScale(data, indexKey) === null) {
-        return; 
+        return;
     }
 
     if (currentLayer) {
@@ -159,14 +165,15 @@ function plot_map(data, indexKey, latitude, longitude, zoomLevel) {
             style: style,
             onEachFeature: onEachFeature
         });
-        initial_index = indexKey; 
+        initial_index = indexKey;
     }
 
     if (infoControl) {
         map.removeControl(infoControl);
     }
 
-    infoControl = createInfoControl();
+    // Pass geo_unit to createInfoControl
+    infoControl = createInfoControl(geo_unit);
     infoControl.addTo(map);
 
     if (legendControl) {
@@ -185,6 +192,7 @@ function plot_map(data, indexKey, latitude, longitude, zoomLevel) {
         "New Layer": currentLayer
     }).addTo(map);
 }
+
 
 
 async function createCheckboxes() {
