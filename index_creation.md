@@ -24,6 +24,6 @@ layout: page
 
 - **Combining PCA Values with Assigned Weights:** Once the principal component for each category is obtained, the weights assigned by the web creator are applied to calculate a weighted average. This involves multiplying each category’s PCA-derived value by its corresponding weight.
 - **Index Calculation:** The final index is calculated as the sum of these weighted values. This index is a comprehensive measure that combines all the relevant information from different categories into a single score.
-- **Interpretation:** The resulting index is a powerful tool for comparison and analysis. It enables ranking or evaluating entities (such as regions, individuals, or organizations) based on the aggregated data, providing insights that are both holistic and data-driven.
+- **Interpretation:** The resulting index is a powerful tool for comparison and analysis. It enables ranking or evaluating entities (such as regions or organizations) based on the aggregated data, providing insights that are both holistic and data-driven.
 
 
