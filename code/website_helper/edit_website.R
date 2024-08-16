@@ -1,4 +1,4 @@
-edit_website <- function(website_title, description, menu_options, initial_index, geo_unit) {
+edit_website <- function(website_title, description, menu_options, initial_index, geo_unit, home_path) {
   
   # Edits website design options
   #' @description
@@ -23,27 +23,28 @@ edit_website <- function(website_title, description, menu_options, initial_index
   require(rjson)
   
   #fix the relative path
-  options <- fromJSON(file = paste0(getwd(), "/geo-ndxr/website_materials/options.json"))
-  menu_options <- fromJSON(file = paste0(getwd(), "/geo-ndxr/website_materials/menu_options.json"))
+  #options <- fromJSON(file = paste0(home_path, "/geo-ndxr/website_materials/options.json"))
+  #menu_options <- fromJSON(file = paste0(home_path, "/geo-ndxr/website_materials/menu_options.json"))
+  
+  options <- list()
   
   #replace content with input strings/lists
   options$website_title <- website_title
   options$description <- description
   options$initial_index <- initial_index
   options$geo_unit <- geo_unit
-  menu_options <- menu_options
   
   # Specify the file to overwrite (options.json)
-  options_file = file(paste0(getwd(), "/geo-ndxr/website_materials/options.json"))
+  options_file = file(paste0(home_path, "/geo-ndxr/website_materials/options.json"))
   
   # Write the file contents in JSON format
-  toJSON(options, pretty = TRUE, auto_unbox = TRUE) %>%
+  jsonlite::toJSON(options, pretty = TRUE, auto_unbox = TRUE) %>%
     write(options_file)
  
   # Specify the file to overwrite (menu_options.json)
-  menu_options_file = file(paste0(getwd(), "/geo-ndxr/website_materials/menu_options.json"))
+  menu_options_file = file(paste0(home_path, "/geo-ndxr/website_materials/menu_options.json"))
   
   # Write the file contents in JSON format
-  toJSON(options, pretty = TRUE, auto_unbox = TRUE) %>%
+  jsonlite::toJSON(menu_options, pretty = TRUE, auto_unbox = TRUE) %>%
     write(menu_options_file)
 }

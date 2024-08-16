@@ -1,0 +1,10 @@
+{
+  "Cat1": {
+    "gini": "gini",
+    "eco_imp_land_mean": "eco mean"
+  },
+  "Category2": {
+    "NRI_score": "NRI",
+    "runoff_max": "runoff max"
+  }
+}

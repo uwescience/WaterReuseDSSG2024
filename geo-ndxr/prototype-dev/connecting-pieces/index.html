@@ -74,7 +74,6 @@
         const webr = new WebR();
         await webr.init();
 
-
         // Download a filesystem image
         await webr.FS.mkdir('/data')
         const data = await fetch('./output.data');
