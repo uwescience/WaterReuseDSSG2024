@@ -422,8 +422,11 @@ head(joined_sfs)
 ```
 
 #### Point to raster 
+Point data integrated into raster. See doc strings in crosswalk_spatial for inputs.
 
 #### Stacking rasters
+Creates a dual-layer raster stack. User aggregates as needed. See doc strings in crosswalk_spatial for inputs. 
 
 #### Rasters to shapes 
+Extracts from raster and adds aggregates sum, mean, and max columns to shapefile. See doc strings in crosswalk_spatial for inputs. 
 
