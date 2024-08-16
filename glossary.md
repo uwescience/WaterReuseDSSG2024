@@ -1,5 +1,3 @@
-# Glossary
-
 ## User Roles
 
 **Index Creator:** uses R functions provided in this repo to determine which variables are included in an index, pre-process them, calculate the default index, and generate an interactive website.
