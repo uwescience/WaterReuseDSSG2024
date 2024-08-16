@@ -3,7 +3,6 @@ title: "Website Generation"
 layout: page
 ---
 
-## Website Generation
 **Overview of the Web Map Creation:**
 
 Web Assembly with webr:
