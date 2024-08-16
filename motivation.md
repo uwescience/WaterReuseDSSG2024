@@ -3,8 +3,6 @@ title: "Motivation"
 layout: page
 ---
 
-  <img src="{{ site.url }}{{ site.baseurl }}/assets/img/drivers.png" alt="Drivers of Water Reuse">
-
 
 ## Project Goals
 
@@ -16,6 +14,10 @@ Deliverables include:
 - Index measuring potential benefits that communities can get from water reuse.
 - Visualization of that index through mapping
 - User interface and generalizable R code that allows users to choose their own components of the index and to map it
+
+We believe that communities are motivated to explore water reuse due to the significant environmental and economic benefits it offers at both utility and household scales. Our project leads, who are experts in water reuse, have identified a comprehensive set of drivers, including effluent disposal limitations, extreme weather events, community health and resilience, and runoff management. These drivers, represented in the top row of boxes, are assessed using measurable indicators, shown in the white boxes below, to determine their severity. Understanding local water needs and the potential benefits of adopting water reuse is complex, but there is a wealth of publicly available data, such as from the U.S. Census Bureau and the Environmental Protection Agency, that can help piece together a comprehensive picture.
+
+  <img src="{{ site.url }}{{ site.baseurl }}/assets/img/drivers.png" alt="Drivers of Water Reuse">
 
 ## Ethical Considerations
 
