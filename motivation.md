@@ -43,7 +43,7 @@ Q) Should we consider all wastewater to have water reuse potential?
 
 
 Check out our use cases below ⬇️
-<div style="overflow-y:auto; max-height:400px;">
+<div style="overflow-y:auto; max-height: 1000px;">
   <table style="border-collapse: collapse; width: 100%;">
     <tr style="background-color: #f2f2f2; border-bottom: 1px solid #ddd;">
       <th>User Group</th>
