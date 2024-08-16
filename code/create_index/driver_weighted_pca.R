@@ -24,7 +24,7 @@ percentile_rank <- function(x) {
 get_percentiles <- function(df, id_column=NULL) {
   
   if (!is.null(id_column)) {
-    numeric_df <- df %>% select(-all_of(c(id_column)))
+    numeric_df <- df %>% dplyr::select(-all_of(c(id_column)))
   }
   
   else { 
@@ -79,7 +79,7 @@ multidriver_pca <- function(data, user_selection,
     
     if (length(indicators_for_driver_score) > 1) {
       print(paste("Running PCA on driver", active_drivers[i], "to reduce dimensionality to 1 number..."))
-      data_for_pca <- data %>% select(all_of(indicators_for_driver_score))
+      data_for_pca <- data %>% dplyr::select(all_of(indicators_for_driver_score))
       
       pca_result <- prcomp(data_for_pca, center = TRUE, scale. = TRUE)
       

@@ -1,0 +1,100 @@
+body {
+    font-family: 'Helvetica', sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Helvetica', sans-serif;
+}
+
+/* Ensure the map stays in the right position */
+#map {
+    width: 70vw; /* Adjust to fit 70% of the viewport width */
+    height: 70vh; /* Adjust to fit 70% of the viewport height */
+    max-width: 900px;
+    max-height: 600px;
+    box-sizing: border-box;
+}
+
+/* Sidebar styling */
+.sidebar {
+    width: 30%;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    border: 1px solid #ccc;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    box-sizing: border-box;
+    height: 70vh; /* Same as map height to align with it */
+    overflow-y: auto;
+}
+
+/* Container for sidebar and map */
+.content {
+    display: flex;
+    align-items: flex-start;
+}
+
+/* Category section styling */
+.category-section {
+    margin-bottom: 10px; /* Space between categories */
+    padding: 5px 0;
+    border-bottom: 1px solid #eee; /* Light border between categories */
+}
+
+/* Category label styling */
+.category-label {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 5px; /* Space below category label */
+}
+
+/* Category label checkbox styling */
+.category-label input {
+    margin-left: 5px;
+}
+
+/* Indicator styling */
+.indicator-item {
+    margin-left: 20px; /* Space to indent indicators under categories */
+}
+
+/* Indicator checkbox styling */
+.indicator-item input {
+    margin-left: 5px;
+}
+
+.info.legend {
+    background: white;
+    padding: 6px 8px;
+    font: 14px/16px Arial, Helvetica, sans-serif;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    line-height: 18px;
+    color: #555;
+}
+
+.info.legend i {
+    width: 18px;
+    height: 18px;
+    float: left;
+    margin-right: 8px;
+    opacity: 0.7;
+}
+
+#metadata {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 4px;
+}
+
+#metadata:hover {
+    background-color: #0056b3;
+}

@@ -1,0 +1,179 @@
+---
+title: "create_index"
+output:
+  pdf_document: default
+  html_document: default
+date: "2024-08-15"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Index and Website Creation Pipeline 
+
+Creator pipeline for calculating a default index and setting up an interactive website displaying an index map. This is a working template for index creation. DO NOT PUSH to the GitHub repository. NOTE: set gitignore? for this file 
+
+## Required Packages and source GeoNdxR crosswalk functions 
+Ensure that the config.yml file in your downloaded GitHub repo contains your correct home path or set your working directory to the highest level of the GitHub repo. 
+
+## Set working directory 
+```{r}
+#Set your working directory to the location that the cloned GitHub repo lives on your computer. Example below. 
+# Start the path with a '/' and DO NOT include a '/' at the end.
+home_path <- "\\\\wsl.localhost\\Ubuntu\\home\\catkiss\\WaterReuseDSSG2024"
+setwd(home_path)
+root_dir <- home_path
+
+```
+
+```{r}
+#Require / Load libraries
+
+pacman::p_load(tigris, tidyverse, dplyr, sf, usmap, ggplot2, naniar, raster, terra, stars, nngeo, exactextractr, naniar, geojsonsf, rmapshaper, geojsonio, jsonlite)
+
+
+#Source GeoNdxR crosswalk functions. Find documentation for these functions linked in the GitHub README. 
+source(paste0(home_path,"/code/crosswalk/crosswalk_spatial.R"))
+source(paste0(home_path,"/code/crosswalk/crosswalk_census.R"))
+source(paste0(home_path,"/code/crosswalk/crosswalk_id.R"))
+source(paste0(home_path,"/code/crosswalk/apply_weight.R"))
+source(paste0(home_path,"/code/website_helper/edit_website.R"))
+source(paste0(home_path,"/code/create_index/driver_weighted_pca.R"))
+source(paste0(home_path,"/code/website_helper/update_metadata.R"))
+```
+
+
+## Load, explore, and transform data 
+Users should provide geospatial dataset(s) to be included in the index. Be mindful of filetypes and requirements. Code chunk below commented with further instruction. 
+
+```{r}
+#Load data. If you used process_data.Rmd to process and crosswalk your data, you can load in percentile_data directly. 
+
+data_path <- "//wsl.localhost/Ubuntu/home/catkiss/WaterReuseDSSG2024/geo-ndxr/prototype-dev/connecting-pieces/"
+
+#If you are loading a shapefile (as opposed to csv, geojson, etc.), include folder with all relevant files in the file path
+file_name <- "output.geojson"
+
+```
+
+Add chunks to explore data. Create plots, use the head(data) function, inspect NAs with naniar function gg_miss_var(data). 
+
+
+## Calculate default/initial index
+```{r}
+#Fill in your categories and indicators and how they are structured. These will become your sidebar menu options (categories and indicators to calculate the index). An example structure is below. Keep in mind that categories are creator-chosen and specified, they do not exist in the data itself. 
+
+file.exists(paste(data_path, file_name,sep="/"))
+percentile_data <- geojsonsf::geojson_sf(paste(data_path, file_name,sep="/"))
+  
+data_structure_for_index <- list(Cat1 = list(gini = "gini",
+                                             eco_imp_land_mean = "eco mean"),
+                                 Category2 = list(NRI_score = "NRI",
+                                                  runoff_max = "runoff max"))
+
+input_json <- data_structure_for_index
+
+test_structure <- data.frame(
+  Driver = character(),
+  Indicator = character(),
+  stringsAsFactors = FALSE
+)
+
+for (category in names(input_json)) {
+  for (key in names(input_json[[category]])) {
+    test_structure <- rbind(test_structure, data.frame(
+      Driver = category,
+      Indicator = key,
+      stringsAsFactors = FALSE
+    ))
+  }
+}
+
+numeric_df <- st_drop_geometry(percentile_data[, sapply(percentile_data, is.numeric)])
+  
+initial_index <- multidriver_pca(data = numeric_df,
+                 user_selection = names(numeric_df),
+                 index_structure = test_structure)
+
+data_with_index <- cbind(percentile_data, initial_index)
+
+```
+
+## Export data
+Fill in the commented sections of this code chunk in order to export a valid .geojson version of your final data. This file will be located in the website_materials folder of the downloaded GitHub repository on your computer. You will not need to interact directly with this file. 
+
+DO NOT CHANGE THE NAME OF THE GEOJSON FILE being exported or the website creation functions will not work. 
+
+**If you already have a geojson file that you would like to input directly, please rename it to output.data and place it in the website_materials folder. 
+
+```{r}
+##Export data as a .geojson file in the website template folder of the repo. DO NOT EDIT. 
+save_path <- paste(home_path,"geo-ndxr/website_materials",sep="/")
+
+#Store the final version of your data in a final sf object. An example is below. 
+final_sf <- data_with_index
+
+## Confirm and correct the CRS (Coordinate Reference System) of your final dataframe.
+final_sf <- st_transform(final_sf, crs = 4326)
+
+#Simplify your geometries to save file space (ensures fast web performance for mapping the index). 
+final_json <- geojson_json(final_sf, geometry = "polygon")
+final_json_simplified <- ms_simplify(final_json)
+
+
+
+#Save the geojson. DO NOT EDIT filepath. 
+geojson_write(final_json_simplified, file = paste0(home_path, "/geo-ndxr/website_materials/output.data"))
+
+#Update the metadata associated with output.data geojson file. 
+#update_js_metadata(paste0(save_path, "/output.data"), home_path)
+
+```
+## Open output.js.metadata in your website_materials folder. Replace the two placeholders using the following script
+```{r}
+#Replace %chars with
+nchar(final_json_simplified)
+
+#Replace %bytes with
+nchar(final_json_simplified, type="bytes")
+```
+
+## Edit website title, description, and menu options 
+```{r}
+website_title <- "Test"
+  
+description <- "TEST Fill in your description. Data is sourced from __organization/website__. Data was published __date__. This data describes ____ conditions across the United States." 
+
+menu_options <- data_structure_for_index
+  # Example: list(Category1 = list(column_name1 = "Display Column Name 1"),                                   
+                                #Category2 = list(column_name2 = "Display Column Name 2",
+                                #                 column_name3 = "Display Column Name 3"))
+  
+                #**Note: this should match input for data_structure_for_index in process_data.rmd if used. 
+
+  
+#Provide the column name of the initial/default index in the dataframe. Please edit the line below with your index column name. 
+initial_index <- "initial_index"
+
+geo_unit <- "PWSID"
+
+edit_website(website_title = website_title, description = description, menu_options = menu_options, initial_index = initial_index, geo_unit = geo_unit, home_path = home_path)
+
+```
+
+## Follow instructions to host the web
+You will now have a customized HTML file in the website_materials folder along with your geo-spatial data (including a calculated default index). 
+
+You can test to see if the website looks as expected by following the following steps: 
+1. Navigate to the website_materials folder in your terminal. 
+2. Type this command: python -m http.server
+3. Open your browser and type localhost:8000/index.html
+4. Interact with the website and check all functionality works as expected. 
+5. If you encounter any issues that our documentation in the GitHub repo doesn't solve, feel free to create an issue on our repository describing your problem, your process, and any relevant screenshots. We are still in development and working out bugs and your feedback is highly valued. 
+
+If you are satisfied with the finished webpage, you will need to take the necessary steps to host your html page on a free or hosted web service. We recommend following the tutorial linked on our GitHub README to host your website on GitHub pages. 
+
+Happy indexing! 
+
+-GeoNdxR team
