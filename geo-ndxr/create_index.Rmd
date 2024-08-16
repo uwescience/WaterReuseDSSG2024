@@ -130,6 +130,8 @@ menu_options <- # Example: list(Category1 = list(column_name1 = "Display Column 
 #Provide the column name of the initial/default index in the dataframe. Please edit the line below with your index column name. 
 initial_index <- "initial_index_column_name"
 
+geo_unit <- # "name of geographic unit (scale)"
+
 edit_website(website_title = website_title, description = description, menu_options = menu_options, initial_index = initial_index, geo_unit = geo_unit)
 
 ```
