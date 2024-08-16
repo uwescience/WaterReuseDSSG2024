@@ -56,8 +56,7 @@ title: Meet the Team
   <div class="bio-content">
     <h2>Carolyn Hayek</h2>
     <p><strong>Project Advisor</strong></p>
-    <p>Carolyn Hayek holds a PhD in Sustainable Development from Columbia Climate School, a B.S. in Chemistry from Boston College with a minor in environmental studies, as well as a Masters in Environmental Engineering and a Masters in Urban Planning from the Massachusetts Institute of Technology (MIT).
-    Carolyn spent 10 years at the US Environmental Protection Agency (EPA) New England regional office in Boston, MA. While there, she was selected for a highly competitive 2-year developmental program designed to expose employees to the full breadth and scope of the Agency. Areas in which Carolyn has worked include: effective management of drinking water and wastewater utilities, grants management and federal oversight of Drinking Water State Revolving Fund programs, water quality sampling, compliance assistance and enforcement for chemical storage and usage, hazardous waste site cleanup, green chemistry, wetlands permitting, low impact development, climate change, and the Significant New Alternatives Policy Program for ozone-depleting substances.</p>
+    <p>Carolyn Hayek is a national expert in sustainable US water infrastructure. She holds an economics-focused PhD in Sustainable Development from Columbia University and Masters in Environmental Engineering and Urban Planning from MIT. Prior to earning her PhD, Carolyn spent 9 years at the US Environmental Protection Agency (EPA) in the New England regional office. Her EPA work included oversight of state funding programs for drinking water and wastewater infrastructure, and developing a toolbox for effective water-sector utility management. Carolyn's research centers on the drivers and effects of underinvestment in US water services provision, and the influence of water reuse implementation.</p>
   </div>
 </div>
 
