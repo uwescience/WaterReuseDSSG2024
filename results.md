@@ -1,8 +1,7 @@
 ---
 layout: page
-title: Case Study: Interactive Water Reuse Website
+title: "Case Study: Interactive Water Reuse Website"
 ---
-
 **Note**
 
 This is a provisional placeholder for the Water Reuse Index website. We will upload the final version shortly. 
