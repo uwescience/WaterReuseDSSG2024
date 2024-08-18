@@ -1,4 +1,3 @@
-
 ---
 title: "Introduction to GeoNdxR"
 layout: page
