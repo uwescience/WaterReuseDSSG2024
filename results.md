@@ -1,19 +1,10 @@
 ---
 layout: page
-title: Results
+title: Case Study: Interactive Water Reuse Website
 ---
 
-**Findings**
+**Note**
 
-What were the outcomes of your analyses?
-What is your interpretation of those findings?
+This is a provisional placeholder for the Water Reuse Index website. We will upload the final version shortly. 
 
-**Deliverables**
-
-What artifacts or outputs did you produce?
-How will these deliverables be used? 
-
-**Outcomes**
-
-How have your stakeholders responded to your deliverables? 
-What impact has your project had, or do you anticipate it having? 
+<img src="{{ site.url }}{{ site.baseurl }}/assets/img/reuse_website.png" alt="Reuse website">
