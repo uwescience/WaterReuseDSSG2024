@@ -1,5 +1,4 @@
 ## User Roles
-
 **Index Creator:** uses R functions provided in this repo to determine which variables are included in an index, pre-process them, calculate the default index, and generate an interactive website.
 
 **Index Explorer:** accesses the website created by the R user & interacts with the graphical user interface. May explore the interactive map and recalculate the index by selecting a subset of the indicators the Index Creator has made available.
@@ -13,19 +12,11 @@
 
 ## Water Reuse Specific Terminology
 
-**Water Reuse:** Defined by the Environmental Protection Agency (EPA) as “the practice of reclaiming water from a variety of sources, treating it, and reusing it for beneficial purposes.” For more information, visit this [Water Reuse Glossary](https://watereuse.org/educate/water-reuse-101/glossary/). 
+**Water Reuse:** Defined by the Environmental Protection Agency (EPA) as “the practice of reclaiming water from a variety of sources, treating it, and reusing it for beneficial purposes.” For more detailed information, visit this [Water Reuse Glossary](https://watereuse.org/educate/water-reuse-101/glossary/). 
 
 **NPDES:** [National Pollutant Discharge Elimination System]([url](https://www.epa.gov/npdes/npdes-permit-basics)), a permitting program set up by the US Environmental Protection Agency. **NPDES requires most wastewater facilities to report data about the substances they discharge, a key data source for this project.**
 
-**Watershed:**
-
-**HUC:** hydrologic unit code. "The United States is divided and sub-divided into successively smaller hydrologic units... The hydrologic units are arranged or nested within each other, from the largest geographic area (regions) to the smallest geographic area (cataloging units). Each hydrologic unit is identified by a unique hydrologic unit code (HUC)." -[US Geographic Survey]([url](https://water.usgs.gov/GIS/huc.html))
-
-**Water Reuse:** 
-
-**NPDES:** [National Pollutant Discharge Elimination System]([url](https://www.epa.gov/npdes/npdes-permit-basics)), a permitting program set up by the US Environmental Protection Agency. **NPDES requires most wastewater facilities to report data about the substances they discharge, a key data source for this project.**
-
-**Watershed:**
+**Watershed:** A watershed is a basin where all flowing surface water drains in a given geographic area. 
 
 **HUC:** hydrologic unit code. "The United States is divided and sub-divided into successively smaller hydrologic units... The hydrologic units are arranged or nested within each other, from the largest geographic area (regions) to the smallest geographic area (cataloging units). Each hydrologic unit is identified by a unique hydrologic unit code (HUC)." -[US Geographic Survey]([url](https://water.usgs.gov/GIS/huc.html))
 
