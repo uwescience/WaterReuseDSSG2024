@@ -76,15 +76,15 @@ We knew that it was important to maintain the conceptual indicator/driver struct
 <style>
 .gis-photo {
   float: left;
-  width: 200px;
-  height: 200px;
+  width: 250px;
+  height: 250px;
   object-fit: cover;
   margin-right: 20px;
 }
 .crosswalk-photo {
   float: left;
-  width: 200px;
-  height: 200px;
+  width: 250px;
+  height: 250px;
   object-fit: cover;
   margin-right: 20px;
 }
