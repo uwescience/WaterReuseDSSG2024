@@ -23,7 +23,7 @@ Additional resources and tips for GIS processing have been [compiled here](https
 
 [Notes and examples](https://github.com/uwescience/WaterReuseDSSG2024/blob/main/code/data_cleaning/final_merge.Rmd): For the Provisional Water Reuse Index, we imputed null values to 0. We converted all values to percentiles prior to performing a Principal Component Analysis. We dropped any water service areas with no associated geometry that could be mapped. 
 
-## Assign Variables ("indicators") to Categories ("drivers")
+## Assign Variables ("Indicators") to Categories ("Drivers")
 We knew that it was important to maintain the conceptual indicator/driver structure shown on the [Motivation](https://uwescience.github.io/WaterReuseDSSG2024/motivation/). We did this by creating a list mapping the drivers to the indicator values (columns) they are measured by. This impacts both how the index is calculated and the menu options that appear on the final website. This is detailed in following pages and in the [create_website.Rmd](https://github.com/uwescience/WaterReuseDSSG2024/blob/main/geo-ndxr/create_index.Rmd).
 
 
