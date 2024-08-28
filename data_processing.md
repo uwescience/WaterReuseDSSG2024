@@ -84,7 +84,7 @@ We knew that it was important to maintain the conceptual indicator/driver struct
 .crosswalk-photo {
   float: left;
   width: 200px;
-  height: 175px;
+  height: 160px;
   object-fit: cover;
   margin-right: 20px;
 }
