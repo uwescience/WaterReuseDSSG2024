@@ -79,13 +79,12 @@ We knew that it was important to maintain the conceptual indicator/driver struct
   width: 200px;
   height: 200px;
   object-fit: cover;
+  margin-right: 20px;
 }
-<style>
 .crosswalk-photo {
   float: left;
   width: 200px;
   height: 200px;
   object-fit: cover;
-}
   margin-right: 20px;
 }
