@@ -1,4 +1,4 @@
-# Water Reuse and _GeoNdxr_ <img src="GeoNdxR_logo.png" align="right" width="30%" />
+# Water Reuse and _GeoNdxr_ <img src="GeoNdxR_logo.png" align="right" width="20%" />
 
 ___
 ### Drivers-Based Water Reuse Potential project
