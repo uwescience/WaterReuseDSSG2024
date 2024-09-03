@@ -1,4 +1,5 @@
-# Water Reuse and _GeoNdxr_
+# Water Reuse and _GeoNdxr_ <img src="GeoNdxR_logo.png" align="right" width="20%" />
+
 ___
 ### Drivers-Based Water Reuse Potential project
 **University of Washington DSSG summer 2024**
