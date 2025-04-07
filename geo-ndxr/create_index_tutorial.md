@@ -33,6 +33,8 @@ pacman::p_load(tigris, tidyverse, dplyr, sf, usmap, ggplot2, naniar, raster, ter
 
 
 #Source GeoNdxR crosswalk functions. Find documentation for these functions linked in the GitHub README. 
+source(paste0(home_path, "/code/crosswalk/crosswalk_geom.R"))
+source(paste0(home_path,"/code/crosswalk/crosswalk_raster.R"))
 source(paste0(home_path,"/code/crosswalk/crosswalk_spatial.R"))
 source(paste0(home_path,"/code/crosswalk/crosswalk_census.R"))
 source(paste0(home_path,"/code/crosswalk/crosswalk_id.R"))
