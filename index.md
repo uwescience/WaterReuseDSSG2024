@@ -4,8 +4,6 @@ layout: default
 
 <img src="{{ site.url }}{{ site.baseurl }}/assets/img/eScience.png">
 
-**This website is part of the eScience Institute, University of Washington Web Archive.**
-
 # GeoNdxR: Water Reuse Index and *Beyond*
 <img src="{{ site.url }}{{ site.baseurl }}/assets/img/index_front.png">
 Communities around the United States are thinking of alternative water systems to address local water challenges. One example of this is water reuse, which is defined by the Environmental Protection Agency (EPA) as “the practice of reclaiming water from a variety of sources, treating it, and reusing it for beneficial purposes.” The current social problem is that communities only see water reuse as an opportunity for areas that are experiencing water scarcity, rather than realizing it’s full potential to address a wide range of water challenges, like lowering flood risk, reducing combined sewer overflows, and minimizing the nutrients that are discharged to the environment.
